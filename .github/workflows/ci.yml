@@ -36,6 +36,28 @@ jobs:
   static:
     name: Types, lint and unit tests
     runs-on: ubuntu-latest
+
+    # `npm test` is not purely unit tests: src/lib/__tests__/rate-limit.test.ts
+    # exercises the real limiter against PostgreSQL, because a fixed-window
+    # limiter is only meaningful against the table it counts in.
+    #
+    # Without a database it did not error usefully — `checkRateLimit` fails OPEN
+    # by design, so every "should be blocked" assertion got `allowed: true` and
+    # the suite reported wrong answers rather than a missing dependency.
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: glex_ci
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d glex_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v4
 
@@ -52,6 +74,10 @@ jobs:
 
       - name: Lint
         run: npm run lint
+
+      - name: Apply migrations
+        # The rate-limit suite needs the RateLimit table to exist.
+        run: npm run db:deploy
 
       - name: Unit tests
         run: npm test
@@ -172,13 +198,6 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
-      # src/lib/env.ts refuses EMAIL_PROVIDER=console under NODE_ENV=production,
-      # and an unreachable SMTP host would stall every send on a connection
-      # timeout. A sink makes delivery real and instant.
-      smtp:
-        image: maildev/maildev:latest
-        ports: ['1025:1025']
-
     env:
       CI: 'true'
       EMAIL_PROVIDER: smtp
@@ -211,6 +230,24 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Start an SMTP sink
+        # src/lib/env.ts refuses EMAIL_PROVIDER=console under NODE_ENV=production,
+        # and every send would otherwise error against a dead port.
+        #
+        # Run from npm rather than as a service container: `maildev/maildev:latest`
+        # is a 3.0 release candidate and failed to start as a service, taking the
+        # whole job down before checkout. This is also the arrangement actually
+        # verified locally, rather than a second one assumed to be equivalent.
+        run: |
+          npx --yes maildev --smtp 1025 --web 1080 --silent &
+          for _ in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:1080 > /dev/null 2>&1; then
+              echo "smtp sink up"; exit 0
+            fi
+            sleep 2
+          done
+          echo "the SMTP sink did not start within 60s"; exit 1
 
       - name: Start and wait for it to answer
         # Polls the liveness probe rather than pulling in a wait-for-it package.
