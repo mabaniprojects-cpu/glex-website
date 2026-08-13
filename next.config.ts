@@ -1,4 +1,5 @@
 import { withSentryConfig } from '@sentry/nextjs'
+import { PHASE_PRODUCTION_BUILD } from 'next/constants'
 import type { NextConfig } from 'next'
 import createNextIntlPlugin from 'next-intl/plugin'
 
@@ -16,19 +17,34 @@ const isDev = process.env.NODE_ENV === 'development'
  * site that looks perfect to a visitor while telling search engines and every
  * social preview that it lives on localhost.
  *
- * That failure is invisible in the browser, so it fails the build instead.
+ * That failure is invisible in the browser, so the build refuses instead.
+ *
+ * Unset is an error; localhost is only a warning. Building a production bundle
+ * against localhost is a legitimate thing to do — CI does it, and so does anyone
+ * verifying a build on their own machine — whereas a host that never sets the
+ * variable at all is the failure that actually reaches production.
+ *
+ * Gated on the phase so `next start` is unaffected: the value is baked in at
+ * build, so the running server has no say in it either way.
  */
-if (!isDev && process.env.NODE_ENV !== 'test') {
+function assertPublicOriginConfigured() {
   const publicUrl = process.env.NEXT_PUBLIC_APP_URL
 
-  if (!publicUrl || /localhost|127\.0\.0\.1/.test(publicUrl)) {
+  if (!publicUrl) {
     throw new Error(
-      `NEXT_PUBLIC_APP_URL must be set to the public origin for a production build.\n` +
-        `  received: ${publicUrl ?? '(unset)'}\n\n` +
+      `NEXT_PUBLIC_APP_URL must be set to the public origin for a production build.\n\n` +
         `It is inlined at build time, so exporting it only in the runtime\n` +
         `environment will not work — sitemap.xml, robots.txt, canonical URLs and\n` +
         `OpenGraph tags would all be published pointing at localhost.\n\n` +
         `  NEXT_PUBLIC_APP_URL="https://www.exporthouse.com.sa" npm run build`
+    )
+  }
+
+  if (/localhost|127\.0\.0\.1/.test(publicUrl)) {
+    console.warn(
+      `\n  NEXT_PUBLIC_APP_URL is ${publicUrl} — fine for a local or CI build,\n` +
+        `  but this bundle must not be deployed: its sitemap, robots.txt and\n` +
+        `  canonical URLs would all point at localhost.\n`
     )
   }
 }
@@ -159,7 +175,7 @@ const canUploadSourceMaps = Boolean(
   process.env.SENTRY_ORG && process.env.SENTRY_PROJECT && process.env.SENTRY_AUTH_TOKEN
 )
 
-export default canUploadSourceMaps
+const finalConfig = canUploadSourceMaps
   ? withSentryConfig(config, {
       org: process.env.SENTRY_ORG,
       project: process.env.SENTRY_PROJECT,
@@ -172,3 +188,13 @@ export default canUploadSourceMaps
       sourcemaps: { deleteSourcemapsAfterUpload: true },
     })
   : config
+
+/**
+ * Exported as a function so the origin check can key off the build phase.
+ * `next typegen` and `next start` evaluate this file too, and neither of them
+ * bakes anything in — only PHASE_PRODUCTION_BUILD does.
+ */
+export default function nextConfigForPhase(phase: string) {
+  if (phase === PHASE_PRODUCTION_BUILD) assertPublicOriginConfigured()
+  return finalConfig
+}
