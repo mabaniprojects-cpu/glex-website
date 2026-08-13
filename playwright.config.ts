@@ -53,10 +53,17 @@ export default defineConfig({
   ],
 
   // Reuse a dev server that is already running; otherwise start one.
+  //
+  // `!CI` alone is not enough. The production-build job starts the real server
+  // itself — `npm start` against a build, which is the whole point of that job
+  // and not something this command could produce — and then Playwright refused
+  // to use it: *"http://localhost:3000 is already used"*. CI should still fail
+  // loudly when something unexpected holds the port, so reuse stays opt-in
+  // rather than becoming unconditional.
   webServer: {
     command: 'npm run dev',
     url: baseURL,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: process.env.E2E_REUSE_SERVER === 'true' || !process.env.CI,
     timeout: 180_000,
   },
 })

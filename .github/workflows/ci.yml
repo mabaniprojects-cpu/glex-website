@@ -200,6 +200,10 @@ jobs:
 
     env:
       CI: 'true'
+      # This job starts the production server itself, below. Without this
+      # Playwright refuses the port it is standing on and tries to launch
+      # `npm run dev` — the dev server this job exists to avoid.
+      E2E_REUSE_SERVER: 'true'
       EMAIL_PROVIDER: smtp
       SMTP_HOST: 127.0.0.1
       SMTP_PORT: '1025'
