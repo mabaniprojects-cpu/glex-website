@@ -30,7 +30,34 @@ import { slugify } from '../src/lib/utils'
 const DEMO_ENABLED =
   process.env.SEED_DEMO_DATA === 'true' && process.env.NODE_ENV !== 'production'
 
-const DEMO_PASSWORD = process.env.SEED_DEMO_PASSWORD ?? 'GlexDemo!2026'
+/**
+ * No fallback, deliberately.
+ *
+ * A hardcoded default here becomes the password of `admin@glex.demo`, a
+ * SUPER_ADMIN, on every environment seeded without one — and since this
+ * repository is public, that default would be readable by anyone. Production is
+ * already protected (`DEMO_ENABLED` requires a non-production NODE_ENV, and
+ * `src/lib/env.ts` refuses the flag outright under production), but staging,
+ * demo and preview environments are not production and are exactly where this
+ * would bite.
+ *
+ * Read lazily rather than at module load: reference-data seeding is safe for
+ * production and must not require a demo password it will never use.
+ */
+function demoPassword(): string {
+  const password = process.env.SEED_DEMO_PASSWORD
+
+  if (!password) {
+    throw new Error(
+      'SEED_DEMO_DATA=true requires SEED_DEMO_PASSWORD to be set.\n' +
+        'Choose your own — 10+ characters with a letter and a digit. There is no\n' +
+        'default, because a default would be the same on every deployment and this\n' +
+        'repository is public.'
+    )
+  }
+
+  return password
+}
 
 // --- Reference data ---------------------------------------------------------
 
@@ -237,12 +264,14 @@ async function seedReferenceData() {
 async function seedDemoData() {
   console.log('· demo accounts, catalogue, RFQ, shipment, news')
 
-  if (!isStrongPassword(DEMO_PASSWORD)) {
+  const password = demoPassword()
+
+  if (!isStrongPassword(password)) {
     throw new Error(
       'SEED_DEMO_PASSWORD does not meet the password policy (10+ characters, a letter and a digit).'
     )
   }
-  const passwordHash = await hashPassword(DEMO_PASSWORD)
+  const passwordHash = await hashPassword(password)
   const verified = new Date()
 
   // --- Internal ---
@@ -664,7 +693,9 @@ async function seedDemoData() {
     'supplier@glex.demo',
     'pending-supplier@glex.demo',
   ]) {
-    console.log(`    ${email.padEnd(30)} ${DEMO_PASSWORD}`)
+    // The value itself is not echoed: `npm run db:seed` runs in CI, and this
+    // repository is public, so anything printed here is world-readable.
+    console.log(`    ${email.padEnd(30)} (the value of SEED_DEMO_PASSWORD)`)
   }
 }
 
