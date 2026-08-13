@@ -1,0 +1,39 @@
+# Line endings, decided by the repository rather than by each contributor's
+# `core.autocrlf` setting.
+#
+# CI runs on Ubuntu and executes the shell steps in .github/workflows plus the
+# Node scripts in scripts/. A CRLF that reached those would break them in ways
+# that look nothing like a line-ending problem, and `scripts/check-encoding.mjs`
+# exists because this project has already lost time to exactly that class of bug.
+
+# Normalise every text file to LF inside the repository. Git decides what is
+# text by inspection; the explicit rules below cover the cases worth pinning.
+* text=auto
+
+# Executed by tooling — LF even when checked out on Windows.
+*.sh   text eol=lf
+*.mjs  text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.sql  text eol=lf
+
+# Source and content.
+*.ts    text
+*.tsx   text
+*.json  text
+*.md    text
+*.css   text
+*.svg   text
+*.toml  text
+*.prisma text
+
+# Never transformed: a substituted byte here is a corrupted file, not a diff.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.pdf  binary

@@ -1,0 +1,237 @@
+name: CI
+
+# Every check in this file is one that has already caught a real defect in this
+# project. The encoding scan is here because a bulk edit once introduced BOMs
+# and mojibake into seven files; the locale verification because a missing key
+# in one of five catalogues is a compile error nobody sees locally until they
+# build; the E2E suite because typecheck and lint have both passed on code that
+# could not render.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  # A new push supersedes the run in progress for the same ref.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Same values in both jobs. None is a secret: the database is a throwaway
+  # service container, and AUTH_SECRET only has to satisfy the 32-character
+  # minimum in src/lib/env.ts.
+  DATABASE_URL: postgresql://postgres:postgres@localhost:5432/glex_ci
+  AUTH_SECRET: ci-only-secret-not-used-anywhere-else-000000
+  APP_URL: http://localhost:3000
+  NEXT_PUBLIC_APP_URL: http://localhost:3000
+  NEXT_PUBLIC_SITE_NAME: GLEX
+  CONTACT_TO_EMAIL: ci@example.com
+  EMAIL_PROVIDER: console
+  STORAGE_PROVIDER: local
+  TRACKING_PROVIDER: internal
+
+jobs:
+  static:
+    name: Types, lint and unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      # `postinstall` runs `prisma generate`, so the client exists from here on.
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm test
+
+      - name: All five locales carry the same keys
+        run: node scripts/verify-locales.mjs
+
+      - name: No BOMs or mojibake
+        run: node scripts/check-encoding.mjs
+
+      - name: Production build
+        # Without this a pull request could break the build and only find out
+        # after merging, since the production E2E job does not run on PRs.
+        # `next build` sets NODE_ENV=production itself, and src/lib/env.ts
+        # refuses console mail under it — hence the override. No database is
+        # needed: sitemap.ts is prerendered and queries one, but both queries
+        # degrade to an empty list by design.
+        run: npm run build
+        env:
+          EMAIL_PROVIDER: smtp
+          SMTP_HOST: 127.0.0.1
+          SMTP_PORT: '1025'
+
+      - name: Production dependency audit
+        # Fails on CRITICAL only. Four HIGH advisories in the nodemailer →
+        # @auth/core → next-auth chain have no published fix, and this codebase
+        # does not use the affected `raw` option; failing on high would make the
+        # gate permanently red and therefore ignored. Revisit when upstream
+        # ships — see STATUS.md.
+        run: npm audit --omit=dev --audit-level=critical
+
+  e2e:
+    name: End-to-end (dev server)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: glex_ci
+        ports: ['5432:5432']
+        # Without this the first migration can race the database's own startup.
+        options: >-
+          --health-cmd "pg_isready -U postgres -d glex_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      CI: 'true'
+      # The suite signs in as the demo accounts, so they have to exist. This is
+      # a throwaway database; src/lib/env.ts still refuses this flag under
+      # NODE_ENV=production.
+      SEED_DEMO_DATA: 'true'
+      SEED_DEMO_PASSWORD: GlexDemo!2026
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install Playwright browsers
+        # Only the browsers the config actually declares projects for.
+        run: npx playwright install --with-deps chromium
+
+      - name: Apply migrations
+        run: npm run db:deploy
+
+      - name: Seed
+        run: npm run db:seed
+
+      - name: Run the suite
+        run: npm run test:e2e
+
+      - name: Upload the report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+      - name: Upload failure traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 7
+
+  e2e-production:
+    name: End-to-end (production build)
+    # The dev server is a developer convenience; this is what actually ships.
+    # It went unrun for the whole project because the Playwright config asserted
+    # it was impossible, so it is a job rather than a note in a README.
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: glex_ci
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d glex_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      # src/lib/env.ts refuses EMAIL_PROVIDER=console under NODE_ENV=production,
+      # and an unreachable SMTP host would stall every send on a connection
+      # timeout. A sink makes delivery real and instant.
+      smtp:
+        image: maildev/maildev:latest
+        ports: ['1025:1025']
+
+    env:
+      CI: 'true'
+      EMAIL_PROVIDER: smtp
+      SMTP_HOST: 127.0.0.1
+      SMTP_PORT: '1025'
+      # A seed-time flag, not a runtime one: seeding happens below with
+      # NODE_ENV unset, and the demo accounts persist into the production run.
+      SEED_DEMO_PASSWORD: GlexDemo!2026
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Apply migrations
+        run: npm run db:deploy
+
+      - name: Seed, including the accounts the suite signs in as
+        run: npm run db:seed
+        env:
+          SEED_DEMO_DATA: 'true'
+
+      - name: Build
+        run: npm run build
+
+      - name: Start and wait for it to answer
+        # Polls the liveness probe rather than pulling in a wait-for-it package.
+        run: |
+          npm start &
+          for _ in $(seq 1 60); do
+            if curl -fsS http://localhost:3000/api/health > /dev/null; then
+              echo "up"; exit 0
+            fi
+            sleep 2
+          done
+          echo "server did not become healthy within 120s"; exit 1
+
+      - name: Run the suite
+        # webServer reuses the server already listening on the port.
+        run: npm run test:e2e
+
+      - name: Upload failure traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces-production
+          path: test-results/
+          retention-days: 7

@@ -1,0 +1,51 @@
+# Local development services for GLEX.
+#
+#   docker compose up -d
+#
+# Provides PostgreSQL and (optionally) MinIO as an S3-compatible object store
+# so the storage abstraction can be exercised without a cloud account.
+# The application itself runs on the host with `npm run dev`.
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: glex-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-glex}
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - glex-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-glex}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Optional. Start with:  docker compose --profile storage up -d
+  minio:
+    image: minio/minio:latest
+    container_name: glex-minio
+    profiles: ['storage']
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-glexadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-glexadmin123}
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - glex-minio-data:/data
+    healthcheck:
+      test: ['CMD', 'mc', 'ready', 'local']
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  glex-postgres-data:
+  glex-minio-data:

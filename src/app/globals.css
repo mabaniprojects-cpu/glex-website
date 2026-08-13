@@ -1,0 +1,190 @@
+@import 'tailwindcss';
+
+/* ==========================================================================
+   GLEX – Global Export House :: design system
+   Palette taken from the official logo. Deep green is the corporate colour,
+   gold is reserved as a premium accent and for primary calls to action.
+   ========================================================================== */
+
+@theme {
+  /* --- Brand palette --- */
+  --color-glex-green-50: #eef7f2;
+  --color-glex-green-100: #d5ebe0;
+  --color-glex-green-200: #94c4af; /* light mint */
+  --color-glex-green-300: #6fae94;
+  --color-glex-green-400: #479774; /* secondary green */
+  --color-glex-green-500: #17855a;
+  --color-glex-green-600: #017a4d; /* primary deep green */
+  --color-glex-green-700: #01603d;
+  --color-glex-green-800: #01462c;
+  --color-glex-green-900: #0f2b22; /* dark text */
+  --color-glex-green-950: #071a14;
+
+  --color-glex-gold-50: #fdf9ed;
+  --color-glex-gold-100: #f9f0d2;
+  --color-glex-gold-200: #f0dfa4;
+  --color-glex-gold-300: #e7cf78;
+  --color-glex-gold-400: #dfbe52; /* GLEX gold */
+  --color-glex-gold-500: #cfa72f;
+  --color-glex-gold-600: #ac8722;
+  --color-glex-gold-700: #86671c;
+  --color-glex-gold-800: #5f4a15;
+  --color-glex-gold-900: #3d300e;
+
+  --color-glex-ivory: #e7ead6; /* warm ivory */
+  --color-glex-ivory-soft: #f3f5e9;
+  --color-glex-ink: #0f2b22;
+
+  /* --- Semantic tokens --- */
+  --color-surface: #ffffff;
+  --color-surface-muted: #f7f8f2;
+  --color-surface-inverse: #0f2b22;
+  --color-border-subtle: #e2e6d8;
+
+  /* --- Typography ---
+     Latin uses Inter; Arabic uses IBM Plex Sans Arabic, which shares Inter's
+     humanist proportions so the two scripts sit together without a visual jump. */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-arabic: var(--font-plex-arabic), var(--font-inter), ui-sans-serif, sans-serif;
+
+  /* --- Motion --- */
+  --ease-out-brand: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --animate-route-dash: route-dash 3.5s linear infinite;
+  --animate-fade-up: fade-up 0.6s var(--ease-out-brand) both;
+  --animate-marquee: marquee 40s linear infinite;
+}
+
+@keyframes route-dash {
+  to {
+    stroke-dashoffset: -1000;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-surface);
+    color: var(--color-glex-ink);
+    font-family: var(--font-sans);
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Arabic sets dir="rtl" on <html>; swap in the Arabic face for the whole tree. */
+  html[dir='rtl'] body {
+    font-family: var(--font-arabic);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    color: var(--color-glex-green-900);
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* A single, consistent, high-contrast focus ring everywhere (WCAG 2.2 AA). */
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-glex-green-600);
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+  }
+
+  ::selection {
+    background-color: var(--color-glex-gold-200);
+    color: var(--color-glex-green-900);
+  }
+}
+
+/* ==========================================================================
+   Utilities
+   ========================================================================== */
+
+@utility container-glex {
+  width: 100%;
+  margin-inline: auto;
+  padding-inline: 1rem;
+  max-width: 80rem;
+
+  @media (width >= 40rem) {
+    padding-inline: 1.5rem;
+  }
+  @media (width >= 64rem) {
+    padding-inline: 2rem;
+  }
+}
+
+/* Screen-reader-only text that becomes visible when focused (skip links). */
+@utility sr-only-focusable {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+
+  &:focus-visible {
+    position: fixed;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
+  }
+}
+
+/* ==========================================================================
+   Reduced motion — every decorative animation must stop. Section 25 / WCAG 2.2.
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
