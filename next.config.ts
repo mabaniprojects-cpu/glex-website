@@ -7,6 +7,33 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
 const isDev = process.env.NODE_ENV === 'development'
 
 /**
+ * `NEXT_PUBLIC_APP_URL` must be correct at BUILD time, not just at runtime.
+ *
+ * Next inlines `NEXT_PUBLIC_*` into the bundle when it builds, and eight modules
+ * fall back to `http://localhost:3000` when it is absent — sitemap.xml,
+ * robots.txt, the canonical and hreflang tags, OpenGraph URLs and the RSS feed.
+ * A deployment that sets this only in the running container therefore produces a
+ * site that looks perfect to a visitor while telling search engines and every
+ * social preview that it lives on localhost.
+ *
+ * That failure is invisible in the browser, so it fails the build instead.
+ */
+if (!isDev && process.env.NODE_ENV !== 'test') {
+  const publicUrl = process.env.NEXT_PUBLIC_APP_URL
+
+  if (!publicUrl || /localhost|127\.0\.0\.1/.test(publicUrl)) {
+    throw new Error(
+      `NEXT_PUBLIC_APP_URL must be set to the public origin for a production build.\n` +
+        `  received: ${publicUrl ?? '(unset)'}\n\n` +
+        `It is inlined at build time, so exporting it only in the runtime\n` +
+        `environment will not work — sitemap.xml, robots.txt, canonical URLs and\n` +
+        `OpenGraph tags would all be published pointing at localhost.\n\n` +
+        `  NEXT_PUBLIC_APP_URL="https://www.exporthouse.com.sa" npm run build`
+    )
+  }
+}
+
+/**
  * Content Security Policy.
  *
  * `'unsafe-inline'` is required on style-src because Tailwind and Next inject
