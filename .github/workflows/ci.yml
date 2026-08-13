@@ -276,3 +276,67 @@ jobs:
           name: playwright-traces-production
           path: test-results/
           retention-days: 7
+
+  artifact:
+    name: Deployable artifact
+    # Built on Linux on purpose. Output file tracing copies the platform's own
+    # native binaries into .next/standalone — a build on a Windows workstation
+    # bundles @img/sharp-win32-x64, which fails the moment image optimisation
+    # runs on the Linux host it was uploaded to.
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+
+    env:
+      # Baked into the bundle at build time, not read at runtime. This is the
+      # value that ends up in sitemap.xml, robots.txt, canonical tags and every
+      # OpenGraph URL, and it cannot be corrected after the fact by the host.
+      NEXT_PUBLIC_APP_URL: https://www.exporthouse.com.sa
+      APP_URL: https://www.exporthouse.com.sa
+      AUTH_URL: https://www.exporthouse.com.sa
+      EMAIL_PROVIDER: smtp
+      SMTP_HOST: 127.0.0.1
+      SMTP_PORT: '1025'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Package
+        # Copies public/ and .next/static in, and strips any .env. Without this
+        # the server boots and 404s every asset.
+        run: npm run package:standalone
+
+      - name: Prove the artifact boots
+        # The suite runs against `next start`; this is the standalone server that
+        # actually ships. Liveness only — no database is attached to this job.
+        run: |
+          PORT=3000 node .next/standalone/server.js &
+          for _ in $(seq 1 30); do
+            if curl -fsS http://localhost:3000/api/health > /dev/null; then
+              echo "artifact booted"; exit 0
+            fi
+            sleep 2
+          done
+          echo "the packaged artifact did not answer within 60s"; exit 1
+
+      - name: Refuse to publish an artifact containing secrets
+        run: |
+          if ls .next/standalone/.env* > /dev/null 2>&1; then
+            echo "an .env file survived packaging"; exit 1
+          fi
+          echo "no .env in the artifact"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: glex-standalone
+          path: .next/standalone
+          retention-days: 14

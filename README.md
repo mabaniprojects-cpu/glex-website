@@ -402,6 +402,64 @@ early"* whenever Playwright navigates away mid-stream.
    already emitted from `next.config.ts`.
 7. Create the first real administrator (below) and delete any demo accounts.
 
+### Deploying to Node.js hosting (cPanel / Passenger)
+
+The target is `https://www.exporthouse.com.sa` on PUIUX Node.js hosting with a
+managed PostgreSQL 17. Three things about that combination will bite, in order
+of how quietly they fail.
+
+**1. Build on Linux, never on Windows.** Output file tracing copies the build
+machine's own native binaries into the artifact. A build on a Windows
+workstation bundles `@img/sharp-win32-x64`, which fails the first time image
+optimisation runs on the Linux host it was uploaded to. The `artifact` CI job
+builds on Ubuntu and publishes `glex-standalone` — download that rather than
+building locally. It also boots the artifact and hits `/api/health` before
+publishing, so a bundle that cannot start never reaches you.
+
+**2. `NEXT_PUBLIC_APP_URL` must be set when the BUILD runs.** cPanel's
+environment-variable panel configures the *running* process, and that is too
+late: `NEXT_PUBLIC_*` values are inlined into the bundle at build time. Building
+without it publishes a sitemap, robots.txt, canonical tags and OpenGraph URLs
+that all point at localhost, on a site that looks perfect in a browser. The
+build refuses when the variable is unset and warns when it is localhost. The CI
+artifact job bakes in the real origin already.
+
+**3. `next start` is not the entry point.** Point Passenger's *Application
+startup file* at the standalone server:
+
+```
+.next/standalone/server.js
+```
+
+It reads `PORT` and defaults `HOSTNAME` to `0.0.0.0`, which is what Passenger
+expects. Upload the *contents* of the `glex-standalone` artifact as the
+application root — it already contains `server.js`, the traced `node_modules`,
+`public/` and `.next/static`, and no `.env`.
+
+**Deployment steps**
+
+1. Set every variable from the table below in cPanel, including `NODE_ENV=production`.
+2. Apply migrations against the managed database — from the cPanel terminal, or
+   locally with `DATABASE_URL` pointed at it: `npm run db:deploy`.
+3. Seed reference data only — leave `SEED_DEMO_DATA` unset: `npm run db:seed`.
+4. Upload the artifact contents to the application root and restart the app.
+5. Register your administrator account through the site, verify the email, then
+   see [Going live](#going-live).
+
+**Managed database notes.** Append `?sslmode=require` to `DATABASE_URL` if PUIUX
+terminates TLS on the database. Passenger may run several application processes
+and `src/lib/db.ts` holds a `pg` pool per process, so keep the total below the
+plan's connection limit.
+
+**Not handled by the application:** TLS termination, and redirecting the apex to
+`www`. `src/lib/company.ts` uses `https://www.exporthouse.com.sa`, so serve that
+as canonical and redirect `exporthouse.com.sa` to it at the host or DNS layer —
+serving both without a redirect splits the site's SEO between two origins.
+
+> Written from the documented behaviour of Passenger and this application's own
+> build output, and **not verified against PUIUX** — no such environment was
+> available here. Treat the first deployment as the test of these steps.
+
 ### Standalone artifact
 
 `next.config.ts` sets `output: 'standalone'`, so the build also emits
