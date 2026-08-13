@@ -110,6 +110,8 @@ Everything marked **Done** was verified by running it — not by inspection.
 | **News authoring** | E2E: draft → PostgreSQL row with a derived slug, server-computed reading time and `isSample: false`, unreachable by its own slug; publish → live article + `AuditLog`; delete → soft delete that removes the public page |
 | **Scheduled publishing is honest** | E2E: a future publication date keeps the article out of the listing, its own page **and** the RSS feed; the editor says plainly whether saving makes it public |
 | **Publication times are company time** | Unit-tested round trip: the editor reads and writes `Asia/Riyadh` wall-clock time, so a server running in UTC cannot shift a scheduled post by three hours |
+| **Going live is a script, not a hand-typed UPDATE** | `scripts/promote-admin.mts` and `scripts/purge-demo-data.mts`, both dry-run by default. Exercised for real against the development database: every refusal path (missing account, unverified, deactivated, already promoted, no real administrator) and the destructive path, after which the demo accounts were confirmed gone, the audit rows written, and the database re-seeded and the full suite re-run |
+| **The purge cannot lock you out** | It refuses while the only `SUPER_ADMIN` is a demo account — verified by running it in exactly that state — so the accounts cannot be removed before a real administrator exists |
 | **The deployable artifact is the thing that was tested** | All 365 E2E tests pass against `.next/standalone` started with `node server.js`, not only against `next start` — so the traced dependency subset, the Prisma driver adapter and the copied static assets are all exercised as they will be in a container. 3.2 min, no flaky |
 | **The artifact carries no secrets and no customer files** | Verified by listing it: `.env` and `storage/` are both absent after `npm run package:standalone`. Before that work they were both present — see bug 21 |
 | **Errors actually reach the monitor** | Verified against a stand-in ingest endpoint, not by inspection: a real Prisma connection failure inside a Server Component was transmitted with its type and message, and a genuine browser error was too. Unit-tested that navigation interrupts and client disconnects are **not** transmitted — a filter that quietly stopped matching would flood the monitor, and one that over-matched would hide real faults |
@@ -413,6 +415,17 @@ news categories simply are not mounted yet.
     `public/` and `.next/static` directories that `server.js` will not serve
     without. A CI build has no `.env` on disk and is unaffected; the script is
     the safety net for builds on a developer machine.
+
+22. **The documented way to remove demo data did not exist.** README and this
+    file both stated that "every record is flagged `isDemo` / `isSample` so it
+    can be filtered or deleted from the admin portal". `isDemo` is on `Shipment`
+    and `isSample` on `NewsArticle` — and nowhere else. Demo **users**,
+    organizations, products and RFQs carry no flag at all, so the one documented
+    procedure for the go-live cleanup did not work for the records that matter
+    most. Found by reading the schema before writing the purge script rather
+    than trusting the prose. The only handle on the accounts is the
+    `@glex.demo` suffix, which is what `scripts/purge-demo-data.mts` uses; it
+    refuses to guess at the unflagged records and says so instead.
 
 ### Test-infrastructure issues worth knowing
 

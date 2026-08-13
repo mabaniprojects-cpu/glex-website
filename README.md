@@ -31,7 +31,7 @@ contractors and infrastructure projects.
 - [Testing](#testing)
 - [Production build](#production-build)
 - [Deployment](#deployment)
-- [Admin account creation](#admin-account-creation)
+- [Going live](#going-live)
 - [Email setup](#email-setup)
 - [Object storage setup](#object-storage-setup)
 - [Tracking provider setup](#tracking-provider-setup)
@@ -255,8 +255,13 @@ npm run db:seed
 global trade routes, 20 product categories, 8 FAQ entries, 20 email templates.
 
 **Demo data** — created only when `SEED_DEMO_DATA=true` *and*
-`NODE_ENV !== production`. Every record is flagged `isDemo` / `isSample` so it can
-be filtered or deleted from the admin portal.
+`NODE_ENV !== production`.
+
+**Only some demo records carry a flag.** `isDemo` exists on `Shipment` and
+`isSample` on `NewsArticle` — and nowhere else. Demo users, organizations,
+products and RFQs have no flag, so the only handle on the accounts is the
+`@glex.demo` email suffix. See [Going live](#going-live) for how they are
+removed.
 
 `SEED_DEMO_PASSWORD` has **no default** and demo seeding refuses to run without
 it. A default would be the same password on every environment that seeded
@@ -456,17 +461,44 @@ The whole E2E suite passes against this artifact, not only against `next start`.
 
 ---
 
-## Admin account creation
+## Going live
 
-Demo accounts must never exist in production. Promote an existing, email-verified
-user:
+Two steps, in this order. The order matters: the purge refuses to run while the
+only `SUPER_ADMIN` is a demo account, so it cannot leave you locked out.
+
+**1. Promote your real administrator.** Register through the application and
+verify the email address first — there is deliberately no bootstrap that creates
+an account, because that would be an administrator nobody proved control of an
+inbox for.
+
+```bash
+npx tsx scripts/promote-admin.mts you@example.com
+```
+
+That is a dry run. Add `--confirm` to apply. It refuses an account that does not
+exist, is unverified, is deactivated or is deleted, does nothing if the user is
+already `SUPER_ADMIN`, and writes the role change and its `AuditLog` entry in one
+transaction so a promotion cannot happen untraced.
+
+**2. Remove the demonstration data.**
+
+```bash
+npx tsx scripts/purge-demo-data.mts
+```
+
+Also a dry run; `--confirm` applies. It prints exactly what it will delete — the
+`@glex.demo` accounts, `isDemo` shipments, `isSample` articles — and, just as
+importantly, what it will leave behind: RFQs and audit records referencing those
+accounts survive with their reference set to null rather than being destroyed.
+Organizations, products and seeded RFQs are never touched, because they carry no
+demo flag and guessing by name or slug would eventually match something real.
+
+Roles are defined by the `UserRole` enum and the permission matrix in
+`src/lib/rbac.ts`. To change a role by hand instead:
 
 ```sql
 UPDATE "User" SET role = 'SUPER_ADMIN' WHERE email = 'you@example.com';
 ```
-
-Roles are defined by the `UserRole` enum and the permission matrix in
-`src/lib/rbac.ts`.
 
 ---
 
@@ -713,7 +745,9 @@ hours · chatbot knowledge documents · the per-entity translation tables
 database for now. UI strings live in `messages/*.json` and are deliberately not
 admin-editable — see [`STATUS.md`](./STATUS.md) for why.
 
-Seeded demonstration content is flagged `isDemo` / `isSample` and is safe to delete.
+Seeded shipments and news articles are flagged `isDemo` / `isSample` and are safe
+to delete. Seeded products, organizations and RFQs are not flagged — remove those
+from the admin portal, where you can see what each one is.
 
 ---
 
