@@ -839,4 +839,16 @@ a quarterly restore rehearsal into a scratch database. Migrations are committed 
 ## Licence and ownership
 
 Proprietary. © Global Export House. The GLEX name, logo and brand assets are the
-property of Global Export House.
+property of Global Export House. See [`LICENSE`](./LICENSE) for the full terms.
+
+This repository is public so the source can be read. **That is not a grant of
+rights** — no permission is given to use, copy, modify or distribute it without
+written permission. Because these terms are not one of the recognised
+open-source licences, GitHub will not display a licence badge for this
+repository, and its sidebar may describe it as unlicensed. That is expected;
+"unlicensed" here means all rights are reserved, not that the code is free to
+take.
+
+The licence covers the source written for this project, not the third-party
+packages it depends on — those keep their own licences and are installed from
+npm rather than committed here.

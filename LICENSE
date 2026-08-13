@@ -1,0 +1,53 @@
+Proprietary Licence
+
+Copyright © 2026 Global Export House. All rights reserved.
+
+
+1. PUBLICATION IS NOT A GRANT OF RIGHTS
+
+   This repository is public so that its source can be read. Being able to read,
+   clone or fork it does not grant permission to use it. No licence is granted
+   by implication, estoppel, or otherwise, and nothing here is an open-source
+   licence.
+
+
+2. RESERVED RIGHTS
+
+   Except with the prior written permission of Global Export House, no person
+   may use, copy, modify, adapt, translate, merge, publish, distribute,
+   sublicense, sell, or create derivative works from this software or any part
+   of it, whether for commercial purposes or not.
+
+
+3. TRADE MARKS AND BRAND
+
+   The GLEX name, the Global Export House name, the logo, and the brand assets
+   in this repository are the property of Global Export House. They are not
+   licensed by this file, and permission to use the software — if granted —
+   would not by itself carry permission to use them.
+
+
+4. THIRD-PARTY COMPONENTS
+
+   This licence covers the source code written for this project. It does not
+   cover the third-party packages it depends on, each of which is governed by
+   its own licence and remains the property of its respective authors. Those
+   packages are not distributed in this repository; they are installed from the
+   npm registry.
+
+
+5. NO WARRANTY
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY,
+   WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF,
+   OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   SOFTWARE.
+
+
+6. ENQUIRIES
+
+   Requests for permission to use this software should be directed to Global
+   Export House.
