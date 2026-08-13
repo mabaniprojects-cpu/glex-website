@@ -7,7 +7,17 @@ import { chromium } from '@playwright/test'
 
 const BASE = process.argv[2] ?? 'http://localhost:3000'
 const OUT = 'preview'
-const PASSWORD = process.env.SEED_DEMO_PASSWORD ?? 'GlexDemo!2026'
+// No fallback: this signs in as the demo administrator, and a default password
+// committed to a public repository is one anybody can read. Plain JS, so it
+// cannot share e2e/helpers.ts — the rule is duplicated, the value is not.
+const PASSWORD = process.env.SEED_DEMO_PASSWORD
+if (!PASSWORD) {
+  console.error(
+    'SEED_DEMO_PASSWORD is not set, so the signed-in screenshots cannot be captured.\n' +
+      'Set it to the value the database was seeded with (see .env).'
+  )
+  process.exit(1)
+}
 
 await mkdir(OUT, { recursive: true })
 

@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '@prisma/client'
+import { demoPassword } from './helpers'
 
 /**
  * Supplier catalogue ownership.
@@ -23,7 +24,7 @@ test.afterAll(async () => {
   await db.$disconnect()
 })
 
-const DEMO_PASSWORD = process.env.SEED_DEMO_PASSWORD ?? 'GlexDemo!2026'
+const DEMO_PASSWORD = demoPassword()
 
 async function signIn(page: Page, email: string) {
   await page.goto('/en/login')

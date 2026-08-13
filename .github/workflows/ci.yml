@@ -109,7 +109,7 @@ jobs:
       # a throwaway database; src/lib/env.ts still refuses this flag under
       # NODE_ENV=production.
       SEED_DEMO_DATA: 'true'
-      SEED_DEMO_PASSWORD: GlexDemo!2026
+      SEED_DEMO_PASSWORD: ci-only-throwaway-not-a-shared-default-1
 
     steps:
       - uses: actions/checkout@v4
@@ -186,7 +186,7 @@ jobs:
       SMTP_PORT: '1025'
       # A seed-time flag, not a runtime one: seeding happens below with
       # NODE_ENV unset, and the demo accounts persist into the production run.
-      SEED_DEMO_PASSWORD: GlexDemo!2026
+      SEED_DEMO_PASSWORD: ci-only-throwaway-not-a-shared-default-1
 
     steps:
       - uses: actions/checkout@v4

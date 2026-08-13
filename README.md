@@ -258,9 +258,16 @@ global trade routes, 20 product categories, 8 FAQ entries, 20 email templates.
 `NODE_ENV !== production`. Every record is flagged `isDemo` / `isSample` so it can
 be filtered or deleted from the admin portal.
 
+`SEED_DEMO_PASSWORD` has **no default** and demo seeding refuses to run without
+it. A default would be the same password on every environment that seeded
+without setting one — including staging and preview deployments, which are not
+production — and this repository is public, so it would be a published
+credential for a `SUPER_ADMIN` account. Choose your own: 10+ characters with a
+letter and a digit.
+
 | Account | Role | Password |
 | --- | --- | --- |
-| `admin@glex.demo` | Super Admin | `SEED_DEMO_PASSWORD` (default `GlexDemo!2026`) |
+| `admin@glex.demo` | Super Admin | whatever you set `SEED_DEMO_PASSWORD` to |
 | `client@glex.demo` | Client org admin | same |
 | `supplier@glex.demo` | Approved supplier | same |
 | `pending-supplier@glex.demo` | Pending supplier | same |

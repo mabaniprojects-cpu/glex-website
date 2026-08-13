@@ -1,6 +1,7 @@
 import type { FullConfig } from '@playwright/test'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '@prisma/client'
+import { demoPassword } from './helpers'
 
 /**
  * Warms every route the suite touches before any worker starts.
@@ -220,7 +221,7 @@ async function clearLoopbackRateLimits() {
 export default async function globalSetup(config: FullConfig) {
   const baseURL =
     config.projects[0]?.use?.baseURL ?? process.env.E2E_BASE_URL ?? 'http://localhost:3000'
-  const password = process.env.SEED_DEMO_PASSWORD ?? 'GlexDemo!2026'
+  const password = demoPassword()
 
   // Wait for the server to accept connections at all.
   const deadline = Date.now() + 180_000

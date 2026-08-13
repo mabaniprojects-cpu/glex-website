@@ -24,7 +24,7 @@ describe('password policy', () => {
   })
 
   it('enforces length, a letter and a digit', () => {
-    expect(isStrongPassword('GlexDemo!2026')).toBe(true)
+    expect(isStrongPassword('Passphrase!2026')).toBe(true)
     expect(isStrongPassword('abcdefghi1')).toBe(true)
 
     expect(isStrongPassword('short1')).toBe(false) // too short
