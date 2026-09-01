@@ -1,0 +1,79 @@
+name: Migrate production database
+
+# Applies Prisma migrations to a deployed database, and optionally seeds the
+# reference data that is safe for production.
+#
+# It exists because the deployable artifact deliberately cannot do this: file
+# tracing ships the Prisma *client* the running app needs, not the *CLI* and not
+# `prisma/migrations/`. Adding them would put schema-altering tooling on the web
+# host for the sake of a step that runs a handful of times.
+#
+# Run manually from the Actions tab. The connection string is a repository
+# secret, so it is never pasted into a chat, an email or this repository.
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "migrate" to confirm — this alters a live database'
+        required: true
+        default: ''
+      seed_reference_data:
+        description: 'Also seed reference data (offices, categories, FAQs, email templates)'
+        type: boolean
+        required: false
+        default: false
+
+jobs:
+  migrate:
+    name: Apply migrations
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check the confirmation
+        # A dispatch button is one misclick; typing the word is a decision.
+        if: ${{ inputs.confirm != 'migrate' }}
+        run: |
+          echo 'Refusing: type "migrate" in the confirmation field to proceed.'
+          exit 1
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Verify the secret is configured
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo 'PRODUCTION_DATABASE_URL is not set.'
+            echo 'Add it under Settings > Secrets and variables > Actions.'
+            exit 1
+          fi
+          # Never print the string itself; the host alone is enough to confirm
+          # the right database is being targeted.
+          echo "target host: $(printf '%s' "$DATABASE_URL" | sed -E 's#.*@([^/?]+).*#\1#')"
+
+      - name: Apply migrations
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+        run: npm run db:deploy
+
+      - name: Seed reference data
+        # Demo accounts are impossible here regardless: seeding requires
+        # SEED_DEMO_DATA=true, and src/lib/env.ts refuses that flag under
+        # NODE_ENV=production. Neither is set.
+        if: ${{ inputs.seed_reference_data }}
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+        run: npm run db:seed
+
+      - name: Report the applied migrations
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+        run: npx prisma migrate status
