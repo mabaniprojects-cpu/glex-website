@@ -235,23 +235,29 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Start an SMTP sink
+      - name: Install an SMTP sink
+        # Separate from starting it: `npx --yes maildev` downloaded the package
+        # inside the readiness loop, so a cold npm cache spent the entire 60s
+        # budget installing and the poll expired before anything had started.
+        #
+        # Pinned, not `latest`: latest is a 3.0 release candidate, and it is the
+        # version that already failed to start as a service container.
+        run: npm install -g maildev@2.2.1
+
+      - name: Start the SMTP sink
         # src/lib/env.ts refuses EMAIL_PROVIDER=console under NODE_ENV=production,
         # and every send would otherwise error against a dead port.
-        #
-        # Run from npm rather than as a service container: `maildev/maildev:latest`
-        # is a 3.0 release candidate and failed to start as a service, taking the
-        # whole job down before checkout. This is also the arrangement actually
-        # verified locally, rather than a second one assumed to be equivalent.
         run: |
-          npx --yes maildev --smtp 1025 --web 1080 --silent &
+          maildev --smtp 1025 --web 1080 > /tmp/maildev.log 2>&1 &
           for _ in $(seq 1 30); do
             if curl -fsS http://127.0.0.1:1080 > /dev/null 2>&1; then
               echo "smtp sink up"; exit 0
             fi
             sleep 2
           done
-          echo "the SMTP sink did not start within 60s"; exit 1
+          echo "the SMTP sink did not start within 60s; its log:"
+          cat /tmp/maildev.log || true
+          exit 1
 
       - name: Start and wait for it to answer
         # Polls the liveness probe rather than pulling in a wait-for-it package.
