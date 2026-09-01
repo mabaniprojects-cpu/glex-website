@@ -340,3 +340,43 @@ jobs:
           name: glex-standalone
           path: .next/standalone
           retention-days: 14
+          # Without this the upload silently drops every dot-prefixed path, and
+          # the whole build output lives in `.next`. The first artifact shipped
+          # to the hosting team had server.js, node_modules and public but no
+          # `.next` and no BUILD_ID, so the site could not start at all.
+          include-hidden-files: true
+          if-no-files-found: error
+
+      - name: Verify the artifact as DOWNLOADED, not as staged
+        # The boot check above runs against the directory on disk, which is why
+        # it passed while the uploaded artifact was unusable. This downloads back
+        # what the hosting team will actually receive and checks it is complete.
+        uses: actions/download-artifact@v4
+        with:
+          name: glex-standalone
+          path: /tmp/delivered
+
+      - name: The delivered artifact must be runnable
+        run: |
+          missing=0
+          for required in \
+            server.js \
+            .next/BUILD_ID \
+            .next/server \
+            .next/static \
+            public \
+            node_modules; do
+            if [ ! -e "/tmp/delivered/$required" ]; then
+              echo "MISSING from the delivered artifact: $required"
+              missing=1
+            else
+              echo "present: $required"
+            fi
+          done
+          if [ "$missing" = "1" ]; then
+            echo
+            echo "The artifact would not start on the host. Refusing to publish it as usable."
+            exit 1
+          fi
+          echo
+          echo "BUILD_ID: $(cat /tmp/delivered/.next/BUILD_ID)"
