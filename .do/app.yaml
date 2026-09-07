@@ -1,0 +1,130 @@
+# DigitalOcean App Platform specification.
+#
+# Import with:  doctl apps create --spec .do/app.yaml
+# or paste it into Create App > Edit Your App Spec in the control panel.
+#
+# Committed so the deployment is reviewable and reproducible rather than a
+# sequence of clicks nobody can audit later. It contains NO secrets — every
+# value here is public. The secret ones are listed at the bottom and are set in
+# the control panel, where they are encrypted at rest.
+
+name: glex-website
+
+# Frankfurt. Keep the app, the database and the Spaces bucket in one region:
+# the marketplace page makes ~10 database round trips, so every millisecond of
+# separation is multiplied by ten on each render.
+region: fra
+
+services:
+  - name: web
+    github:
+      repo: mabaniprojects-cpu/glex-website
+      branch: main
+      deploy_on_push: true
+
+    build_command: npm run build
+    run_command: npm start
+
+    # `next start` listens on $PORT, which App Platform injects to match this.
+    http_port: 8080
+
+    # 512 MB is not enough to build Next plus generate the Prisma client for 62
+    # models. This is the 1 GiB tier.
+    instance_size_slug: apps-s-1vcpu-1gb
+    instance_count: 1
+
+    # Liveness only — /api/health deliberately touches nothing else, so a
+    # database blip cannot make the platform restart a perfectly healthy app.
+    # /api/health/ready is the one that checks the database; it is NOT wired
+    # here on purpose.
+    health_check:
+      http_path: /api/health
+      initial_delay_seconds: 20
+      period_seconds: 15
+      failure_threshold: 3
+
+    envs:
+      # ---------------------------------------------------------------------
+      # BUILD_TIME matters here, not just RUN_TIME.
+      #
+      # Next inlines NEXT_PUBLIC_* into the bundle when it builds, and
+      # src/lib/env.ts is evaluated during the build because sitemap.xml is
+      # prerendered. A variable supplied only at run time is supplied too late:
+      # the build either fails or bakes in the wrong value. That is why every
+      # entry below is RUN_AND_BUILD_TIME.
+      # ---------------------------------------------------------------------
+
+      - key: NODE_ENV
+        scope: RUN_AND_BUILD_TIME
+        value: production
+
+      - key: NEXT_PUBLIC_APP_URL
+        scope: RUN_AND_BUILD_TIME
+        value: https://www.exporthouse.com.sa
+
+      - key: APP_URL
+        scope: RUN_AND_BUILD_TIME
+        value: https://www.exporthouse.com.sa
+
+      - key: AUTH_URL
+        scope: RUN_AND_BUILD_TIME
+        value: https://www.exporthouse.com.sa
+
+      - key: NEXT_PUBLIC_SITE_NAME
+        scope: RUN_AND_BUILD_TIME
+        value: GLEX – Global Export House
+
+      # Object storage. Uploads must NOT go to the container filesystem: it is
+      # replaced on every deploy, so every RFQ attachment would be lost.
+      - key: STORAGE_PROVIDER
+        scope: RUN_AND_BUILD_TIME
+        value: s3
+      - key: S3_ENDPOINT
+        scope: RUN_AND_BUILD_TIME
+        value: https://fra1.digitaloceanspaces.com
+      - key: S3_REGION
+        scope: RUN_AND_BUILD_TIME
+        value: fra1
+      - key: S3_FORCE_PATH_STYLE
+        scope: RUN_AND_BUILD_TIME
+        value: 'false'
+
+      - key: EMAIL_PROVIDER
+        scope: RUN_AND_BUILD_TIME
+        value: resend
+
+      - key: TRACKING_PROVIDER
+        scope: RUN_AND_BUILD_TIME
+        value: internal
+
+      # Connections per process. Set this to the database plan's connection
+      # limit divided by instance_count, leaving headroom for migrations and an
+      # admin session. The basic managed plan allows roughly 22.
+      - key: DATABASE_POOL_MAX
+        scope: RUN_TIME
+        value: '10'
+
+# ---------------------------------------------------------------------------
+# SET IN THE CONTROL PANEL, NOT HERE. This file is public.
+#
+# Mark each as "Encrypt" and scope it to RUN_AND_BUILD_TIME, for the reason
+# given above — the build reads them too.
+#
+#   DATABASE_URL          postgresql://…@…:25060/glex?sslmode=require
+#   AUTH_SECRET           32+ characters, generated fresh — never reuse another
+#                         environment's value
+#   RESEND_API_KEY        from resend.com
+#   CONTACT_TO_EMAIL      where contact enquiries are delivered; without it they
+#                         reach nobody
+#   S3_BUCKET             the Spaces bucket name
+#   S3_ACCESS_KEY_ID      Spaces access key
+#   S3_SECRET_ACCESS_KEY  Spaces secret
+#
+# Optional:
+#   SENTRY_DSN, NEXT_PUBLIC_SENTRY_DSN   error monitoring
+#   ANTHROPIC_API_KEY                    the assistant's AI branch; the FAQ
+#                                        fallback works without it
+#   TURNSTILE_SITE_KEY, TURNSTILE_SECRET_KEY
+#
+# SEED_DEMO_DATA must stay unset. src/lib/env.ts refuses it under production.
+# ---------------------------------------------------------------------------

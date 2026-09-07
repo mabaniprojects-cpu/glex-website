@@ -402,7 +402,51 @@ early"* whenever Playwright navigates away mid-stream.
    already emitted from `next.config.ts`.
 7. Create the first real administrator (below) and delete any demo accounts.
 
-### Deploying to Node.js hosting (cPanel / Passenger)
+### Deploying to DigitalOcean App Platform (primary)
+
+App, database and object storage in one account, one region. The app spec lives
+at [`.do/app.yaml`](./.do/app.yaml) — committed so the deployment is reviewable
+rather than a sequence of clicks. It contains no secrets.
+
+**Three resources, all in Frankfurt (`fra1`):**
+
+| Resource | Plan | Purpose |
+| --- | --- | --- |
+| App Platform | 1 GiB (`apps-s-1vcpu-1gb`) | the application |
+| Managed PostgreSQL 17 | basic | the database |
+| Spaces | 250 GiB | uploads — RFQ attachments and documents |
+
+Keep them in one region. The marketplace page makes ~10 database round trips
+per render, so distance is multiplied by ten on every page.
+
+**Order matters.** Create the database with *Trusted Sources* left open, apply
+migrations through the **Migrate production database** workflow, and only then
+restrict it. Locking it down first leaves GitHub Actions unable to reach it and
+the schema never gets applied.
+
+**Build time versus run time.** Every variable in the spec is scoped
+`RUN_AND_BUILD_TIME`, deliberately: Next inlines `NEXT_PUBLIC_*` at build, and
+`src/lib/env.ts` is evaluated during the build because `sitemap.xml` is
+prerendered. A value supplied only at run time arrives too late — the build
+either fails or bakes in the wrong origin. This has already caused two real
+failures, on Vercel and on cPanel.
+
+**Uploads must use Spaces, not the filesystem.** App Platform replaces the
+container on every deploy, so `STORAGE_PROVIDER=local` would lose every
+attachment. The storage layer is S3-compatible and needs no code change —
+`S3_ENDPOINT=https://fra1.digitaloceanspaces.com`, `S3_REGION=fra1`,
+`S3_FORCE_PATH_STYLE=false`.
+
+The secrets to set in the control panel are listed at the bottom of the app
+spec. The standalone artifact and the CI artifact job are not needed here — App
+Platform builds from the repository on push.
+
+> Written from DigitalOcean's documented app-spec format and this application's
+> own build behaviour. **The spec has not been applied to a real account** — no
+> DigitalOcean access was available here. Treat the first deploy as the test of
+> it, and send me whatever it reports.
+
+### Deploying to Node.js hosting (cPanel / Passenger) — alternative
 
 The target is `https://www.exporthouse.com.sa` on PUIUX Node.js hosting with a
 managed PostgreSQL 17. Three things about that combination will bite, in order
