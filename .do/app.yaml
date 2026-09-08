@@ -54,9 +54,26 @@ services:
       # entry below is RUN_AND_BUILD_TIME.
       # ---------------------------------------------------------------------
 
+      # RUN_TIME only, and this one genuinely matters.
+      #
+      # npm omits devDependencies when NODE_ENV=production. Tailwind's postcss
+      # plugin and TypeScript are devDependencies, so a build with NODE_ENV set
+      # installs neither and `next build` fails resolving @tailwindcss/postcss.
+      #
+      # `next build` sets NODE_ENV=production for the compilation itself, so
+      # nothing is lost by leaving it out of the build environment. The origin
+      # guard in next.config.ts keys off the build PHASE rather than NODE_ENV
+      # precisely so it is unaffected by this.
       - key: NODE_ENV
-        scope: RUN_AND_BUILD_TIME
+        scope: RUN_TIME
         value: production
+
+      # Belt and braces: `include` overrides `omit` in npm, so devDependencies
+      # are installed even if the platform sets NODE_ENV=production itself
+      # during the build, which several buildpacks do.
+      - key: NPM_CONFIG_INCLUDE
+        scope: BUILD_TIME
+        value: dev
 
       - key: NEXT_PUBLIC_APP_URL
         scope: RUN_AND_BUILD_TIME
