@@ -35,7 +35,27 @@ const plexArabic = IBM_Plex_Sans_Arabic({
   display: 'swap',
 })
 
-/** Pre-renders all five locales at build time. */
+/**
+ * Every page under this layout renders per request, not at build.
+ *
+ * Two reasons, and the second is the important one.
+ *
+ * Correctness: offices, FAQs, trade routes, news and products are all edited
+ * from the admin portal. Prerendering them at build means an edit does not
+ * appear until someone redeploys — which makes the admin portal a liar.
+ *
+ * Operability: a production database is firewalled to the application, so the
+ * BUILD cannot reach it. Prerendering 301 pages that each query a database they
+ * cannot see meant every one of them hung until Next's 60-second per-page limit
+ * and the build failed. Fallbacks did not save it — a dropped packet is not a
+ * refused connection, so the queries did not fail, they waited.
+ *
+ * Applies to the whole subtree; `dynamic` is a route segment config and this is
+ * the segment every page sits under.
+ */
+export const dynamic = 'force-dynamic'
+
+/** Enumerates the five locales; pages are still rendered on demand. */
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }))
 }

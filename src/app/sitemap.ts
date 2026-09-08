@@ -1,5 +1,15 @@
 import type { MetadataRoute } from 'next'
 import { db } from '@/lib/db'
+
+/**
+ * Built per request, not at deploy time.
+ *
+ * The build cannot reach the production database — it is firewalled to the
+ * application — so a prerendered sitemap would be generated from the empty
+ * fallbacks below and would list no products and no articles at all. An empty
+ * sitemap is worse than a slow one.
+ */
+export const dynamic = 'force-dynamic'
 import { localeHreflang, locales, routing } from '@/i18n/routing'
 
 /** Public routes that exist for every locale. */

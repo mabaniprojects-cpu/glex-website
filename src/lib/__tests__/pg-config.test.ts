@@ -73,3 +73,28 @@ describe('buildPgConfig', () => {
     expect(buildPgConfig(URL_WITH_SSLMODE, { DATABASE_POOL_MAX: 'many' }).max).toBeUndefined()
   })
 })
+
+describe('connection timeout', () => {
+  it('never waits forever, which is pg default of 0', () => {
+    // A firewall that DROPS packets produces silence, not an error. Without a
+    // timeout the request hangs until something upstream gives up.
+    expect(buildPgConfig(URL_WITH_SSLMODE, {}).connectionTimeoutMillis).toBe(10_000)
+  })
+
+  it('applies the timeout with a CA too, not only without one', () => {
+    const config = buildPgConfig(URL_WITH_SSLMODE, { DATABASE_CA_CERT: CA })
+    expect(config.connectionTimeoutMillis).toBe(10_000)
+  })
+
+  it('is tunable, and ignores nonsense', () => {
+    expect(
+      buildPgConfig(URL_WITH_SSLMODE, { DATABASE_CONNECT_TIMEOUT_MS: '3000' }).connectionTimeoutMillis
+    ).toBe(3000)
+    expect(
+      buildPgConfig(URL_WITH_SSLMODE, { DATABASE_CONNECT_TIMEOUT_MS: '0' }).connectionTimeoutMillis
+    ).toBe(10_000)
+    expect(
+      buildPgConfig(URL_WITH_SSLMODE, { DATABASE_CONNECT_TIMEOUT_MS: 'soon' }).connectionTimeoutMillis
+    ).toBe(10_000)
+  })
+})
