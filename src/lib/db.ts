@@ -1,5 +1,6 @@
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '@prisma/client'
+import { buildPgConfig } from '@/lib/pg-config'
 
 /**
  * Prisma 7 requires a driver adapter — the datasource URL is no longer read
@@ -14,24 +15,21 @@ function createPrismaClient() {
   }
 
   /**
-   * Pool size, tunable because it stops being a local concern the moment the
-   * database is remote.
+   * TLS and pool size both stop being local concerns the moment the database is
+   * remote — see `buildPgConfig` for why each is handled the way it is.
    *
-   * `pg` defaults to 10 connections PER PROCESS, and Passenger runs several
-   * application processes. Four processes therefore ask a managed database for
-   * 40 connections, which is above the limit of most small plans — and the
-   * symptom is "too many clients already" under load rather than at startup,
-   * so it looks like a traffic problem rather than a configuration one.
+   * DATABASE_POOL_MAX: `pg` opens 10 connections PER PROCESS by default, and a
+   * host may run several application processes, so four of them ask a managed
+   * database for 40 connections — above the limit of most small plans. The
+   * symptom is "too many clients already" under load rather than at startup, so
+   * it reads as a traffic problem rather than a configuration one. Set it to
+   * (the plan's connection limit ÷ number of processes), leaving headroom for
+   * migrations and an admin session.
    *
-   * Set DATABASE_POOL_MAX to (the plan's connection limit ÷ number of app
-   * processes), leaving headroom for migrations and any admin session.
+   * DATABASE_CA_CERT: the managed provider's CA, so TLS verifies properly
+   * instead of being switched off.
    */
-  const poolMax = Number(process.env.DATABASE_POOL_MAX)
-
-  const adapter = new PrismaPg({
-    connectionString,
-    ...(Number.isFinite(poolMax) && poolMax > 0 ? { max: poolMax } : {}),
-  })
+  const adapter = new PrismaPg(buildPgConfig(connectionString))
 
   return new PrismaClient({
     adapter,
