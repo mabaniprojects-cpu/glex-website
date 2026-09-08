@@ -62,7 +62,23 @@ jobs:
       - name: Apply migrations
         env:
           DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
-        run: npm run db:deploy
+        # The failure is echoed back as a GitHub error annotation, not just left
+        # in the log. Prisma emits no annotations of its own, so a failed run
+        # showed only "Process completed with exit code 1" — and job logs need
+        # admin rights to download, so the reason was invisible to anyone
+        # helping remotely. Annotations are readable without them.
+        run: |
+          set +e
+          output=$(npm run db:deploy 2>&1)
+          status=$?
+          echo "$output"
+          if [ $status -ne 0 ]; then
+            # Strip the connection string if Prisma echoed it, then collapse to
+            # one line: annotations do not render raw newlines.
+            safe=$(printf '%s' "$output" | sed -E 's#postgresql://[^ ]*#postgresql://<redacted>#g' | tr '\n' ' ')
+            echo "::error title=Migration failed::${safe}"
+          fi
+          exit $status
 
       - name: Seed reference data
         # Demo accounts are impossible here regardless: seeding requires
