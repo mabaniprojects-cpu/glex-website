@@ -62,10 +62,9 @@ export const PHOTOGRAPHY = {
     minWidth: 2400,
     minHeight: 1600,
     brief:
-      'Gantry cranes working a vessel, or containers stacked at height. Shot from below or from distance; late afternoon light. No people identifiable. Avoid a carrier name in large type across a hull — it reads as GLEX claiming the ship.',
+      'Gantry cranes working a vessel, or containers stacked at height. Shot from below or from distance; late afternoon light. No people identifiable. A carrier name may appear, but only for a carrier GLEX actually partners with — MSC, CMA CGM, Kuehne+Nagel, Marsec.',
     textSide: 'start',
-    source:
-      'Pixabay distelapparath-container-2921882 (5810x3816) — extract 1700,300 4000x2250, which drops the oversized MSC column at the left edge',
+    source: 'Pixabay wasi1370-container-3552869 (5184x3456) — attention crop to 2400x1350',
   },
   handling: {
     id: 'handling',
