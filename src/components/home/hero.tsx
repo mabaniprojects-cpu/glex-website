@@ -43,11 +43,38 @@ export async function Hero() {
         </div>
       )}
 
-      {/* Readability scrim — keeps text contrast above 4.5:1 over the map. */}
-      <div
-        className="from-glex-green-950/85 via-glex-green-900/70 to-glex-green-900/95 pointer-events-none absolute inset-0 bg-linear-to-b"
-        aria-hidden="true"
-      />
+      {/*
+        Readability scrim. The two backdrops need different treatments.
+
+        The map is line art we are happy to bury, so it takes a flat vertical
+        wash in brand green. A photograph is the opposite: wash it evenly and
+        the green cast destroys the thing we put there. It gets the same
+        directional scrim as the photographic bands — heavy where the type is,
+        releasing across the frame so the image reads — plus a light vertical
+        pass so the tracking field at the bottom stays legible.
+
+        Alphas are the measured ones: white on green-950 over a blown-out sky
+        is 13.7:1 at 0.90 and 8.1:1 at 0.75. Below lg the copy spans the full
+        column, so the directional gradient would put its transparent end under
+        the last words; flat 80% there instead.
+      */}
+      {hasPhoto(PHOTOGRAPHY.hero) ? (
+        <>
+          <div
+            className="bg-glex-green-950/80 lg:from-glex-green-950/92 lg:via-glex-green-950/75 pointer-events-none absolute inset-0 lg:bg-transparent lg:bg-linear-to-r lg:via-55% lg:to-transparent lg:to-90%"
+            aria-hidden="true"
+          />
+          <div
+            className="to-glex-green-950/70 pointer-events-none absolute inset-0 bg-linear-to-b from-transparent via-transparent"
+            aria-hidden="true"
+          />
+        </>
+      ) : (
+        <div
+          className="from-glex-green-950/85 via-glex-green-900/70 to-glex-green-900/95 pointer-events-none absolute inset-0 bg-linear-to-b"
+          aria-hidden="true"
+        />
+      )}
 
       <div className="container-glex relative py-20 lg:py-28">
         <div className="max-w-3xl">

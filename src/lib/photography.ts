@@ -30,6 +30,11 @@ export type PhotoSlot = {
   readonly brief: string
   /** Which side the type overlays, so the shot keeps that side uncluttered. */
   readonly textSide: TextSide
+  /**
+   * Where the current file came from, so the licence can be traced and the
+   * image replaced knowingly. Absent while a slot is unfilled.
+   */
+  readonly source?: string
 }
 
 /**
@@ -43,30 +48,34 @@ export type PhotoSlot = {
 export const PHOTOGRAPHY = {
   hero: {
     id: 'hero',
-    src: null as string | null,
+    src: '/photography/hero.jpg' as string | null,
     minWidth: 3200,
     minHeight: 1800,
     brief:
       'Elevated or aerial view of a container terminal — Jeddah Islamic Port or King Abdullah Port. Wide, with open sky or water across the leading half of the frame for the headline to sit in.',
     textSide: 'start',
+    source: 'Pixabay 2857440-waters-3138889 (5472x3078) — cropped to 3200x1800',
   },
   network: {
     id: 'network',
-    src: null as string | null,
+    src: '/photography/network.jpg' as string | null,
     minWidth: 2400,
     minHeight: 1600,
     brief:
-      'Gantry cranes working a vessel, or containers stacked at height. Shot from below or from distance; late afternoon light. No people identifiable.',
+      'Gantry cranes working a vessel, or containers stacked at height. Shot from below or from distance; late afternoon light. No people identifiable. Avoid a carrier name in large type across a hull — it reads as GLEX claiming the ship.',
     textSide: 'start',
+    source:
+      'Pixabay distelapparath-container-2921882 (5810x3816) — extract 1700,300 4000x2250, which drops the oversized MSC column at the left edge',
   },
   handling: {
     id: 'handling',
-    src: null as string | null,
+    src: '/photography/handling.jpg' as string | null,
     minWidth: 2400,
     minHeight: 1600,
     brief:
       'Warehouse interior — racking, forklift, palletised goods under inspection. Depth down an aisle rather than a flat wall of shelving.',
     textSide: 'end',
+    source: 'Pixabay sebastianvennebusch-crane-3626174 (6000x4000) — attention crop to 2400x1350',
   },
 } satisfies Record<string, PhotoSlot>
 
