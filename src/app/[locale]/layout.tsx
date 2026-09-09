@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { IBM_Plex_Sans_Arabic, Inter } from 'next/font/google'
+import { IBM_Plex_Sans, IBM_Plex_Sans_Arabic } from 'next/font/google'
 import { hasLocale, NextIntlClientProvider } from 'next-intl'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
@@ -10,24 +10,33 @@ import { CookieConsent } from '@/components/layout/cookie-consent'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { SiteHeader } from '@/components/layout/site-header'
 import { SkipToContent } from '@/components/layout/skip-to-content'
-import {
-  localeDirection,
-  localeHreflang,
-  locales,
-  routing,
-  type AppLocale,
-} from '@/i18n/routing'
+import { localeDirection, localeHreflang, locales, routing, type AppLocale } from '@/i18n/routing'
 import { readConsent } from '@/lib/consent'
 import { sweepIfDue } from '@/lib/maintenance'
 import '../globals.css'
 
-const inter = Inter({
-  variable: '--font-inter',
+/**
+ * Latin and Arabic both come from the IBM Plex superfamily.
+ *
+ * They were previously Inter and Plex Arabic — two unrelated designs, so the
+ * Arabic pages read visibly heavier and narrower than the English ones. Sharing
+ * a superfamily means the five locales have matching stroke weight, x-height
+ * and proportion, and `/ar` stops looking like a different site.
+ *
+ * Plex has no variable-font build on Google Fonts, so weights are listed
+ * explicitly. Keep the two lists identical — a weight present for one script
+ * and missing for the other reintroduces exactly the mismatch this fixes. They
+ * cannot be hoisted into a shared constant: next/font reads these arguments
+ * statically at build time and rejects anything but a literal.
+ */
+const plexSans = IBM_Plex_Sans({
+  variable: '--font-plex-sans',
   subsets: ['latin', 'latin-ext'],
+  weight: ['400', '500', '600', '700'],
   display: 'swap',
 })
 
-// Arabic needs its own face; Inter has no Arabic coverage.
+// Arabic needs its own face; the Latin cut has no Arabic coverage.
 const plexArabic = IBM_Plex_Sans_Arabic({
   variable: '--font-plex-arabic',
   subsets: ['arabic'],
@@ -147,7 +156,7 @@ export default async function LocaleLayout({
       // Next 16 no longer overrides `scroll-behavior: smooth` during
       // navigation unless this attribute is present.
       data-scroll-behavior="smooth"
-      className={`${inter.variable} ${plexArabic.variable} h-full`}
+      className={`${plexSans.variable} ${plexArabic.variable} h-full`}
       suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col bg-white antialiased">

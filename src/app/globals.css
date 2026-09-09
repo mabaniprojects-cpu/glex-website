@@ -42,10 +42,11 @@
   --color-border-subtle: #e2e6d8;
 
   /* --- Typography ---
-     Latin uses Inter; Arabic uses IBM Plex Sans Arabic, which shares Inter's
-     humanist proportions so the two scripts sit together without a visual jump. */
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-arabic: var(--font-plex-arabic), var(--font-inter), ui-sans-serif, sans-serif;
+     One superfamily across both scripts: IBM Plex Sans for Latin, IBM Plex Sans
+     Arabic for Arabic. Same designers, same skeleton, so switching to /ar does
+     not change the weight or texture of the page. */
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-arabic: var(--font-plex-arabic), var(--font-plex-sans), ui-sans-serif, sans-serif;
 
   /* --- Motion --- */
   --ease-out-brand: cubic-bezier(0.22, 1, 0.36, 1);
