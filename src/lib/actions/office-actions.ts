@@ -13,7 +13,7 @@ import { db } from '@/lib/db'
  * so an edit here is immediately visible to the world — hence the audit trail
  * and the refusal to delete the last remaining office.
  *
- * Company *identity* — legal name, commercial registration, paid-up capital —
+ * Company *identity* — legal name, commercial registration —
  * is not editable here. It lives in `src/lib/company.ts` because it is legally
  * fixed rather than content.
  */

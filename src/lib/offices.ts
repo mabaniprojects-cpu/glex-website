@@ -10,7 +10,7 @@ import type { OfficeView } from '@/lib/office-view'
  * real, verified Jeddah address, so an empty or unreachable table degrades to
  * correct data rather than to a blank contact page.
  *
- * Company *identity* — legal name, commercial registration, paid-up capital —
+ * Company *identity* — legal name, commercial registration —
  * deliberately stays in `src/lib/company.ts` and is not editable here. It is
  * legally fixed, and a typo in it is a different class of problem.
  */
@@ -59,4 +59,3 @@ export async function listOffices(): Promise<OfficeView[]> {
     return [fallbackOffice()]
   }
 }
-

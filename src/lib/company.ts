@@ -14,7 +14,6 @@ export const GLEX_COMPANY = {
   tagline: 'From KSA to the World',
 
   crNumber: '4030472336',
-  paidUpCapitalSar: 1_000_000,
 
   phoneDisplay: '+966 9200 31827',
   /** Digits only, for `tel:` links. */

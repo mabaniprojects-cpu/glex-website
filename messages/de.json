@@ -234,8 +234,6 @@
     "legal": "Rechtliches",
     "contact": "Kontakt",
     "crNumber": "Handelsregister",
-    "paidCapital": "Eingezahltes Kapital",
-    "capitalValue": "1.000.000 SAR",
     "rights": "Alle Rechte vorbehalten.",
     "followUs": "Folgen Sie uns",
     "privacy": "Datenschutzerklärung",
@@ -820,7 +818,7 @@
       "edit": "Kategorie bearbeiten"
     },
     "offices": {
-      "intro": "Diese Adressen erscheinen auf der öffentlichen Kontaktseite. Firmenname, Handelsregisternummer und Kapital sind im Code festgelegt und hier nicht änderbar.",
+      "intro": "Diese Adressen erscheinen auf der öffentlichen Kontaktseite. Firmenname und Handelsregisternummer sind im Code festgelegt und hier nicht änderbar.",
       "name": "Name des Büros",
       "addressLines": "Adresse",
       "addressHint": "Eine Zeile pro Reihe, genau so, wie sie gedruckt werden soll.",

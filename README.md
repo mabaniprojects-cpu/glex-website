@@ -55,12 +55,12 @@ supplier relationships, export documentation, freight and shipment visibility.
 
 The application covers four surfaces:
 
-| Surface | Path | Audience |
-| --- | --- | --- |
-| Public website | `/[locale]` | Buyers, suppliers, general public |
-| Client dashboard | `/[locale]/dashboard` | Client organizations |
-| Supplier dashboard | `/[locale]/supplier` | Suppliers and distributors |
-| Admin portal | `/[locale]/admin` | GLEX staff |
+| Surface            | Path                  | Audience                          |
+| ------------------ | --------------------- | --------------------------------- |
+| Public website     | `/[locale]`           | Buyers, suppliers, general public |
+| Client dashboard   | `/[locale]/dashboard` | Client organizations              |
+| Supplier dashboard | `/[locale]/supplier`  | Suppliers and distributors        |
+| Admin portal       | `/[locale]/admin`     | GLEX staff                        |
 
 **Company details** (real, defined once in `src/lib/company.ts`):
 
@@ -68,7 +68,6 @@ The application covers four surfaces:
   Ash Shati District, P.O. Box 442, Jeddah 21411, Kingdom of Saudi Arabia
 - Telephone **+966 9200 31827**
 - Commercial Registration **4030472336**
-- Paid-up capital **SAR 1,000,000**
 - Website <https://www.exporthouse.com.sa>
 
 No email address is invented anywhere; contact delivery uses the
@@ -78,25 +77,25 @@ No email address is invented anywhere; contact delivery uses the
 
 ## Technology stack
 
-| Concern | Choice | Version |
-| --- | --- | --- |
-| Framework | Next.js (App Router, Turbopack) | 16.2.12 |
-| UI runtime | React | 19.2.4 |
-| Language | TypeScript (strict) | 5.x |
-| Styling | Tailwind CSS | v4 |
-| Icons | Lucide | — |
-| Carousel | Embla | 8.x |
-| Database | PostgreSQL | 17 |
-| ORM | Prisma (driver adapter, query compiler) | 7.9.1 |
-| Auth | Auth.js (`next-auth`) | 5.0.0-beta |
-| i18n | next-intl | 4.13.4 |
-| Validation | Zod + React Hook Form | 4.x / 7.x |
-| Email | Resend or SMTP, via a provider abstraction | — |
-| Storage | S3-compatible or local disk, via an abstraction | — |
-| AI | Vercel AI SDK + Anthropic | — |
-| Maps | Inline SVG (default) or MapLibre GL | — |
-| Unit tests | Vitest + React Testing Library | 4.x |
-| E2E tests | Playwright | 1.x |
+| Concern    | Choice                                          | Version    |
+| ---------- | ----------------------------------------------- | ---------- |
+| Framework  | Next.js (App Router, Turbopack)                 | 16.2.12    |
+| UI runtime | React                                           | 19.2.4     |
+| Language   | TypeScript (strict)                             | 5.x        |
+| Styling    | Tailwind CSS                                    | v4         |
+| Icons      | Lucide                                          | —          |
+| Carousel   | Embla                                           | 8.x        |
+| Database   | PostgreSQL                                      | 17         |
+| ORM        | Prisma (driver adapter, query compiler)         | 7.9.1      |
+| Auth       | Auth.js (`next-auth`)                           | 5.0.0-beta |
+| i18n       | next-intl                                       | 4.13.4     |
+| Validation | Zod + React Hook Form                           | 4.x / 7.x  |
+| Email      | Resend or SMTP, via a provider abstraction      | —          |
+| Storage    | S3-compatible or local disk, via an abstraction | —          |
+| AI         | Vercel AI SDK + Anthropic                       | —          |
+| Maps       | Inline SVG (default) or MapLibre GL             | —          |
+| Unit tests | Vitest + React Testing Library                  | 4.x        |
+| E2E tests  | Playwright                                      | 1.x        |
 
 ### Version-specific notes that will bite you
 
@@ -173,12 +172,12 @@ rather than failing later at runtime.
 
 Required to start:
 
-| Variable | Purpose |
-| --- | --- |
-| `DATABASE_URL` | PostgreSQL connection string |
-| `AUTH_SECRET` | Session signing key (≥32 chars) |
-| `APP_URL` / `NEXT_PUBLIC_APP_URL` | Canonical origin, used for metadata and links |
-| `CONTACT_TO_EMAIL` | Destination for contact-form and internal notifications |
+| Variable                          | Purpose                                                 |
+| --------------------------------- | ------------------------------------------------------- |
+| `DATABASE_URL`                    | PostgreSQL connection string                            |
+| `AUTH_SECRET`                     | Session signing key (≥32 chars)                         |
+| `APP_URL` / `NEXT_PUBLIC_APP_URL` | Canonical origin, used for metadata and links           |
+| `CONTACT_TO_EMAIL`                | Destination for contact-form and internal notifications |
 
 Everything else is optional and degrades gracefully. Cross-field rules are enforced
 too — `EMAIL_PROVIDER="console"` is rejected in production, and `SEED_DEMO_DATA=true`
@@ -218,11 +217,11 @@ docker compose up -d                          # PostgreSQL only
 docker compose --profile storage up -d        # + MinIO (S3-compatible)
 ```
 
-| Service | Port | Notes |
-| --- | --- | --- |
+| Service       | Port | Notes                       |
+| ------------- | ---- | --------------------------- |
 | PostgreSQL 17 | 5432 | volume `glex-postgres-data` |
-| MinIO API | 9000 | optional, `storage` profile |
-| MinIO console | 9001 | optional |
+| MinIO API     | 9000 | optional, `storage` profile |
+| MinIO console | 9001 | optional                    |
 
 The application itself runs on the host with `npm run dev`.
 
@@ -230,15 +229,15 @@ The application itself runs on the host with `npm run dev`.
 
 ## Prisma commands
 
-| Command | Purpose |
-| --- | --- |
-| `npm run db:migrate` | Create and apply a migration in development |
-| `npm run db:deploy` | Apply pending migrations (production) |
-| `npm run db:reset` | Drop, recreate and re-migrate — **destroys data** |
-| `npm run db:seed` | Run the seed script |
-| `npm run db:studio` | Open Prisma Studio |
-| `npx prisma generate` | Regenerate the client |
-| `npx prisma validate` | Validate the schema |
+| Command               | Purpose                                           |
+| --------------------- | ------------------------------------------------- |
+| `npm run db:migrate`  | Create and apply a migration in development       |
+| `npm run db:deploy`   | Apply pending migrations (production)             |
+| `npm run db:reset`    | Drop, recreate and re-migrate — **destroys data** |
+| `npm run db:seed`     | Run the seed script                               |
+| `npm run db:studio`   | Open Prisma Studio                                |
+| `npx prisma generate` | Regenerate the client                             |
+| `npx prisma validate` | Validate the schema                               |
 
 > Prisma 7 removed `--skip-generate` and `--skip-seed` from `migrate dev` and
 > `migrate reset`, contrary to some published documentation.
@@ -254,7 +253,7 @@ npm run db:seed
 **Always seeded (production-safe reference data):** Jeddah office, 10 indicative
 global trade routes, 20 product categories, 8 FAQ entries, 20 email templates.
 
-**Demo data** — created only when `SEED_DEMO_DATA=true` *and*
+**Demo data** — created only when `SEED_DEMO_DATA=true` _and_
 `NODE_ENV !== production`.
 
 **Only some demo records carry a flag.** `isDemo` exists on `Shipment` and
@@ -270,12 +269,12 @@ production — and this repository is public, so it would be a published
 credential for a `SUPER_ADMIN` account. Choose your own: 10+ characters with a
 letter and a digit.
 
-| Account | Role | Password |
-| --- | --- | --- |
-| `admin@glex.demo` | Super Admin | whatever you set `SEED_DEMO_PASSWORD` to |
-| `client@glex.demo` | Client org admin | same |
-| `supplier@glex.demo` | Approved supplier | same |
-| `pending-supplier@glex.demo` | Pending supplier | same |
+| Account                      | Role              | Password                                 |
+| ---------------------------- | ----------------- | ---------------------------------------- |
+| `admin@glex.demo`            | Super Admin       | whatever you set `SEED_DEMO_PASSWORD` to |
+| `client@glex.demo`           | Client org admin  | same                                     |
+| `supplier@glex.demo`         | Approved supplier | same                                     |
+| `pending-supplier@glex.demo` | Pending supplier  | same                                     |
 
 Also seeded: a client organization, an approved and a pending supplier, 6 sample
 products, 1 sample RFQ, 1 demonstration shipment with a 7-event timeline, 3 sample
@@ -300,14 +299,14 @@ the correct working directory:
 scripts\dev.cmd
 ```
 
-| Script | Purpose |
-| --- | --- |
-| `npm run dev` | Dev server |
-| `npm run build` | `prisma generate && next build` |
-| `npm start` | Serve the production build |
-| `npm run lint` | ESLint (flat config) |
-| `npm run typecheck` | `next typegen && tsc --noEmit` |
-| `npm run format` | Prettier |
+| Script                 | Purpose                                          |
+| ---------------------- | ------------------------------------------------ |
+| `npm run dev`          | Dev server                                       |
+| `npm run build`        | `prisma generate && next build`                  |
+| `npm start`            | Serve the production build                       |
+| `npm run lint`         | ESLint (flat config)                             |
+| `npm run typecheck`    | `next typegen && tsc --noEmit`                   |
+| `npm run format`       | Prettier                                         |
 | `npm run brand:assets` | Regenerate logo variants from the source artwork |
 
 ---
@@ -384,8 +383,8 @@ server already listening on the port instead of starting `next dev`. All 353
 tests pass against a production build, in roughly a third of the dev-server time.
 
 Two log lines are expected during that run: `CredentialsSignin` from the tests
-that assert a bad password is refused, and *"The destination stream closed
-early"* whenever Playwright navigates away mid-stream.
+that assert a bad password is refused, and _"The destination stream closed
+early"_ whenever Playwright navigates away mid-stream.
 
 ---
 
@@ -410,16 +409,16 @@ rather than a sequence of clicks. It contains no secrets.
 
 **Three resources, all in Frankfurt (`fra1`):**
 
-| Resource | Plan | Purpose |
-| --- | --- | --- |
-| App Platform | 1 GiB (`apps-s-1vcpu-1gb`) | the application |
-| Managed PostgreSQL 17 | basic | the database |
-| Spaces | 250 GiB | uploads — RFQ attachments and documents |
+| Resource              | Plan                       | Purpose                                 |
+| --------------------- | -------------------------- | --------------------------------------- |
+| App Platform          | 1 GiB (`apps-s-1vcpu-1gb`) | the application                         |
+| Managed PostgreSQL 17 | basic                      | the database                            |
+| Spaces                | 250 GiB                    | uploads — RFQ attachments and documents |
 
 Keep them in one region. The marketplace page makes ~10 database round trips
 per render, so distance is multiplied by ten on every page.
 
-**Order matters.** Create the database with *Trusted Sources* left open, apply
+**Order matters.** Create the database with _Trusted Sources_ left open, apply
 migrations through the **Migrate production database** workflow, and only then
 restrict it. Locking it down first leaves GitHub Actions unable to reach it and
 the schema never gets applied.
@@ -461,22 +460,22 @@ building locally. It also boots the artifact and hits `/api/health` before
 publishing, so a bundle that cannot start never reaches you.
 
 **2. `NEXT_PUBLIC_APP_URL` must be set when the BUILD runs.** cPanel's
-environment-variable panel configures the *running* process, and that is too
+environment-variable panel configures the _running_ process, and that is too
 late: `NEXT_PUBLIC_*` values are inlined into the bundle at build time. Building
 without it publishes a sitemap, robots.txt, canonical tags and OpenGraph URLs
 that all point at localhost, on a site that looks perfect in a browser. The
 build refuses when the variable is unset and warns when it is localhost. The CI
 artifact job bakes in the real origin already.
 
-**3. `next start` is not the entry point.** Point Passenger's *Application
-startup file* at the standalone server:
+**3. `next start` is not the entry point.** Point Passenger's _Application
+startup file_ at the standalone server:
 
 ```
 .next/standalone/server.js
 ```
 
 It reads `PORT` and defaults `HOSTNAME` to `0.0.0.0`, which is what Passenger
-expects. Upload the *contents* of the `glex-standalone` artifact as the
+expects. Upload the _contents_ of the `glex-standalone` artifact as the
 application root — it already contains `server.js`, the traced `node_modules`,
 `public/` and `.next/static`, and no `.env`.
 
@@ -608,11 +607,11 @@ UPDATE "User" SET role = 'SUPER_ADMIN' WHERE email = 'you@example.com';
 
 `EMAIL_PROVIDER` selects the transport:
 
-| Value | Behaviour |
-| --- | --- |
+| Value     | Behaviour                                                                                           |
+| --------- | --------------------------------------------------------------------------------------------------- |
 | `console` | Prints the message to the terminal, sends nothing. Development default. **Rejected in production.** |
-| `smtp` | Requires `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` |
-| `resend` | Requires `RESEND_API_KEY` |
+| `smtp`    | Requires `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`                        |
+| `resend`  | Requires `RESEND_API_KEY`                                                                           |
 
 Templates are seeded into the `EmailTemplate` table (keyed by `key` + `locale`) and
 are editable from the admin portal.
@@ -621,10 +620,10 @@ are editable from the admin portal.
 
 ## Object storage setup
 
-| `STORAGE_PROVIDER` | Behaviour |
-| --- | --- |
-| `local` | Writes to `./storage` (gitignored). Development only. |
-| `s3` | Any S3-compatible endpoint. Requires `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`; set `S3_ENDPOINT` and `S3_FORCE_PATH_STYLE=true` for MinIO. |
+| `STORAGE_PROVIDER` | Behaviour                                                                                                                                                 |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `local`            | Writes to `./storage` (gitignored). Development only.                                                                                                     |
+| `s3`               | Any S3-compatible endpoint. Requires `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`; set `S3_ENDPOINT` and `S3_FORCE_PATH_STYLE=true` for MinIO. |
 
 `UPLOAD_MAX_MB` caps upload size. Uploads are recorded in the `StoredFile` model,
 which carries `scannedAt` / `scanResult` columns for a malware-scanning integration.
@@ -643,11 +642,11 @@ interface TrackingProvider {
 }
 ```
 
-| `TRACKING_PROVIDER` | Behaviour |
-| --- | --- |
-| `internal` | GLEX logistics staff maintain shipments and events by hand. **Production-safe default.** |
-| `mock` | Seeded demonstration data. The UI shows a prominent *Demo Tracking Mode* banner. Development only. |
-| *(external name)* | An adapter, enabled only when `TRACKING_API_KEY` is also set. |
+| `TRACKING_PROVIDER` | Behaviour                                                                                          |
+| ------------------- | -------------------------------------------------------------------------------------------------- |
+| `internal`          | GLEX logistics staff maintain shipments and events by hand. **Production-safe default.**           |
+| `mock`              | Seeded demonstration data. The UI shows a prominent _Demo Tracking Mode_ banner. Development only. |
+| _(external name)_   | An adapter, enabled only when `TRACKING_API_KEY` is also set.                                      |
 
 Webhooks post to `/api/webhooks/tracking` and are verified against
 `TRACKING_WEBHOOK_SECRET` (HMAC-SHA256 over the raw body, compared in constant
@@ -738,14 +737,14 @@ tables and tells the user it is doing so. Fallback answers are returned verbatim
 from the matched entry, with its title shown, so the assistant cannot generate a
 price, a date or a requirement even when it matches the wrong question.
 
-| Surface | Path |
-| --- | --- |
-| Widget | `src/components/chat/glex-assistant.tsx`, mounted once in `src/app/[locale]/layout.tsx` |
-| Turn endpoint | `POST /api/chat` |
-| Feedback | `POST /api/chat/feedback` |
-| Human handoff | `POST /api/chat/handoff` |
-| Guardrails / tools / fallback | `src/lib/ai/` |
-| Conversation ownership | `src/lib/chat.ts` |
+| Surface                       | Path                                                                                    |
+| ----------------------------- | --------------------------------------------------------------------------------------- |
+| Widget                        | `src/components/chat/glex-assistant.tsx`, mounted once in `src/app/[locale]/layout.tsx` |
+| Turn endpoint                 | `POST /api/chat`                                                                        |
+| Feedback                      | `POST /api/chat/feedback`                                                               |
+| Human handoff                 | `POST /api/chat/handoff`                                                                |
+| Guardrails / tools / fallback | `src/lib/ai/`                                                                           |
+| Conversation ownership        | `src/lib/chat.ts`                                                                       |
 
 Assistant safety rules:
 
@@ -758,7 +757,7 @@ Assistant safety rules:
 - Requests are rate-limited: `CHAT_RATE_LIMIT` messages per 15 minutes (default 30),
   keyed by account when signed in and by IP otherwise. Raise it where many genuine
   visitors share one address.
-- Tool *names* are logged; arguments and retrieved private content are not.
+- Tool _names_ are logged; arguments and retrieved private content are not.
 - Escalation creates a real support ticket only for a signed-in person. An anonymous
   visitor is directed to the contact form instead — there is no way to reply to them,
   and promising a follow-up would be a commitment the system cannot keep.
@@ -789,7 +788,7 @@ which fails on any read-only or replicated deployment, skips review of
 customer-facing copy, and defeats the parity check above. The `translation:write`
 permission exists for the database-backed copy below, not for these files.
 
-Database-backed copy that *is* per-locale and editable in the portal: email
+Database-backed copy that _is_ per-locale and editable in the portal: email
 templates (`/admin/emails`), FAQ entries (`/admin/faq`) and announcements
 (`/admin/settings`).
 
@@ -819,23 +818,23 @@ with `toDbLocale()` / `fromDbLocale()` from `src/i18n/locale.ts`.
 
 **Editable from the admin portal today**, no deploy required:
 
-| Content | Where |
-| --- | --- |
-| Product categories | `/admin/categories` — create, edit, re-order, activate; a category with products or sub-categories cannot be deleted |
-| Products | `/admin/products` — create, edit, publish/hide, soft-delete, search |
-| News articles | `/admin/news` — write, schedule, publish, soft-delete, search. A future publication date keeps the article hidden until it arrives; no cron job is involved |
-| RFQ status, assignment, internal notes | `/admin/rfqs` |
-| Supplier applications | `/admin/suppliers` |
-| Announcement bar | `/admin/settings` — one active announcement at a time, with an optional schedule |
-| Social links | `/admin/settings` — rendered in the footer; http(s) only |
-| FAQ entries | `/admin/faq` — also the source the GLEX Assistant quotes when no AI provider is configured |
-| Staff and client accounts | `/admin/users` — change a role, deactivate or reactivate, clear a brute-force lockout. Nobody can alter their own account, grant a role above their own, or switch off the last administrator |
-| Client and supplier organizations | `/admin/organizations` — edit details, enable or disable. **Disabling denies a session to every member**, so it ends a whole company's access at once. An organization holding users, RFQs or shipments cannot be deleted |
-| Office locations | `/admin/offices` — drives the addresses on the public contact page. Exactly one head office; the last office cannot be deleted |
-| News categories | `/admin/news/categories` — slug derived from the name. A category holding articles cannot be deleted |
-| Email copy | `/admin/emails` — subject, heading and body per template and locale. Only keys the code actually sends can be chosen. Deleting a row degrades to English and then to built-in copy, so mail never stops |
-| Chat transcripts | `/admin/chats` — read-only record of what the GLEX Assistant told visitors, with an escalated-only filter |
-| Trade routes | `/admin/routes` — the lanes drawn on the homepage map and network page |
+| Content                                | Where                                                                                                                                                                                                                     |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Product categories                     | `/admin/categories` — create, edit, re-order, activate; a category with products or sub-categories cannot be deleted                                                                                                      |
+| Products                               | `/admin/products` — create, edit, publish/hide, soft-delete, search                                                                                                                                                       |
+| News articles                          | `/admin/news` — write, schedule, publish, soft-delete, search. A future publication date keeps the article hidden until it arrives; no cron job is involved                                                               |
+| RFQ status, assignment, internal notes | `/admin/rfqs`                                                                                                                                                                                                             |
+| Supplier applications                  | `/admin/suppliers`                                                                                                                                                                                                        |
+| Announcement bar                       | `/admin/settings` — one active announcement at a time, with an optional schedule                                                                                                                                          |
+| Social links                           | `/admin/settings` — rendered in the footer; http(s) only                                                                                                                                                                  |
+| FAQ entries                            | `/admin/faq` — also the source the GLEX Assistant quotes when no AI provider is configured                                                                                                                                |
+| Staff and client accounts              | `/admin/users` — change a role, deactivate or reactivate, clear a brute-force lockout. Nobody can alter their own account, grant a role above their own, or switch off the last administrator                             |
+| Client and supplier organizations      | `/admin/organizations` — edit details, enable or disable. **Disabling denies a session to every member**, so it ends a whole company's access at once. An organization holding users, RFQs or shipments cannot be deleted |
+| Office locations                       | `/admin/offices` — drives the addresses on the public contact page. Exactly one head office; the last office cannot be deleted                                                                                            |
+| News categories                        | `/admin/news/categories` — slug derived from the name. A category holding articles cannot be deleted                                                                                                                      |
+| Email copy                             | `/admin/emails` — subject, heading and body per template and locale. Only keys the code actually sends can be chosen. Deleting a row degrades to English and then to built-in copy, so mail never stops                   |
+| Chat transcripts                       | `/admin/chats` — read-only record of what the GLEX Assistant told visitors, with an escalated-only filter                                                                                                                 |
+| Trade routes                           | `/admin/routes` — the lanes drawn on the homepage map and network page                                                                                                                                                    |
 
 Every mutation writes an `AuditLog` row in the same transaction as the change.
 Slugs are derived server-side from the name and are never accepted from the client.
@@ -872,14 +871,14 @@ The source path is overridable with `GLEX_LOGO_SOURCE`.
 
 **Palette** (from the logo, defined in `src/app/globals.css`):
 
-| Token | Hex | Use |
-| --- | --- | --- |
-| Primary deep green | `#017A4D` | Main corporate colour |
-| Secondary green | `#479774` | Cards, secondary sections |
-| Light mint | `#94C4AF` | Data visualisation, filters |
-| GLEX gold | `#DFBE52` | Premium accent, primary CTAs only |
-| Warm ivory | `#E7EAD6` | Backgrounds |
-| Dark text | `#0F2B22` | Body copy |
+| Token              | Hex       | Use                               |
+| ------------------ | --------- | --------------------------------- |
+| Primary deep green | `#017A4D` | Main corporate colour             |
+| Secondary green    | `#479774` | Cards, secondary sections         |
+| Light mint         | `#94C4AF` | Data visualisation, filters       |
+| GLEX gold          | `#DFBE52` | Premium accent, primary CTAs only |
+| Warm ivory         | `#E7EAD6` | Backgrounds                       |
+| Dark text          | `#0F2B22` | Body copy                         |
 
 The deep green fails contrast on dark surfaces, so the dark-background lockup places
 the untouched logo on an ivory plate rather than recolouring the mark.
@@ -924,7 +923,7 @@ Implemented:
   `ConsentRecord` evidence alongside grants, and the choice can be withdrawn
   from the cookie policy page as easily as it was given
 
-**Critical rule:** `src/proxy.ts` performs an *optimistic* cookie check to improve
+**Critical rule:** `src/proxy.ts` performs an _optimistic_ cookie check to improve
 redirect UX. It is **not** a security boundary — Server Actions POST to the page's
 own URL and route handlers can be called directly. Every privileged page, server
 action and route handler must call a guard from `src/lib/auth-guards.ts`.
@@ -957,18 +956,18 @@ a quarterly restore rehearsal into a scratch database. Migrations are committed 
 
 ## Troubleshooting
 
-| Symptom | Cause and fix |
-| --- | --- |
-| `The datasource property 'url' is no longer supported` | Prisma 7. The URL belongs in `prisma.config.ts`, not `schema.prisma`. |
-| `PrismaClient ... A driver adapter is required` | Prisma 7 needs `@prisma/adapter-pg`. Use the singleton in `src/lib/db.ts`. |
-| `No seed command configured` | Prisma 7 ignores `package.json#prisma`. Configure `migrations.seed` in `prisma.config.ts`. |
-| Custom JWT claims are `unknown` | The augmentation must target `@auth/core/jwt`, not `next-auth/jwt`. |
-| `Could not find i18n config at ./src/i18n/request.ts` | The dev server was started from the wrong working directory. Use `scripts\dev.cmd`, or `cd` into `glex-app` first. |
-| `'node' is not recognized` | Node is not on the shell `PATH`. Prepend `C:\Program Files\nodejs`, or use `scripts\dev.cmd`. |
-| `npm warn allow-scripts` and Prisma fails | npm 11 blocked the engine download. Run `npm approve-scripts prisma @prisma/engines sharp`. |
-| `next build` fails mentioning webpack | Turbopack is the default builder in Next 16. Remove any `webpack` config. |
-| Images 400 with a quality error | Next 16 only allows qualities listed in `images.qualities`. |
-| Build fails on a parallel route | Next 16 requires an explicit `default.tsx` for every `@slot`. |
+| Symptom                                                | Cause and fix                                                                                                      |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| `The datasource property 'url' is no longer supported` | Prisma 7. The URL belongs in `prisma.config.ts`, not `schema.prisma`.                                              |
+| `PrismaClient ... A driver adapter is required`        | Prisma 7 needs `@prisma/adapter-pg`. Use the singleton in `src/lib/db.ts`.                                         |
+| `No seed command configured`                           | Prisma 7 ignores `package.json#prisma`. Configure `migrations.seed` in `prisma.config.ts`.                         |
+| Custom JWT claims are `unknown`                        | The augmentation must target `@auth/core/jwt`, not `next-auth/jwt`.                                                |
+| `Could not find i18n config at ./src/i18n/request.ts`  | The dev server was started from the wrong working directory. Use `scripts\dev.cmd`, or `cd` into `glex-app` first. |
+| `'node' is not recognized`                             | Node is not on the shell `PATH`. Prepend `C:\Program Files\nodejs`, or use `scripts\dev.cmd`.                      |
+| `npm warn allow-scripts` and Prisma fails              | npm 11 blocked the engine download. Run `npm approve-scripts prisma @prisma/engines sharp`.                        |
+| `next build` fails mentioning webpack                  | Turbopack is the default builder in Next 16. Remove any `webpack` config.                                          |
+| Images 400 with a quality error                        | Next 16 only allows qualities listed in `images.qualities`.                                                        |
+| Build fails on a parallel route                        | Next 16 requires an explicit `default.tsx` for every `@slot`.                                                      |
 
 ---
 

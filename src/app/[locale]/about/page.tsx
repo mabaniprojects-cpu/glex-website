@@ -1,4 +1,4 @@
-import { Building2, Globe2, Phone, ShieldCheck } from 'lucide-react'
+import { Building2, Globe2, Phone } from 'lucide-react'
 import type { Metadata } from 'next'
 import { hasLocale } from 'next-intl'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
@@ -34,7 +34,6 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
   // clients, partnerships or awards.
   const FACTS = [
     { icon: Building2, label: footer('crNumber'), value: GLEX_COMPANY.crNumber, ltr: true },
-    { icon: ShieldCheck, label: footer('paidCapital'), value: footer('capitalValue'), ltr: false },
     { icon: Phone, label: nav('contact'), value: GLEX_COMPANY.phoneDisplay, ltr: true },
     {
       icon: Globe2,
@@ -57,14 +56,15 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
       />
 
       <Section>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Three columns, matching FACTS — a four-column track left a gap. */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {FACTS.map((fact) => (
             <Card key={fact.label} className="bg-glex-green-50/50">
               <CardContent className="p-6 pt-6">
-                <fact.icon className="size-6 text-glex-green-600" aria-hidden="true" />
-                <p className="mt-4 text-sm font-medium text-glex-green-800/70">{fact.label}</p>
+                <fact.icon className="text-glex-green-600 size-6" aria-hidden="true" />
+                <p className="text-glex-green-800/70 mt-4 text-sm font-medium">{fact.label}</p>
                 <p
-                  className="mt-1 text-lg font-semibold text-glex-green-900"
+                  className="text-glex-green-900 mt-1 text-lg font-semibold"
                   dir={fact.ltr ? 'ltr' : undefined}
                 >
                   {fact.value}
@@ -82,7 +82,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
             <Card key={key}>
               <CardContent className="p-6 pt-6">
                 <h3 className="font-semibold">{t(`${key}.title`)}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-glex-green-800/75">
+                <p className="text-glex-green-800/75 mt-2 text-sm leading-relaxed">
                   {t(`${key}.body`)}
                 </p>
               </CardContent>
@@ -94,7 +94,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
       <Section>
         <div className="max-w-3xl">
           <h2 className="text-2xl font-bold sm:text-3xl">{GLEX_COMPANY.office.name}</h2>
-          <address className="mt-5 space-y-1 text-lg not-italic text-glex-green-800/80">
+          <address className="text-glex-green-800/80 mt-5 space-y-1 text-lg not-italic">
             {GLEX_COMPANY.office.addressLines.map((line) => (
               <span key={line} className="block">
                 {line}
@@ -105,7 +105,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
             <a
               href={`tel:${GLEX_COMPANY.phoneE164}`}
               dir="ltr"
-              className="text-lg font-semibold text-glex-green-700 underline-offset-4 hover:underline"
+              className="text-glex-green-700 text-lg font-semibold underline-offset-4 hover:underline"
             >
               {GLEX_COMPANY.phoneDisplay}
             </a>

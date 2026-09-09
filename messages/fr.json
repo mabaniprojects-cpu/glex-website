@@ -234,8 +234,6 @@
     "legal": "Informations légales",
     "contact": "Contact",
     "crNumber": "Registre du commerce",
-    "paidCapital": "Capital libéré",
-    "capitalValue": "1 000 000 SAR",
     "rights": "Tous droits réservés.",
     "followUs": "Suivez-nous",
     "privacy": "Politique de confidentialité",
@@ -820,7 +818,7 @@
       "edit": "Modifier la catégorie"
     },
     "offices": {
-      "intro": "Ces adresses apparaissent sur la page de contact publique. La raison sociale, le registre du commerce et le capital sont fixés dans le code et ne sont pas modifiables ici.",
+      "intro": "Ces adresses apparaissent sur la page de contact publique. La raison sociale et le registre du commerce sont fixés dans le code et ne sont pas modifiables ici.",
       "name": "Nom du bureau",
       "addressLines": "Adresse",
       "addressHint": "Une ligne par rangée, exactement telle qu’elle doit être imprimée.",

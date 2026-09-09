@@ -44,7 +44,7 @@ export async function SiteFooter() {
     .catch(() => [])
 
   return (
-    <footer className="mt-auto bg-glex-green-900 text-glex-ivory">
+    <footer className="bg-glex-green-900 text-glex-ivory mt-auto">
       <div className="container-glex py-14">
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-12">
           {/* Brand + summary */}
@@ -57,7 +57,7 @@ export async function SiteFooter() {
               quality={90}
               className="h-20 w-auto"
             />
-            <p className="mt-5 max-w-sm text-sm leading-relaxed text-glex-ivory/80">
+            <p className="text-glex-ivory/80 mt-5 max-w-sm text-sm leading-relaxed">
               {t('summary')}
             </p>
           </div>
@@ -80,7 +80,7 @@ export async function SiteFooter() {
             <h2 className="text-sm font-semibold tracking-wide text-white uppercase">
               {t('contact')}
             </h2>
-            <address className="mt-4 space-y-3 text-sm not-italic text-glex-ivory/80">
+            <address className="text-glex-ivory/80 mt-4 space-y-3 text-sm not-italic">
               <div className="flex gap-2.5">
                 <MapPin className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
                 <span>
@@ -92,7 +92,7 @@ export async function SiteFooter() {
                 </span>
               </div>
               <div className="flex gap-2.5">
-                <Phone className="size-4 shrink-0 rtl-flip" aria-hidden="true" />
+                <Phone className="rtl-flip size-4 shrink-0" aria-hidden="true" />
                 <a
                   href={`tel:${GLEX_COMPANY.phoneE164}`}
                   className="underline-offset-4 hover:underline"
@@ -112,12 +112,9 @@ export async function SiteFooter() {
         </div>
 
         {/* Registration details */}
-        <div className="mt-12 grid gap-3 border-t border-white/10 pt-8 text-sm text-glex-ivory/70 sm:grid-cols-2">
+        <div className="text-glex-ivory/70 mt-12 border-t border-white/10 pt-8 text-sm">
           <p>
             {t('crNumber')}: <span dir="ltr">{GLEX_COMPANY.crNumber}</span>
-          </p>
-          <p className="sm:text-end">
-            {t('paidCapital')}: {t('capitalValue')}
           </p>
         </div>
 
@@ -131,7 +128,7 @@ export async function SiteFooter() {
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer me"
-                    className="text-sm text-glex-ivory/80 underline-offset-4 hover:underline"
+                    className="text-glex-ivory/80 text-sm underline-offset-4 hover:underline"
                   >
                     {link.platform}
                   </a>
@@ -141,7 +138,7 @@ export async function SiteFooter() {
           </div>
         ) : null}
 
-        <div className="mt-8 flex flex-col gap-4 border-t border-white/10 pt-8 text-sm text-glex-ivory/70 sm:flex-row sm:items-center sm:justify-between">
+        <div className="text-glex-ivory/70 mt-8 flex flex-col gap-4 border-t border-white/10 pt-8 text-sm sm:flex-row sm:items-center sm:justify-between">
           <p>
             © {new Date().getFullYear()} {common('brandFull')}. {t('rights')}
           </p>
@@ -166,7 +163,7 @@ function FooterColumn({ title, items }: { title: string; items: FooterItem[] }) 
   return (
     <div className="lg:col-span-2">
       <h2 className="text-sm font-semibold tracking-wide text-white uppercase">{title}</h2>
-      <ul className="mt-4 space-y-2.5 text-sm text-glex-ivory/80">
+      <ul className="text-glex-ivory/80 mt-4 space-y-2.5 text-sm">
         {items.map((item) => (
           <li key={item.href}>
             <Link

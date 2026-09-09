@@ -234,8 +234,6 @@
     "legal": "Legal",
     "contact": "Contact",
     "crNumber": "Commercial Registration",
-    "paidCapital": "Paid-up capital",
-    "capitalValue": "SAR 1,000,000",
     "rights": "All rights reserved.",
     "followUs": "Follow us",
     "privacy": "Privacy Policy",
@@ -820,7 +818,7 @@
       "edit": "Edit category"
     },
     "offices": {
-      "intro": "These addresses appear on the public contact page. The legal name, commercial registration and capital are fixed in code and are not editable here.",
+      "intro": "These addresses appear on the public contact page. The legal name and commercial registration are fixed in code and are not editable here.",
       "name": "Office name",
       "addressLines": "Address",
       "addressHint": "One line per row, exactly as it should be printed.",
