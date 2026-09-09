@@ -102,6 +102,18 @@
         "body": "Ein Partner von der Beschaffung über die Dokumentation bis zur Endlieferung."
       }
     },
+    "photoNetwork": {
+      "eyebrow": "Hafen- und Seefracht",
+      "title": "Jede Sendung verfolgt — vom Kai bis zum Ziel",
+      "body": "GLEX bucht, dokumentiert und überwacht Seefracht ab saudischen Häfen, damit Sie jederzeit wissen, wo eine Sendung ist und was als Nächstes geschieht.",
+      "alt": "Containerbrücken verladen Container auf ein Schiff in einem saudischen Hafen"
+    },
+    "photoHandling": {
+      "eyebrow": "Lagerung und Prüfung",
+      "title": "Waren geprüft, bevor sie das Königreich verlassen",
+      "body": "Konsolidierung, Palettierung und Vorausfuhrkontrolle erfolgen vor dem Auslaufen, damit Sendungen ohne vermeidbare Verzögerung verzollt werden.",
+      "alt": "Palettierte Waren im Lagerregal werden für den Export vorbereitet"
+    },
     "services": {
       "heading": "Unsere Leistungen",
       "description": "Alles, was für den Weg saudischer Produkte in internationale Märkte erforderlich ist.",

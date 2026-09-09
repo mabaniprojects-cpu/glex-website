@@ -102,6 +102,18 @@
         "body": "One partner from sourcing and documentation through to final delivery."
       }
     },
+    "photoNetwork": {
+      "eyebrow": "Port and ocean freight",
+      "title": "Every shipment, tracked from quay to destination",
+      "body": "GLEX books, documents and monitors ocean freight out of Saudi ports, so you always know where a consignment is and what happens next.",
+      "alt": "Gantry cranes loading containers onto a vessel at a Saudi port"
+    },
+    "photoHandling": {
+      "eyebrow": "Warehousing and inspection",
+      "title": "Goods checked before they leave the Kingdom",
+      "body": "Consolidation, palletisation and pre-export inspection are handled before departure, so shipments clear customs without avoidable delay.",
+      "alt": "Palletised goods on warehouse racking being prepared for export"
+    },
     "services": {
       "heading": "Our Services",
       "description": "Everything required to move Saudi products into international markets.",

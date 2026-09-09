@@ -6,7 +6,9 @@ import { Hero } from '@/components/home/hero'
 import { HomeNewsSection } from '@/components/home/news-section'
 import {
   CtaSections,
+  HandlingPhotoSection,
   HowItWorksSection,
+  NetworkPhotoSection,
   ServicesSection,
   ValuesSection,
 } from '@/components/home/sections'
@@ -32,7 +34,9 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
       <Hero />
       <ValuesSection />
+      <NetworkPhotoSection />
       <ServicesSection />
+      <HandlingPhotoSection />
       <HowItWorksSection />
       <HomeNewsSection />
       <CtaSections />

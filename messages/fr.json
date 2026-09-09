@@ -102,6 +102,18 @@
         "body": "Un partenaire unique, du sourcing et de la documentation jusqu'à la livraison finale."
       }
     },
+    "photoNetwork": {
+      "eyebrow": "Portuaire et fret maritime",
+      "title": "Chaque expédition suivie, du quai à la destination",
+      "body": "GLEX réserve, documente et surveille le fret maritime au départ des ports saoudiens, afin que vous sachiez toujours où se trouve un envoi et ce qui suit.",
+      "alt": "Portiques chargeant des conteneurs sur un navire dans un port saoudien"
+    },
+    "photoHandling": {
+      "eyebrow": "Entreposage et inspection",
+      "title": "Marchandises contrôlées avant de quitter le Royaume",
+      "body": "La consolidation, la palettisation et l'inspection avant expédition sont effectuées avant le départ, pour un dédouanement sans retard évitable.",
+      "alt": "Marchandises palettisées sur rayonnages d'entrepôt en préparation à l'export"
+    },
     "services": {
       "heading": "Nos services",
       "description": "Tout ce qu'il faut pour acheminer les produits saoudiens vers les marchés internationaux.",

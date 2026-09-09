@@ -1,8 +1,10 @@
 import { ArrowRight, Ship } from 'lucide-react'
+import Image from 'next/image'
 import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { Button } from '@/components/ui/button'
 import { db } from '@/lib/db'
+import { hasPhoto, PHOTOGRAPHY } from '@/lib/photography'
 import { TrackingQuickSearch } from '@/components/tracking/tracking-quick-search'
 import { RouteMap } from '@/components/visuals/route-map'
 
@@ -10,26 +12,46 @@ export async function Hero() {
   const t = await getTranslations('home.hero')
   const common = await getTranslations('common')
 
-  const routes = await db.globalRoute
-    .findMany({ where: { isActive: true }, orderBy: { sortOrder: 'asc' }, take: 12 })
-    .catch(() => [])
+  // Only the map fallback needs these; skip the query when a photo is in place.
+  const routes = hasPhoto(PHOTOGRAPHY.hero)
+    ? []
+    : await db.globalRoute
+        .findMany({ where: { isActive: true }, orderBy: { sortOrder: 'asc' }, take: 12 })
+        .catch(() => [])
 
   return (
-    <section className="relative overflow-hidden bg-glex-green-900 text-white">
-      {/* Animated route map sits behind the copy and is purely decorative. */}
-      <div className="pointer-events-none absolute inset-0 opacity-45" aria-hidden="true">
-        <RouteMap routes={routes} />
-      </div>
+    <section className="bg-glex-green-900 relative overflow-hidden text-white">
+      {/*
+        Photograph when one has been supplied, the animated route map otherwise.
+        The map is a genuine fallback, not scaffolding: it renders the live
+        GlobalRoute records and stands on its own if the shoot never happens.
+      */}
+      {hasPhoto(PHOTOGRAPHY.hero) ? (
+        <Image
+          src={PHOTOGRAPHY.hero.src}
+          alt=""
+          fill
+          sizes="100vw"
+          // Above the fold and the page's largest element — this is the LCP.
+          priority
+          quality={82}
+          className="object-cover"
+        />
+      ) : (
+        <div className="pointer-events-none absolute inset-0 opacity-45" aria-hidden="true">
+          <RouteMap routes={routes} />
+        </div>
+      )}
 
       {/* Readability scrim — keeps text contrast above 4.5:1 over the map. */}
       <div
-        className="pointer-events-none absolute inset-0 bg-linear-to-b from-glex-green-950/85 via-glex-green-900/70 to-glex-green-900/95"
+        className="from-glex-green-950/85 via-glex-green-900/70 to-glex-green-900/95 pointer-events-none absolute inset-0 bg-linear-to-b"
         aria-hidden="true"
       />
 
       <div className="container-glex relative py-20 lg:py-28">
         <div className="max-w-3xl">
-          <p className="animate-fade-up text-sm font-semibold tracking-[0.2em] text-glex-gold-400 uppercase">
+          <p className="animate-fade-up text-glex-gold-400 text-sm font-semibold tracking-[0.2em] uppercase">
             {common('tagline')}
           </p>
 
@@ -37,7 +59,7 @@ export async function Hero() {
             {t('headline')}
           </h1>
 
-          <p className="animate-fade-up mt-6 max-w-2xl text-lg leading-relaxed text-glex-ivory/90">
+          <p className="animate-fade-up text-glex-ivory/90 mt-6 max-w-2xl text-lg leading-relaxed">
             {t('description')}
           </p>
 
@@ -45,7 +67,7 @@ export async function Hero() {
             <Button asChild variant="gold" size="lg">
               <Link href="/rfq">
                 {t('ctaQuote')}
-                <ArrowRight className="size-4 rtl-flip" aria-hidden="true" />
+                <ArrowRight className="rtl-flip size-4" aria-hidden="true" />
               </Link>
             </Button>
             <Button asChild variant="inverse" size="lg">
@@ -58,7 +80,7 @@ export async function Hero() {
               className="border-white/40 text-white hover:bg-white/10"
             >
               <Link href="/tracking">
-                <Ship className="size-4 rtl-flip" aria-hidden="true" />
+                <Ship className="rtl-flip size-4" aria-hidden="true" />
                 {t('ctaTrack')}
               </Link>
             </Button>
