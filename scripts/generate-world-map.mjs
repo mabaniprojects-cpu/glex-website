@@ -1,0 +1,177 @@
+/**
+ * Regenerates `src/components/visuals/world-map-paths.ts`.
+ *
+ * Source data is Natural Earth 1:110m "land", which is public domain, shipped
+ * as TopoJSON by the `world-atlas` package. We fetch the pinned version rather
+ * than adding a dependency: this runs by hand when the map needs changing, not
+ * during install or build.
+ *
+ *     node scripts/generate-world-map.mjs
+ *
+ * TopoJSON is decoded here directly (it is ~40 lines of delta decoding) so the
+ * project gains no runtime or dev dependency for a one-off conversion.
+ *
+ * Output is committed. Do not hand-edit the generated file.
+ */
+import { writeFileSync } from 'node:fs'
+import { readFile } from 'node:fs/promises'
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
+
+const SOURCE = 'https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/land-110m.json'
+
+/** Must stay identical to project() in world-map.tsx. */
+const MAP_WIDTH = 1000
+const MAP_HEIGHT = 500
+const project = (lat, lng) => [((lng + 180) / 360) * MAP_WIDTH, ((90 - lat) / 180) * MAP_HEIGHT]
+
+/**
+ * Douglas-Peucker tolerance in SVG units. The map is 1000 units wide and is
+ * never drawn wider than about 2000 CSS pixels, so ~1 unit is under two pixels
+ * of coastline error — invisible, and it halves the markup.
+ */
+const TOLERANCE = 0.9
+
+/** Islands smaller than this (SVG units squared) render as specks; drop them. */
+const MIN_AREA = 6
+
+/**
+ * Reads the pinned TopoJSON. Pass a path to work from a local copy when the
+ * CDN is unreachable:  node scripts/generate-world-map.mjs ./land-110m.json
+ */
+async function loadTopoJson() {
+  const local = process.argv[2]
+  if (local) return JSON.parse(await readFile(local, 'utf8'))
+
+  try {
+    const response = await fetch(SOURCE)
+    if (!response.ok) throw new Error(`responded ${response.status}`)
+    return await response.json()
+  } catch (cause) {
+    throw new Error(
+      `Could not fetch ${SOURCE}.\n` +
+        `Download it by hand and re-run with the file path as an argument.`,
+      { cause }
+    )
+  }
+}
+
+const topo = await loadTopoJson()
+
+const { scale, translate } = topo.transform
+
+/** Delta-decode one quantised arc into absolute [lng, lat] pairs. */
+const arcs = topo.arcs.map((arc) => {
+  let x = 0
+  let y = 0
+  return arc.map(([dx, dy]) => {
+    x += dx
+    y += dy
+    return [x * scale[0] + translate[0], y * scale[1] + translate[1]]
+  })
+})
+
+/** Index i means arc i forward; a negative index ~i means arc -i-1 reversed. */
+function ring(indices) {
+  const points = []
+  for (const i of indices) {
+    const arc = i < 0 ? arcs[~i].slice().reverse() : arcs[i]
+    // Consecutive arcs share their joining point.
+    points.push(...(points.length ? arc.slice(1) : arc))
+  }
+  return points
+}
+
+function collectPolygons(geometry) {
+  if (geometry.type === 'GeometryCollection') return geometry.geometries.flatMap(collectPolygons)
+  if (geometry.type === 'MultiPolygon') return geometry.arcs
+  if (geometry.type === 'Polygon') return [geometry.arcs]
+  return []
+}
+
+function perpendicular([px, py], [x1, y1], [x2, y2]) {
+  const dx = x2 - x1
+  const dy = y2 - y1
+  if (dx === 0 && dy === 0) return Math.hypot(px - x1, py - y1)
+  const t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy)))
+  return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy))
+}
+
+function simplify(points, tolerance) {
+  if (points.length < 3) return points
+  const first = points[0]
+  const last = points[points.length - 1]
+  let index = -1
+  let furthest = 0
+
+  for (let i = 1; i < points.length - 1; i++) {
+    const distance = perpendicular(points[i], first, last)
+    if (distance > furthest) {
+      furthest = distance
+      index = i
+    }
+  }
+
+  if (furthest <= tolerance) return [first, last]
+  return [
+    ...simplify(points.slice(0, index + 1), tolerance).slice(0, -1),
+    ...simplify(points.slice(index), tolerance),
+  ]
+}
+
+/** Shoelace area of a projected ring. */
+function area(points) {
+  let sum = 0
+  for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+    sum += (points[j][0] + points[i][0]) * (points[j][1] - points[i][1])
+  }
+  return Math.abs(sum / 2)
+}
+
+const round = (n) => Math.round(n * 10) / 10
+
+const paths = []
+let dropped = 0
+
+for (const polygon of collectPolygons(topo.objects.land)) {
+  const parts = []
+  for (const indices of polygon) {
+    const points = simplify(
+      ring(indices).map(([lng, lat]) => project(lat, lng)),
+      TOLERANCE
+    )
+    if (points.length < 4 || area(points) < MIN_AREA) {
+      dropped++
+      continue
+    }
+    parts.push(`M ${points.map(([x, y]) => `${round(x)} ${round(y)}`).join(' L ')} Z`)
+  }
+  // Sub-paths of one landmass stay in a single `d` so holes fill correctly.
+  if (parts.length) paths.push(parts.join(' '))
+}
+
+const file = join(
+  dirname(fileURLToPath(import.meta.url)),
+  '..',
+  'src',
+  'components',
+  'visuals',
+  'world-map-paths.ts'
+)
+
+writeFileSync(
+  file,
+  `// GENERATED by scripts/generate-world-map.mjs — do not edit by hand.
+//
+// Natural Earth 1:110m land (public domain), projected equirectangularly onto
+// the ${MAP_WIDTH}x${MAP_HEIGHT} viewBox that world-map.tsx's project() defines, then
+// simplified with a ${TOLERANCE}-unit Douglas-Peucker tolerance.
+
+export const CONTINENT_PATHS: readonly string[] = [
+${paths.map((d) => `  '${d}',`).join('\n')}
+] as const
+`
+)
+
+console.log(`${paths.length} landmasses written (${dropped} specks dropped)`)
+console.log(`${file}`)

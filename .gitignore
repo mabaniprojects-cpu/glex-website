@@ -55,3 +55,6 @@ next-env.d.ts
 
 # Generated Prisma client, if the `prisma-client` generator output is used.
 /src/generated/
+
+# Claude Code local tooling
+.claude/
