@@ -69,12 +69,22 @@ export function LanguageSwitcher({ className }: { className?: string }) {
         disabled={pending}
         className={cn(
           'inline-flex h-11 items-center gap-2 rounded-lg px-3 text-sm font-medium',
-          'text-glex-green-800 transition-colors hover:bg-glex-green-50',
+          'text-glex-green-800 hover:bg-glex-green-50 transition-colors',
           'disabled:opacity-60'
         )}
       >
         <Globe className="size-4" aria-hidden="true" />
-        <span>{localeLabels[activeLocale]}</span>
+        {/*
+          The full language name everywhere except the xl band, where the seven
+          desktop nav links are showing and the header row is at its tightest —
+          "Français" costs 60px that French cannot spare. A short code still
+          tells a sighted user which language is active, and the button's
+          aria-label carries the accessible name regardless.
+        */}
+        <span className="xl:hidden">{localeLabels[activeLocale]}</span>
+        <span className="hidden uppercase xl:inline" aria-hidden="true">
+          {activeLocale.split('-')[0]}
+        </span>
       </button>
 
       {open ? (
@@ -83,7 +93,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
           aria-label={t('selectLanguage')}
           className={cn(
             'absolute end-0 top-full z-50 mt-1 min-w-48 overflow-hidden rounded-lg',
-            'border border-border-subtle bg-white py-1 shadow-lg'
+            'border-border-subtle border bg-white py-1 shadow-lg'
           )}
         >
           {locales.map((locale) => {
@@ -99,8 +109,8 @@ export function LanguageSwitcher({ className }: { className?: string }) {
                   dir={locale === 'ar' ? 'rtl' : 'ltr'}
                   className={cn(
                     'flex w-full items-center justify-between gap-3 px-4 py-2.5 text-start text-sm',
-                    'transition-colors hover:bg-glex-green-50',
-                    selected ? 'font-semibold text-glex-green-700' : 'text-glex-green-900'
+                    'hover:bg-glex-green-50 transition-colors',
+                    selected ? 'text-glex-green-700 font-semibold' : 'text-glex-green-900'
                   )}
                 >
                   <span>{localeLabels[locale]}</span>

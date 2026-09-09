@@ -99,13 +99,13 @@ export function MobileNav({
         onClick={() => setOpen(true)}
         aria-label={common('openMenu')}
         aria-expanded={open}
-        className="inline-flex size-11 items-center justify-center rounded-lg text-glex-green-800 transition-colors hover:bg-glex-green-50 lg:hidden"
+        className="inline-flex size-11 items-center justify-center rounded-lg text-glex-green-800 transition-colors hover:bg-glex-green-50 xl:hidden"
       >
         <Menu className="size-6" aria-hidden="true" />
       </button>
 
       {open ? (
-        <div className="fixed inset-0 z-100 lg:hidden">
+        <div className="fixed inset-0 z-100 xl:hidden">
           <div
             className="absolute inset-0 bg-glex-green-950/50"
             onClick={() => setOpen(false)}
