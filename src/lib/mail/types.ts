@@ -47,6 +47,17 @@ export const TEMPLATE_KEYS = [
   'contact-received',
   'support-response',
   'team-invitation',
+
+  /**
+   * Staff notifications. These were previously sent using the CUSTOMER
+   * template, so the shared mailbox received "Thank you for contacting GLEX.
+   * Our team will respond as soon as possible." — GLEX thanking itself and
+   * promising itself a reply. Staff copy is now its own.
+   */
+  'internal-contact',
+  'internal-rfq',
+  'internal-freight',
+  'internal-supplier',
 ] as const
 
 export type TemplateKey = (typeof TEMPLATE_KEYS)[number]
@@ -59,6 +70,15 @@ export type TemplateContext = {
   actionLabel?: string
   /** Extra lines appended under the body, e.g. a reference number. */
   details?: Array<{ label: string; value: string }>
+  /**
+   * Appended to the subject after a separator.
+   *
+   * Staff mail lands in a shared mailbox alongside cold outreach, where a
+   * fixed subject like "Supplier application received" is neither scannable
+   * nor searchable. Putting the reference and sender in the subject is what
+   * makes a real lead findable six weeks later.
+   */
+  subjectSuffix?: string
 }
 
 export function addressToString(address: MailAddress): string {

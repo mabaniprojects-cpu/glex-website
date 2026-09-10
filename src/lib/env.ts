@@ -27,7 +27,19 @@ const serverSchema = z.object({
   AUTH_URL: z.string().url().optional(),
 
   APP_URL: z.string().url().default('http://localhost:3000'),
+  /**
+   * Internal notification recipients.
+   *
+   * CONTACT_TO_EMAIL is the base and the fallback for the rest, so a
+   * deployment that sets only it keeps working exactly as before. The others
+   * exist because an RFQ is a commercial lead and a shared `info@` mailbox
+   * collects cold outreach — routing them together means the highest-value
+   * inbound message arrives looking like the lowest.
+   */
   CONTACT_TO_EMAIL: z.preprocess(emptyToUndefined, z.string().email().optional()),
+  RFQ_TO_EMAIL: z.preprocess(emptyToUndefined, z.string().email().optional()),
+  SUPPLIER_TO_EMAIL: z.preprocess(emptyToUndefined, z.string().email().optional()),
+  FREIGHT_TO_EMAIL: z.preprocess(emptyToUndefined, z.string().email().optional()),
 
   // Email
   EMAIL_PROVIDER: z.enum(['smtp', 'resend', 'console']).default('console'),
@@ -128,7 +140,10 @@ function loadServerEnv(): ServerEnv {
   if (env.EMAIL_PROVIDER === 'resend' && !env.RESEND_API_KEY) {
     throw new Error('EMAIL_PROVIDER="resend" requires RESEND_API_KEY to be set.')
   }
-  if (env.STORAGE_PROVIDER === 's3' && (!env.S3_BUCKET || !env.S3_ACCESS_KEY_ID || !env.S3_SECRET_ACCESS_KEY)) {
+  if (
+    env.STORAGE_PROVIDER === 's3' &&
+    (!env.S3_BUCKET || !env.S3_ACCESS_KEY_ID || !env.S3_SECRET_ACCESS_KEY)
+  ) {
     throw new Error(
       'STORAGE_PROVIDER="s3" requires S3_BUCKET, S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY.'
     )
@@ -177,7 +192,9 @@ export const isRemoteMapConfigured = () => Boolean(env().MAP_STYLE_URL)
  */
 export const isExternalTrackingConfigured = () => {
   const { TRACKING_PROVIDER, TRACKING_API_KEY } = env()
-  return TRACKING_PROVIDER !== 'internal' && TRACKING_PROVIDER !== 'mock' && Boolean(TRACKING_API_KEY)
+  return (
+    TRACKING_PROVIDER !== 'internal' && TRACKING_PROVIDER !== 'mock' && Boolean(TRACKING_API_KEY)
+  )
 }
 
 export const isDemoTrackingMode = () =>

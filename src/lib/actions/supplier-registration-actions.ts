@@ -18,8 +18,7 @@ import {
 } from '@/lib/validation/supplier-registration'
 
 export type SupplierRegistrationResult =
-  | { ok: true }
-  | { ok: false; error: string; fields?: Record<string, string> }
+  { ok: true } | { ok: false; error: string; fields?: Record<string, string> }
 
 function absoluteUrl(path: string): string {
   const base = (env().APP_URL || 'http://localhost:3000').replace(/\/$/, '')
@@ -102,9 +101,17 @@ export async function submitSupplierRegistration(
       country: data.country,
       crNumber: data.crNumber || null,
       description: data.description || null,
-      brands: data.brands ? data.brands.split(',').map((b) => b.trim()).filter(Boolean) : [],
+      brands: data.brands
+        ? data.brands
+            .split(',')
+            .map((b) => b.trim())
+            .filter(Boolean)
+        : [],
       marketsServed: data.marketsServed
-        ? data.marketsServed.split(',').map((m) => m.trim()).filter(Boolean)
+        ? data.marketsServed
+            .split(',')
+            .map((m) => m.trim())
+            .filter(Boolean)
         : [],
       availableIncoterms: data.availableIncoterms,
       contacts,
@@ -149,7 +156,10 @@ export async function submitSupplierRegistration(
           employeeCount: data.employeeCount || null,
           description: data.description || null,
           brands: data.brands
-            ? data.brands.split(',').map((b) => b.trim()).filter(Boolean)
+            ? data.brands
+                .split(',')
+                .map((b) => b.trim())
+                .filter(Boolean)
             : [],
           isManufacturer: data.isManufacturer,
           isDistributor: data.isDistributor,
@@ -157,7 +167,10 @@ export async function submitSupplierRegistration(
           minimumOrderNotes: data.minimumOrderNotes || null,
           exportExperience: data.exportExperience || null,
           marketsServed: data.marketsServed
-            ? data.marketsServed.split(',').map((m) => m.trim()).filter(Boolean)
+            ? data.marketsServed
+                .split(',')
+                .map((m) => m.trim())
+                .filter(Boolean)
             : [],
           availableIncoterms: data.availableIncoterms,
           leadTimeNotes: data.leadTimeNotes || null,
@@ -254,10 +267,13 @@ export async function submitSupplierRegistration(
       details: [{ label: 'Company', value: data.legalName }],
     })
 
-    const admin = internalRecipient()
+    const admin = internalRecipient('supplier')
     if (admin) {
-      await sendTemplate('supplier-submitted', admin, {
+      await sendTemplate('internal-supplier', admin, {
         locale: 'en',
+        subjectSuffix: `${data.legalName} · ${data.country}`,
+        actionUrl: absoluteUrl('/en/admin/suppliers'),
+        actionLabel: 'Open in the admin portal',
         details: [
           { label: 'Company', value: data.legalName },
           { label: 'Country', value: data.country },

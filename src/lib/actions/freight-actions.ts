@@ -128,10 +128,11 @@ export async function submitFreightInquiry(input: FreightInquiryInput): Promise<
       details: [{ label: 'Reference', value: reference }],
     })
 
-    const admin = internalRecipient()
+    const admin = internalRecipient('freight')
     if (admin) {
-      await sendTemplate('contact-received', admin, {
+      await sendTemplate('internal-freight', admin, {
         locale: 'en',
+        subjectSuffix: `${reference} · ${lane}`,
         actionUrl: absoluteUrl('/en/admin/inquiries'),
         actionLabel: 'Open in the admin portal',
         details: [

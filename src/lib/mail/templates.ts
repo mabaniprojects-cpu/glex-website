@@ -15,26 +15,128 @@ type TemplateCopy = { subject: string; heading: string; body: string }
 
 /** Fallbacks mirroring the seeded rows. */
 const FALLBACKS: Record<TemplateKey, TemplateCopy> = {
-  welcome: { subject: 'Welcome to GLEX', heading: 'Welcome to GLEX', body: 'Your account has been created. You can now build RFQs, follow shipments and manage your documents.' },
-  'email-verification': { subject: 'Verify your email address', heading: 'Confirm your email', body: 'Please confirm your email address to activate your GLEX account.' },
-  'password-reset': { subject: 'Reset your GLEX password', heading: 'Password reset', body: 'A password reset was requested for your account. If this was not you, no action is needed and your password stays unchanged.' },
-  'supplier-submitted': { subject: 'Supplier application received', heading: 'Application received', body: 'Thank you for registering. Our team will review your application and respond by email.' },
-  'supplier-clarification': { subject: 'Additional information required', heading: 'Clarification required', body: 'We need some additional information before we can complete our review.' },
-  'supplier-approved': { subject: 'Your GLEX supplier application is approved', heading: 'Application approved', body: 'Your company has been approved. You can now manage your catalogue and receive sourcing opportunities.' },
-  'supplier-rejected': { subject: 'Update on your GLEX supplier application', heading: 'Application update', body: 'Thank you for your interest. On this occasion we are unable to proceed with your application.' },
-  'client-registered': { subject: 'Your GLEX account is ready', heading: 'Account created', body: 'Your client account is active. Explore the marketplace and submit your first request for quotation.' },
-  'rfq-submitted': { subject: 'We have received your request for quotation', heading: 'RFQ received', body: 'Thank you. Your request has been logged and our team will respond shortly.' },
-  'rfq-clarification': { subject: 'Clarification required on your RFQ', heading: 'Clarification required', body: 'We need a little more detail before we can prepare your quotation.' },
-  'quotation-available': { subject: 'Your quotation is ready', heading: 'Quotation available', body: 'Your commercial offer is ready to review in your dashboard.' },
-  'rfq-accepted': { subject: 'Quotation accepted', heading: 'Thank you', body: 'We have recorded your acceptance and will proceed with sourcing and logistics.' },
-  'shipment-created': { subject: 'Your shipment has been booked', heading: 'Shipment created', body: 'A shipment has been created for your order. You can follow its progress at any time.' },
-  'shipment-departed': { subject: 'Your shipment has departed', heading: 'Shipment departed', body: 'Your shipment has departed the origin port.' },
-  'shipment-delayed': { subject: 'Update: your shipment is delayed', heading: 'Shipment delayed', body: 'We are tracking a delay on your shipment and will update you as soon as we have more information.' },
-  'shipment-exception': { subject: 'Action may be required on your shipment', heading: 'Shipment exception', body: 'An exception has been recorded against your shipment. Our team is reviewing it.' },
-  'shipment-delivered': { subject: 'Your shipment has been delivered', heading: 'Shipment delivered', body: 'Your shipment has been delivered. Thank you for working with GLEX.' },
-  'contact-received': { subject: 'We have received your message', heading: 'Message received', body: 'Thank you for contacting GLEX. Our team will respond as soon as possible.' },
-  'support-response': { subject: 'Update on your support request', heading: 'Support update', body: 'There is a new response on your support request.' },
-  'team-invitation': { subject: 'You have been invited to a GLEX team', heading: 'Team invitation', body: 'You have been invited to join an organization on GLEX.' },
+  welcome: {
+    subject: 'Welcome to GLEX',
+    heading: 'Welcome to GLEX',
+    body: 'Your account has been created. You can now build RFQs, follow shipments and manage your documents.',
+  },
+  'email-verification': {
+    subject: 'Verify your email address',
+    heading: 'Confirm your email',
+    body: 'Please confirm your email address to activate your GLEX account.',
+  },
+  'password-reset': {
+    subject: 'Reset your GLEX password',
+    heading: 'Password reset',
+    body: 'A password reset was requested for your account. If this was not you, no action is needed and your password stays unchanged.',
+  },
+  'supplier-submitted': {
+    subject: 'Supplier application received',
+    heading: 'Application received',
+    body: 'Thank you for registering. Our team will review your application and respond by email.',
+  },
+  'supplier-clarification': {
+    subject: 'Additional information required',
+    heading: 'Clarification required',
+    body: 'We need some additional information before we can complete our review.',
+  },
+  'supplier-approved': {
+    subject: 'Your GLEX supplier application is approved',
+    heading: 'Application approved',
+    body: 'Your company has been approved. You can now manage your catalogue and receive sourcing opportunities.',
+  },
+  'supplier-rejected': {
+    subject: 'Update on your GLEX supplier application',
+    heading: 'Application update',
+    body: 'Thank you for your interest. On this occasion we are unable to proceed with your application.',
+  },
+  'client-registered': {
+    subject: 'Your GLEX account is ready',
+    heading: 'Account created',
+    body: 'Your client account is active. Explore the marketplace and submit your first request for quotation.',
+  },
+  'rfq-submitted': {
+    subject: 'We have received your request for quotation',
+    heading: 'RFQ received',
+    body: 'Thank you. Your request has been logged and our team will respond shortly.',
+  },
+  'rfq-clarification': {
+    subject: 'Clarification required on your RFQ',
+    heading: 'Clarification required',
+    body: 'We need a little more detail before we can prepare your quotation.',
+  },
+  'quotation-available': {
+    subject: 'Your quotation is ready',
+    heading: 'Quotation available',
+    body: 'Your commercial offer is ready to review in your dashboard.',
+  },
+  'rfq-accepted': {
+    subject: 'Quotation accepted',
+    heading: 'Thank you',
+    body: 'We have recorded your acceptance and will proceed with sourcing and logistics.',
+  },
+  'shipment-created': {
+    subject: 'Your shipment has been booked',
+    heading: 'Shipment created',
+    body: 'A shipment has been created for your order. You can follow its progress at any time.',
+  },
+  'shipment-departed': {
+    subject: 'Your shipment has departed',
+    heading: 'Shipment departed',
+    body: 'Your shipment has departed the origin port.',
+  },
+  'shipment-delayed': {
+    subject: 'Update: your shipment is delayed',
+    heading: 'Shipment delayed',
+    body: 'We are tracking a delay on your shipment and will update you as soon as we have more information.',
+  },
+  'shipment-exception': {
+    subject: 'Action may be required on your shipment',
+    heading: 'Shipment exception',
+    body: 'An exception has been recorded against your shipment. Our team is reviewing it.',
+  },
+  'shipment-delivered': {
+    subject: 'Your shipment has been delivered',
+    heading: 'Shipment delivered',
+    body: 'Your shipment has been delivered. Thank you for working with GLEX.',
+  },
+  'contact-received': {
+    subject: 'We have received your message',
+    heading: 'Message received',
+    body: 'Thank you for contacting GLEX. Our team will respond as soon as possible.',
+  },
+  'support-response': {
+    subject: 'Update on your support request',
+    heading: 'Support update',
+    body: 'There is a new response on your support request.',
+  },
+  'team-invitation': {
+    subject: 'You have been invited to a GLEX team',
+    heading: 'Team invitation',
+    body: 'You have been invited to join an organization on GLEX.',
+  },
+
+  // Staff copy. Written for someone who works here, not for the sender.
+  'internal-contact': {
+    subject: 'New enquiry',
+    heading: 'New enquiry',
+    body: 'Someone has submitted the contact form. The full message is in the admin portal.',
+  },
+  'internal-rfq': {
+    subject: 'New RFQ',
+    heading: 'New request for quotation',
+    body: 'A client has submitted a request for quotation and is waiting on a commercial offer.',
+  },
+  'internal-freight': {
+    subject: 'New freight quote request',
+    heading: 'New freight quote request',
+    body: 'A freight quotation has been requested and is waiting on a response.',
+  },
+  'internal-supplier': {
+    subject: 'New supplier application',
+    heading: 'New supplier application',
+    body: 'A company has applied to supply through GLEX and is waiting on review.',
+  },
 }
 
 async function loadCopy(key: TemplateKey, locale: Locale): Promise<TemplateCopy> {
@@ -190,9 +292,17 @@ function renderText(copy: TemplateCopy, context: TemplateContext): string {
 
 export async function renderTemplate(key: TemplateKey, context: TemplateContext) {
   const copy = await loadCopy(key, context.locale)
+
+  // The suffix is joined to the admin-editable subject rather than replacing
+  // it, so staff can still reword the prefix without losing the reference that
+  // makes the mail findable.
+  const subject = context.subjectSuffix
+    ? `${copy.subject} · ${context.subjectSuffix}`
+    : copy.subject
+
   return {
-    subject: copy.subject,
-    html: renderHtml(copy, context),
-    text: renderText(copy, context),
+    subject,
+    html: renderHtml({ ...copy, subject }, context),
+    text: renderText({ ...copy, subject }, context),
   }
 }

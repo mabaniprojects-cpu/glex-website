@@ -94,11 +94,15 @@ export async function submitContactInquiry(input: ContactInput): Promise<Contact
     })
 
     // Without this, an enquiry is stored and nobody is ever told about it.
-    const admin = internalRecipient()
+    const admin = internalRecipient('contact')
     if (admin) {
-      await sendTemplate('contact-received', admin, {
+      await sendTemplate('internal-contact', admin, {
         // Internal mail is always English; staff are not per-locale.
         locale: 'en',
+        // Reference and sender in the subject: this lands in a shared mailbox
+        // beside cold outreach, and a fixed subject is neither scannable at a
+        // glance nor searchable weeks later.
+        subjectSuffix: `${reference} · ${data.email.toLowerCase()}`,
         actionUrl: absoluteUrl('/en/admin/inquiries'),
         actionLabel: 'Open in the admin portal',
         // The message body is deliberately not included: the portal is the one

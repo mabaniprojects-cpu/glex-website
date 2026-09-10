@@ -19,14 +19,14 @@ type MailContext = {
   details?: Array<{ label: string; value: string }>
 }
 
-const sendTemplate = vi.fn<(key: string, to: string, context: MailContext) => Promise<{ ok: true }>>(
-  async () => ({ ok: true })
-)
-const internalRecipient = vi.fn<() => string | null>(() => 'ops@glex.test')
+const sendTemplate = vi.fn<
+  (key: string, to: string, context: MailContext) => Promise<{ ok: true }>
+>(async () => ({ ok: true }))
+const internalRecipient = vi.fn<(channel: string) => string | null>(() => 'ops@glex.test')
 
 vi.mock('@/lib/mail', () => ({
   sendTemplate: (key: string, to: string, context: MailContext) => sendTemplate(key, to, context),
-  internalRecipient: () => internalRecipient(),
+  internalRecipient: (channel: string) => internalRecipient(channel),
 }))
 
 vi.mock('next/headers', () => ({
@@ -92,7 +92,8 @@ describe('contact enquiry notifications', () => {
     expect(ackContext.recipientName).toBe('Amina Osman')
 
     const [staffKey, staffTo] = sendTemplate.mock.calls[1]
-    expect(staffKey).toBe('contact-received')
+    // Staff get their own copy, not the customer's 'thank you for contacting us'.
+    expect(staffKey).toBe('internal-contact')
     expect(staffTo).toBe('ops@glex.test')
   })
 

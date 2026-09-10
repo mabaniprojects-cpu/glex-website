@@ -172,12 +172,21 @@ rather than failing later at runtime.
 
 Required to start:
 
-| Variable                          | Purpose                                                 |
-| --------------------------------- | ------------------------------------------------------- |
-| `DATABASE_URL`                    | PostgreSQL connection string                            |
-| `AUTH_SECRET`                     | Session signing key (≥32 chars)                         |
-| `APP_URL` / `NEXT_PUBLIC_APP_URL` | Canonical origin, used for metadata and links           |
-| `CONTACT_TO_EMAIL`                | Destination for contact-form and internal notifications |
+| Variable                          | Purpose                                                                      |
+| --------------------------------- | ---------------------------------------------------------------------------- |
+| `DATABASE_URL`                    | PostgreSQL connection string                                                 |
+| `AUTH_SECRET`                     | Session signing key (≥32 chars)                                              |
+| `APP_URL` / `NEXT_PUBLIC_APP_URL` | Canonical origin, used for metadata and links                                |
+| `CONTACT_TO_EMAIL`                | Destination for internal notifications, and the fallback for the three below |
+
+Optional, to route commercial leads away from the general mailbox. Each falls
+back to `CONTACT_TO_EMAIL`, so they can be adopted one at a time:
+
+| Variable            | Receives                                                    |
+| ------------------- | ----------------------------------------------------------- |
+| `RFQ_TO_EMAIL`      | Requests for quotation                                      |
+| `SUPPLIER_TO_EMAIL` | Supplier registrations                                      |
+| `FREIGHT_TO_EMAIL`  | Freight quote requests (falls through `RFQ_TO_EMAIL` first) |
 
 Everything else is optional and degrades gracefully. Cross-field rules are enforced
 too — `EMAIL_PROVIDER="console"` is rejected in production, and `SEED_DEMO_DATA=true`

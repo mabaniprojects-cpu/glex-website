@@ -1,6 +1,13 @@
 import { env } from '@/lib/env'
 import { renderTemplate } from './templates'
-import { addressToString, type MailMessage, type MailProvider, type MailResult, type TemplateContext, type TemplateKey } from './types'
+import {
+  addressToString,
+  type MailMessage,
+  type MailProvider,
+  type MailResult,
+  type TemplateContext,
+  type TemplateKey,
+} from './types'
 
 /**
  * Email transport selection.
@@ -47,9 +54,7 @@ const smtpProvider: MailProvider = {
         host: config.SMTP_HOST,
         port: config.SMTP_PORT ?? 587,
         secure: (config.SMTP_PORT ?? 587) === 465,
-        auth: config.SMTP_USER
-          ? { user: config.SMTP_USER, pass: config.SMTP_PASSWORD }
-          : undefined,
+        auth: config.SMTP_USER ? { user: config.SMTP_USER, pass: config.SMTP_PASSWORD } : undefined,
       })
 
       const info = await transport.sendMail({
@@ -138,9 +143,32 @@ export async function sendTemplate(
   }
 }
 
-/** Internal notification address, from CONTACT_TO_EMAIL. */
-export function internalRecipient(): string | null {
-  return env().CONTACT_TO_EMAIL ?? null
+/**
+ * Where a given kind of inbound submission is announced to staff.
+ *
+ * Every channel falls back to CONTACT_TO_EMAIL, so a deployment that has not
+ * set the newer variables behaves exactly as it did before — nothing is lost
+ * by adopting them one at a time.
+ *
+ * Freight falls through RFQ first: a freight quote request is a commercial
+ * lead, so it belongs wherever quotations are handled rather than in the
+ * general mailbox, unless it is given an address of its own.
+ */
+export type InternalChannel = 'contact' | 'rfq' | 'freight' | 'supplier'
+
+export function internalRecipient(channel: InternalChannel): string | null {
+  const { CONTACT_TO_EMAIL, RFQ_TO_EMAIL, SUPPLIER_TO_EMAIL, FREIGHT_TO_EMAIL } = env()
+
+  switch (channel) {
+    case 'rfq':
+      return RFQ_TO_EMAIL ?? CONTACT_TO_EMAIL ?? null
+    case 'freight':
+      return FREIGHT_TO_EMAIL ?? RFQ_TO_EMAIL ?? CONTACT_TO_EMAIL ?? null
+    case 'supplier':
+      return SUPPLIER_TO_EMAIL ?? CONTACT_TO_EMAIL ?? null
+    case 'contact':
+      return CONTACT_TO_EMAIL ?? null
+  }
 }
 
 export type { MailMessage, MailProvider, MailResult } from './types'

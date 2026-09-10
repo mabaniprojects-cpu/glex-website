@@ -177,10 +177,15 @@ export async function submitRfq(input: RfqSubmitInput): Promise<RfqSubmitResult>
       })
     }
 
-    const admin = internalRecipient()
+    const admin = internalRecipient('rfq')
     if (admin) {
-      await sendTemplate('rfq-submitted', admin, {
+      await sendTemplate('internal-rfq', admin, {
         locale: 'en',
+        subjectSuffix: `${reference} · ${data.destinationCountry}`,
+        // Previously absent, so the one notification that matters commercially
+        // was the only one with no way to open the record it described.
+        actionUrl: absoluteUrl('/en/admin/rfqs'),
+        actionLabel: 'Open in the admin portal',
         details: [
           { label: 'Reference', value: reference },
           { label: 'Destination', value: data.destinationCountry },
