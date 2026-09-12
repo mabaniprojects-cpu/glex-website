@@ -544,6 +544,14 @@
       "MEDIA": "Médias",
       "CAREERS": "Carrières",
       "OTHER": "Autre"
+    },
+    "status": {
+      "NEW": "Nouveau",
+      "IN_PROGRESS": "En cours",
+      "WAITING_ON_CLIENT": "En attente du client",
+      "RESOLVED": "Résolu",
+      "CLOSED": "Clôturé",
+      "SPAM": "Indésirable"
     }
   },
   "chatbot": {

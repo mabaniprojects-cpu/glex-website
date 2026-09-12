@@ -544,6 +544,14 @@
       "MEDIA": "媒体垂询",
       "CAREERS": "招聘应聘",
       "OTHER": "其他"
+    },
+    "status": {
+      "NEW": "新建",
+      "IN_PROGRESS": "处理中",
+      "WAITING_ON_CLIENT": "等待客户回复",
+      "RESOLVED": "已解决",
+      "CLOSED": "已关闭",
+      "SPAM": "垃圾信息"
     }
   },
   "chatbot": {

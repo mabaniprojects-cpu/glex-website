@@ -544,6 +544,14 @@
       "MEDIA": "إعلام",
       "CAREERS": "التوظيف",
       "OTHER": "أخرى"
+    },
+    "status": {
+      "NEW": "جديد",
+      "IN_PROGRESS": "قيد المعالجة",
+      "WAITING_ON_CLIENT": "بانتظار العميل",
+      "RESOLVED": "تم الحل",
+      "CLOSED": "مغلق",
+      "SPAM": "رسالة مزعجة"
     }
   },
   "chatbot": {

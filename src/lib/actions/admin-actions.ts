@@ -180,7 +180,11 @@ export async function decideSupplier(input: unknown): Promise<AdminActionResult>
         status: true,
         legalName: true,
         organizationId: true,
-        organization: { select: { users: { select: { id: true, email: true, preferredLocale: true, name: true } } } },
+        organization: {
+          select: {
+            users: { select: { id: true, email: true, preferredLocale: true, name: true } },
+          },
+        },
       },
     })
     if (!supplier) return { ok: false, error: 'not_found' }
@@ -254,6 +258,12 @@ export async function decideSupplier(input: unknown): Promise<AdminActionResult>
 const inquiryStatusSchema = z.object({
   id: z.string().uuid(),
   status: z.enum(['NEW', 'IN_PROGRESS', 'WAITING_ON_CLIENT', 'RESOLVED', 'CLOSED', 'SPAM']),
+  /**
+   * Internal notes, replacing whatever is stored. Optional and distinct from
+   * an empty string: omitting the field leaves existing notes alone, whereas
+   * sending '' is an explicit clear.
+   */
+  internalNotes: z.string().trim().max(4000).optional(),
 })
 
 export async function updateInquiryStatus(input: unknown): Promise<AdminActionResult> {
@@ -265,30 +275,41 @@ export async function updateInquiryStatus(input: unknown): Promise<AdminActionRe
   try {
     const inquiry = await db.contactInquiry.findFirst({
       where: { id: parsed.data.id, deletedAt: null },
-      select: { id: true, status: true, reference: true },
+      select: { id: true, status: true, reference: true, internalNotes: true },
     })
     if (!inquiry) return { ok: false, error: 'not_found' }
+
+    const { status, internalNotes } = parsed.data
+    const notesChanged =
+      internalNotes !== undefined && internalNotes !== (inquiry.internalNotes ?? '')
 
     await db.$transaction(async (tx) => {
       await tx.contactInquiry.update({
         where: { id: inquiry.id },
-        data: { status: parsed.data.status },
+        data: {
+          status,
+          ...(internalNotes === undefined ? {} : { internalNotes: internalNotes || null }),
+        },
       })
 
+      // The note text is NOT copied into the audit row. Audit records who
+      // changed what and when; duplicating free-text staff commentary into a
+      // second table means redacting it in two places later.
       await recordAudit(
         {
           actorId: user.id,
           action: 'inquiry.status_changed',
           entityType: 'ContactInquiry',
           entityId: inquiry.id,
-          before: { status: inquiry.status },
-          after: { status: parsed.data.status, reference: inquiry.reference },
+          before: { status: inquiry.status, hadNotes: Boolean(inquiry.internalNotes) },
+          after: { status, reference: inquiry.reference, notesChanged },
         },
         tx
       )
     })
 
     revalidatePath('/[locale]/admin/inquiries', 'page')
+    revalidatePath('/[locale]/admin/inquiries/[reference]', 'page')
     return { ok: true }
   } catch (error) {
     console.error('[admin] updateInquiryStatus failed:', error)

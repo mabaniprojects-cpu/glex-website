@@ -261,6 +261,44 @@ export async function listInquiriesForAdmin({ take = 30, skip = 0 } = {}) {
   return { items, total }
 }
 
+/**
+ * One enquiry, in full.
+ *
+ * The list view deliberately omits `message`, `email` and `phone` — a table of
+ * every enquiry is not the place for them. This is the only path that returns
+ * the message a person actually wrote, and until it existed the text was
+ * stored and unreachable: absent from the list, excluded from the CSV export
+ * by design, and left out of the notification email on purpose.
+ *
+ * `ipAddress` and `userAgent` stay out. They are kept for abuse investigation,
+ * not for routine reading, and a detail page open on a shared screen is
+ * routine reading.
+ */
+export async function getInquiryForAdmin(reference: string) {
+  return db.contactInquiry.findFirst({
+    where: { reference, deletedAt: null },
+    select: {
+      id: true,
+      reference: true,
+      type: true,
+      status: true,
+      fullName: true,
+      company: true,
+      email: true,
+      phone: true,
+      country: true,
+      subject: true,
+      message: true,
+      locale: true,
+      internalNotes: true,
+      consentGiven: true,
+      createdAt: true,
+      file: { select: { id: true, originalName: true } },
+      freight: true,
+    },
+  })
+}
+
 export async function listProductsForAdmin({ take = 30, skip = 0, q = '' } = {}) {
   const where = {
     deletedAt: null,
@@ -593,9 +631,7 @@ export async function listChatConversationsForAdmin({
   skip = 0,
   escalatedOnly = false,
 }: { take?: number; skip?: number; escalatedOnly?: boolean } = {}) {
-  const where: Prisma.ChatConversationWhereInput = escalatedOnly
-    ? { handoffAt: { not: null } }
-    : {}
+  const where: Prisma.ChatConversationWhereInput = escalatedOnly ? { handoffAt: { not: null } } : {}
 
   const [items, total] = await Promise.all([
     db.chatConversation.findMany({

@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { hasLocale } from 'next-intl'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
+import { Link } from '@/i18n/navigation'
 import { ListRange } from '@/components/ui/list-range'
 import { Button } from '@/components/ui/button'
 import { Pagination } from '@/components/ui/pagination'
@@ -51,13 +52,13 @@ export default async function AdminInquiriesPage({
       <ListRange page={page} take={take} count={items.length} total={total} />
 
       {items.length === 0 ? (
-        <p className="mt-10 text-glex-green-800/70">{common('noResults')}</p>
+        <p className="text-glex-green-800/70 mt-10">{common('noResults')}</p>
       ) : (
         <div className="mt-6 overflow-x-auto">
           <table className="w-full border-collapse text-sm">
             <caption className="sr-only">{admin('nav.inquiries')}</caption>
             <thead>
-              <tr className="border-b border-border-subtle">
+              <tr className="border-border-subtle border-b">
                 <th scope="col" className="py-3 pe-4 text-start font-semibold">
                   {common('reference')}
                 </th>
@@ -80,14 +81,28 @@ export default async function AdminInquiriesPage({
             </thead>
             <tbody>
               {items.map((row) => (
-                <tr key={row.id} className="border-b border-border-subtle">
+                <tr key={row.id} className="border-border-subtle border-b">
                   <td className="py-3 pe-4 font-mono text-xs" dir="ltr">
-                    {row.reference}
+                    {/*
+                      The reference is the way in. Without this link the detail
+                      page is unreachable, and the message it holds stays as
+                      invisible as it was before the page existed.
+                    */}
+                    <Link
+                      href={
+                        `/admin/inquiries/${row.reference}` as Parameters<typeof Link>[0]['href']
+                      }
+                      className="text-glex-green-700 font-medium underline-offset-4 hover:underline"
+                      dir="ltr"
+                    >
+                      {row.reference}
+                    </Link>
                   </td>
                   <td className="py-3 pe-4">{contact(`type.${row.type}`)}</td>
                   <td className="py-3 pe-4">{row.subject}</td>
                   <td className="py-3 pe-4">{row.company ?? row.fullName}</td>
-                  <td className="py-3 pe-4">{row.status}</td>
+                  {/* Was rendering the raw enum, e.g. "WAITING_ON_CLIENT". */}
+                  <td className="py-3 pe-4">{contact(`status.${row.status}`)}</td>
                   <td className="py-3 whitespace-nowrap">
                     {formatDate(row.createdAt, locale, { dateStyle: 'medium' })}
                   </td>
