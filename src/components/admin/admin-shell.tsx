@@ -17,13 +17,15 @@ import {
   Building2,
   Mail,
   MapPin,
+  LogOut,
   MessageSquare,
   Ship,
   Users,
   X,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { useTranslations } from 'next-intl'
+import { signOut } from 'next-auth/react'
+import { useLocale, useTranslations } from 'next-intl'
 import * as React from 'react'
 import { Link, usePathname } from '@/i18n/navigation'
 import { cn } from '@/lib/utils'
@@ -75,6 +77,9 @@ export function AdminShell({
   children: React.ReactNode
 }) {
   const common = useTranslations('common')
+  const nav_t = useTranslations('nav')
+  const locale = useLocale()
+  const [signingOut, setSigningOut] = React.useState(false)
   const pathname = usePathname()
 
   const [open, setOpen] = React.useState(false)
@@ -155,11 +160,41 @@ export function AdminShell({
     </ul>
   )
 
+  /**
+   * Sign out, below the nav entries.
+   *
+   * Staff route home to /admin, and this sidebar had no way to end a session —
+   * the only sign-out in the product lived on /dashboard/security, a page an
+   * admin has no reason to visit. An admin account that cannot be signed out
+   * from where it is used outlives whoever borrowed the screen.
+   */
+  const signOutBlock = (
+    <button
+      type="button"
+      disabled={signingOut}
+      onClick={() => {
+        setSigningOut(true)
+        void signOut({ redirectTo: `/${locale}` })
+      }}
+      className={cn(
+        'border-border-subtle mt-4 flex w-full items-center gap-3 border-t px-3 pt-4',
+        'text-glex-green-800 hover:text-glex-green-600 text-sm font-medium',
+        'transition-colors disabled:opacity-60'
+      )}
+    >
+      <LogOut className="rtl-flip size-4 shrink-0" aria-hidden="true" />
+      {signingOut ? common('loading') : nav_t('logout')}
+    </button>
+  )
+
   return (
     <div className="container-glex py-8 lg:py-12">
       <div className="lg:grid lg:grid-cols-[15rem_1fr] lg:gap-10">
         <aside className="hidden lg:block" aria-label={title}>
-          <nav className="sticky top-24">{nav}</nav>
+          <nav className="sticky top-24">
+            {nav}
+            {signOutBlock}
+          </nav>
         </aside>
 
         <div>
@@ -169,7 +204,7 @@ export function AdminShell({
               type="button"
               onClick={() => setOpen(true)}
               aria-expanded={open}
-              className="inline-flex h-11 items-center gap-2 rounded-lg border border-border-subtle px-4 text-sm font-medium text-glex-green-800"
+              className="border-border-subtle text-glex-green-800 inline-flex h-11 items-center gap-2 rounded-lg border px-4 text-sm font-medium"
             >
               <Menu className="size-4" aria-hidden="true" />
               {title}
@@ -183,7 +218,7 @@ export function AdminShell({
       {open ? (
         <div className="fixed inset-0 z-100 lg:hidden">
           <div
-            className="absolute inset-0 bg-glex-green-950/50"
+            className="bg-glex-green-950/50 absolute inset-0"
             onClick={() => setOpen(false)}
             aria-hidden="true"
           />
@@ -201,12 +236,15 @@ export function AdminShell({
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label={common('closeMenu')}
-                className="inline-flex size-11 items-center justify-center rounded-lg text-glex-green-800 hover:bg-glex-green-50"
+                className="text-glex-green-800 hover:bg-glex-green-50 inline-flex size-11 items-center justify-center rounded-lg"
               >
                 <X className="size-5" aria-hidden="true" />
               </button>
             </div>
-            <nav>{nav}</nav>
+            <nav>
+              {nav}
+              {signOutBlock}
+            </nav>
           </div>
         </div>
       ) : null}

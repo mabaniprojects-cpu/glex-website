@@ -1,7 +1,8 @@
 'use client'
 
-import { LogIn, Menu, Ship, X } from 'lucide-react'
-import { useTranslations } from 'next-intl'
+import { LogIn, LogOut, Menu, Ship, X } from 'lucide-react'
+import { signOut } from 'next-auth/react'
+import { useLocale, useTranslations } from 'next-intl'
 import * as React from 'react'
 import { Link, usePathname } from '@/i18n/navigation'
 import { Button } from '@/components/ui/button'
@@ -34,9 +35,11 @@ export function MobileNav({
 }) {
   const t = useTranslations('nav')
   const common = useTranslations('common')
+  const locale = useLocale()
   const pathname = usePathname()
 
   const [open, setOpen] = React.useState(false)
+  const [signingOut, setSigningOut] = React.useState(false)
   const panelRef = React.useRef<HTMLDivElement>(null)
   const triggerRef = React.useRef<HTMLButtonElement>(null)
 
@@ -99,7 +102,7 @@ export function MobileNav({
         onClick={() => setOpen(true)}
         aria-label={common('openMenu')}
         aria-expanded={open}
-        className="inline-flex size-11 items-center justify-center rounded-lg text-glex-green-800 transition-colors hover:bg-glex-green-50 xl:hidden"
+        className="text-glex-green-800 hover:bg-glex-green-50 inline-flex size-11 items-center justify-center rounded-lg transition-colors xl:hidden"
       >
         <Menu className="size-6" aria-hidden="true" />
       </button>
@@ -107,7 +110,7 @@ export function MobileNav({
       {open ? (
         <div className="fixed inset-0 z-100 xl:hidden">
           <div
-            className="absolute inset-0 bg-glex-green-950/50"
+            className="bg-glex-green-950/50 absolute inset-0"
             onClick={() => setOpen(false)}
             aria-hidden="true"
           />
@@ -123,13 +126,13 @@ export function MobileNav({
               'bg-white shadow-2xl outline-none'
             )}
           >
-            <div className="flex h-18 shrink-0 items-center justify-between border-b border-border-subtle px-4">
+            <div className="border-border-subtle flex h-18 shrink-0 items-center justify-between border-b px-4">
               <LanguageSwitcher />
               <button
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label={common('closeMenu')}
-                className="inline-flex size-11 items-center justify-center rounded-lg text-glex-green-800 transition-colors hover:bg-glex-green-50"
+                className="text-glex-green-800 hover:bg-glex-green-50 inline-flex size-11 items-center justify-center rounded-lg transition-colors"
               >
                 <X className="size-6" aria-hidden="true" />
               </button>
@@ -141,7 +144,7 @@ export function MobileNav({
                   <li key={href}>
                     <Link
                       href={href}
-                      className="block rounded-lg px-4 py-3 text-base font-medium text-glex-green-900 transition-colors hover:bg-glex-green-50"
+                      className="text-glex-green-900 hover:bg-glex-green-50 block rounded-lg px-4 py-3 text-base font-medium transition-colors"
                     >
                       {t(key)}
                     </Link>
@@ -150,24 +153,46 @@ export function MobileNav({
               </ul>
             </nav>
 
-            <div className="shrink-0 space-y-2 border-t border-border-subtle p-4">
+            <div className="border-border-subtle shrink-0 space-y-2 border-t p-4">
               <Button asChild variant="outline" size="md" className="w-full">
                 <Link href="/tracking">
-                  <Ship className="size-4 rtl-flip" aria-hidden="true" />
+                  <Ship className="rtl-flip size-4" aria-hidden="true" />
                   {t('tracking')}
                 </Link>
               </Button>
 
               {signedIn && dashboardHref ? (
-                <Button asChild variant="subtle" size="md" className="w-full">
-                  <Link href={dashboardHref as Parameters<typeof Link>[0]['href']}>
-                    {t('dashboard')}
-                  </Link>
-                </Button>
+                <>
+                  <Button asChild variant="subtle" size="md" className="w-full">
+                    <Link href={dashboardHref as Parameters<typeof Link>[0]['href']}>
+                      {t('dashboard')}
+                    </Link>
+                  </Button>
+
+                  {/*
+                    The only way out on a phone. The desktop account menu is
+                    hidden below sm, so without this a signed-in visitor on a
+                    handset has no sign-out anywhere.
+                  */}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="md"
+                    className="w-full"
+                    disabled={signingOut}
+                    onClick={() => {
+                      setSigningOut(true)
+                      void signOut({ redirectTo: `/${locale}` })
+                    }}
+                  >
+                    <LogOut className="rtl-flip size-4" aria-hidden="true" />
+                    {signingOut ? common('loading') : t('logout')}
+                  </Button>
+                </>
               ) : (
                 <Button asChild variant="subtle" size="md" className="w-full">
                   <Link href="/login">
-                    <LogIn className="size-4 rtl-flip" aria-hidden="true" />
+                    <LogIn className="rtl-flip size-4" aria-hidden="true" />
                     {t('login')}
                   </Link>
                 </Button>

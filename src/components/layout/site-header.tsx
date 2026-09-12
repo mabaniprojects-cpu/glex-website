@@ -1,5 +1,5 @@
 import { LogIn, Ship } from 'lucide-react'
-import { getTranslations } from 'next-intl/server'
+import { getLocale, getTranslations } from 'next-intl/server'
 import { getSessionUser } from '@/lib/auth-guards'
 import { homeRouteFor } from '@/lib/rbac'
 import { Link } from '@/i18n/navigation'
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { AnnouncementBar } from './announcement-bar'
 import { LanguageSwitcher } from './language-switcher'
 import { MobileNav } from './mobile-nav'
+import { UserMenu } from './user-menu'
 
 /** Public navigation. Kept in one place so desktop and mobile never diverge. */
 export const NAV_LINKS = [
@@ -23,6 +24,7 @@ export const NAV_LINKS = [
 export async function SiteHeader() {
   const t = await getTranslations('nav')
   const user = await getSessionUser()
+  const locale = await getLocale()
 
   return (
     <>
@@ -82,9 +84,13 @@ export async function SiteHeader() {
             </Button>
 
             {user ? (
-              <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex">
-                <Link href={homeRouteFor(user.role)}>{t('dashboard')}</Link>
-              </Button>
+              <UserMenu
+                className="hidden sm:block"
+                name={user.name ?? user.email}
+                email={user.email}
+                dashboardHref={homeRouteFor(user.role)}
+                redirectTo={`/${locale}`}
+              />
             ) : (
               <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
                 <Link href="/login">
