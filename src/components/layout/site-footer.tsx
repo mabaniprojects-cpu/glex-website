@@ -1,6 +1,6 @@
 import { Mail, MapPin, Phone } from 'lucide-react'
-import Image from 'next/image'
 import { getTranslations } from 'next-intl/server'
+import { GlexLogo } from '@/components/brand/glex-logo'
 import { GLEX_COMPANY } from '@/lib/company'
 import { Link } from '@/i18n/navigation'
 import { db } from '@/lib/db'
@@ -49,14 +49,13 @@ export async function SiteFooter() {
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-12">
           {/* Brand + summary */}
           <div className="lg:col-span-4">
-            <Image
-              src="/brand/glex-logo-on-dark.png"
-              alt={common('logoAlt')}
-              width={640}
-              height={306}
-              quality={90}
-              className="h-20 w-auto"
-            />
+            {/*
+              Was a hardcoded <Image> pointing straight at the Latin file, so
+              the footer kept showing the Latin lockup on /ar even after the
+              header learned to switch. Going through GlexLogo means the choice
+              is made in one place.
+            */}
+            <GlexLogo variant="onDark" className="h-20 w-auto" />
             <p className="text-glex-ivory/80 mt-5 max-w-sm text-sm leading-relaxed">
               {t('summary')}
             </p>

@@ -1,24 +1,37 @@
 import Image from 'next/image'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
 
 /**
  * The official GLEX logo.
  *
  * The artwork is never redrawn or recoloured — each variant is a proportional
- * export of the same source file (see scripts/build-brand-assets.mjs). On dark
- * surfaces the `onDark` variant places the untouched logo on a warm-ivory
- * plate, because the deep green would otherwise fail contrast.
+ * export of an official source file (see scripts/build-brand-assets.mjs and
+ * scripts/build-arabic-logo.mjs). On dark surfaces the `onDark` variant places
+ * the untouched logo on a warm-ivory plate, because the deep green would
+ * otherwise fail contrast.
+ *
+ * Arabic has its own lockup — جلكس / بيت التصدير العالمي — and until now it was
+ * the one locale not using it: /ar rendered the Latin wordmark. The Arabic
+ * files are separate artwork, not a mirrored or restyled copy, so they carry
+ * their own dimensions.
  */
 
-const SOURCES = {
+const LATIN = {
   nav: { src: '/brand/glex-logo-nav.png', width: 320, height: 137 },
   mobile: { src: '/brand/glex-logo-mobile.png', width: 200, height: 86 },
   footer: { src: '/brand/glex-logo-footer.png', width: 260, height: 112 },
   onDark: { src: '/brand/glex-logo-on-dark.png', width: 640, height: 306 },
 } as const
 
-export type LogoVariant = keyof typeof SOURCES
+const ARABIC = {
+  nav: { src: '/brand/glex-logo-ar-nav.png', width: 320, height: 154 },
+  mobile: { src: '/brand/glex-logo-ar-mobile.png', width: 200, height: 96 },
+  footer: { src: '/brand/glex-logo-ar-footer.png', width: 260, height: 125 },
+  onDark: { src: '/brand/glex-logo-ar-on-dark.png', width: 716, height: 383 },
+} as const satisfies Record<keyof typeof LATIN, { src: string; width: number; height: number }>
+
+export type LogoVariant = keyof typeof LATIN
 
 export function GlexLogo({
   variant = 'nav',
@@ -31,7 +44,10 @@ export function GlexLogo({
   eager?: boolean
 }) {
   const t = useTranslations('common')
-  const { src, width, height } = SOURCES[variant]
+  const locale = useLocale()
+  // Only Arabic has its own lockup. The other four locales use the Latin one,
+  // which is correct — de/fr/zh-CN have no separate wordmark.
+  const { src, width, height } = (locale === 'ar' ? ARABIC : LATIN)[variant]
 
   return (
     <Image
