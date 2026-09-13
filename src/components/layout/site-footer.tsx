@@ -55,7 +55,7 @@ export async function SiteFooter() {
               header learned to switch. Going through GlexLogo means the choice
               is made in one place.
             */}
-            <GlexLogo variant="onDark" className="h-20 w-auto" />
+            <GlexLogo variant="white" className="h-16 w-auto" />
             <p className="text-glex-ivory/80 mt-5 max-w-sm text-sm leading-relaxed">
               {t('summary')}
             </p>

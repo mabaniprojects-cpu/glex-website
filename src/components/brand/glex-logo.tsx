@@ -7,9 +7,8 @@ import { cn } from '@/lib/utils'
  *
  * The artwork is never redrawn or recoloured — each variant is a proportional
  * export of an official source file (see scripts/build-brand-assets.mjs and
- * scripts/build-arabic-logo.mjs). On dark surfaces the `onDark` variant places
- * the untouched logo on a warm-ivory plate, because the deep green would
- * otherwise fail contrast.
+ * scripts/build-arabic-logo.mjs). On the green footer the `white` variant uses
+ * the official knockout artwork (scripts/build-white-logo.mjs).
  *
  * Arabic has its own lockup — جلكس / بيت التصدير العالمي — and until now it was
  * the one locale not using it: /ar rendered the Latin wordmark. The Arabic
@@ -21,14 +20,15 @@ const LATIN = {
   nav: { src: '/brand/glex-logo-nav.png', width: 320, height: 137 },
   mobile: { src: '/brand/glex-logo-mobile.png', width: 200, height: 86 },
   footer: { src: '/brand/glex-logo-footer.png', width: 260, height: 112 },
-  onDark: { src: '/brand/glex-logo-on-dark.png', width: 640, height: 306 },
+  /** Knockout artwork for the green footer — see scripts/build-white-logo.mjs. */
+  white: { src: '/brand/glex-logo-white.png', width: 640, height: 275 },
 } as const
 
 const ARABIC = {
   nav: { src: '/brand/glex-logo-ar-nav.png', width: 320, height: 154 },
   mobile: { src: '/brand/glex-logo-ar-mobile.png', width: 200, height: 96 },
   footer: { src: '/brand/glex-logo-ar-footer.png', width: 260, height: 125 },
-  onDark: { src: '/brand/glex-logo-ar-on-dark.png', width: 716, height: 383 },
+  white: { src: '/brand/glex-logo-ar-white.png', width: 640, height: 307 },
 } as const satisfies Record<keyof typeof LATIN, { src: string; width: number; height: number }>
 
 export type LogoVariant = keyof typeof LATIN
