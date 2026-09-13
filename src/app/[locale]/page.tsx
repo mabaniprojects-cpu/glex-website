@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { routing } from '@/i18n/routing'
 import { Hero } from '@/components/home/hero'
 import { HomeNewsSection } from '@/components/home/news-section'
+import { PartnersSection } from '@/components/home/partners-section'
 import {
   CtaSections,
   HandlingPhotoSection,
@@ -37,6 +38,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       <NetworkPhotoSection />
       <ServicesSection />
       <HandlingPhotoSection />
+      <PartnersSection />
       <HowItWorksSection />
       <HomeNewsSection />
       <CtaSections />
