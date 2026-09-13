@@ -25,7 +25,7 @@ export const GLEX_COMPANY = {
     name: 'Global Export House',
     addressLines: [
       'King Road Tower',
-      'Floor 15, Offices 03 and 04',
+      'Floor 10, Office 03',
       'Ash Shati District',
       'P.O. Box 442',
       'Jeddah 21411',
@@ -67,7 +67,7 @@ export function organizationJsonLd(appUrl: string) {
     },
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'King Road Tower, Floor 15, Offices 03 and 04',
+      streetAddress: 'King Road Tower, Floor 10, Office 03',
       addressLocality: GLEX_COMPANY.office.city,
       addressRegion: 'Makkah Province',
       postalCode: GLEX_COMPANY.office.postalCode,

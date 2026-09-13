@@ -64,7 +64,7 @@ The application covers four surfaces:
 
 **Company details** (real, defined once in `src/lib/company.ts`):
 
-- Global Export House, King Road Tower, Floor 15, Offices 03 and 04,
+- Global Export House, King Road Tower, Floor 10, Office 03,
   Ash Shati District, P.O. Box 442, Jeddah 21411, Kingdom of Saudi Arabia
 - Telephone **+966 9200 31827**
 - Commercial Registration **4030472336**
