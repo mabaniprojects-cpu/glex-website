@@ -114,6 +114,11 @@
       "body": "La consolidation, la palettisation et l'inspection avant expédition sont effectuées avant le départ, pour un dédouanement sans retard évitable.",
       "alt": "Marchandises palettisées sur rayonnages d'entrepôt en préparation à l'export"
     },
+    "partners": {
+      "heading": "Notre réseau de fournisseurs",
+      "description": "Fabricants et partenaires du réseau d'approvisionnement de GLEX.",
+      "groupLabel": "Notre groupe"
+    },
     "services": {
       "heading": "Nos services",
       "description": "Tout ce qu'il faut pour acheminer les produits saoudiens vers les marchés internationaux.",
@@ -325,7 +330,8 @@
     "emptyTitle": "Aucun produit ne correspond à vos filtres",
     "emptyBody": "Essayez de retirer un filtre ou de rechercher un autre terme.",
     "relatedProducts": "Produits associés",
-    "equivalentsAccepted": "Produits équivalents acceptés"
+    "equivalentsAccepted": "Produits équivalents acceptés",
+    "illustrativeImage": "Image d'illustration. L'aspect du produit livré peut différer."
   },
   "rfq": {
     "title": "Demande de devis",

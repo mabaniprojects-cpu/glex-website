@@ -14,7 +14,7 @@ export async function ProductCard({ product }: { product: ProductListItem }) {
       {/* Media */}
       <Link
         href={`/products/${product.slug}` as Parameters<typeof Link>[0]['href']}
-        className="relative block aspect-4/3 overflow-hidden bg-surface-muted"
+        className="bg-surface-muted relative block aspect-square overflow-hidden"
       >
         {product.imageUrl ? (
           <Image
@@ -25,13 +25,13 @@ export async function ProductCard({ product }: { product: ProductListItem }) {
             className="object-cover"
           />
         ) : (
-          <span className="flex size-full items-center justify-center text-glex-green-200">
+          <span className="text-glex-green-200 flex size-full items-center justify-center">
             <ImageOff className="size-10" aria-hidden="true" />
           </span>
         )}
 
         {product.isSaudiMade ? (
-          <span className="absolute start-3 top-3 rounded-full bg-glex-green-600 px-2.5 py-1 text-xs font-semibold text-white">
+          <span className="bg-glex-green-600 absolute start-3 top-3 rounded-full px-2.5 py-1 text-xs font-semibold text-white">
             {t('saudiMade')}
           </span>
         ) : null}
@@ -39,7 +39,7 @@ export async function ProductCard({ product }: { product: ProductListItem }) {
 
       {/* Body */}
       <div className="flex flex-1 flex-col p-5">
-        <p className="text-xs font-medium tracking-wide text-glex-green-500 uppercase">
+        <p className="text-glex-green-500 text-xs font-medium tracking-wide uppercase">
           {product.categoryName}
         </p>
 
@@ -53,7 +53,7 @@ export async function ProductCard({ product }: { product: ProductListItem }) {
         </h3>
 
         {product.shortDescription ? (
-          <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-glex-green-800/70">
+          <p className="text-glex-green-800/70 mt-2 line-clamp-2 text-sm leading-relaxed">
             {product.shortDescription}
           </p>
         ) : null}
@@ -68,7 +68,7 @@ export async function ProductCard({ product }: { product: ProductListItem }) {
 
           {product.minimumOrderQty ? (
             <div className="flex items-center gap-2">
-              <Package className="size-3.5 shrink-0 text-glex-green-400" aria-hidden="true" />
+              <Package className="text-glex-green-400 size-3.5 shrink-0" aria-hidden="true" />
               <dt className="text-glex-green-800/60">{t('moq')}:</dt>
               <dd className="font-medium">{product.minimumOrderQty}</dd>
             </div>
@@ -76,14 +76,14 @@ export async function ProductCard({ product }: { product: ProductListItem }) {
 
           {product.countryOfOrigin ? (
             <div className="flex items-center gap-2">
-              <MapPin className="size-3.5 shrink-0 text-glex-green-400" aria-hidden="true" />
+              <MapPin className="text-glex-green-400 size-3.5 shrink-0" aria-hidden="true" />
               <dd className="font-medium">{product.countryOfOrigin}</dd>
             </div>
           ) : null}
         </dl>
 
         {/* Prices are never shown — this is an RFQ catalogue. */}
-        <p className="mt-4 text-sm font-semibold text-glex-gold-700">{t('priceOnRequest')}</p>
+        <p className="text-glex-gold-700 mt-4 text-sm font-semibold">{t('priceOnRequest')}</p>
 
         <div className="mt-4 pt-1">
           <AddToRfqButton productId={product.id} fullWidth className="w-full" />

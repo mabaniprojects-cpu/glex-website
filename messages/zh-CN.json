@@ -114,6 +114,11 @@
       "body": "拼箱、打托与出口前查验均在发运前完成，使货物顺利清关，避免不必要的延误。",
       "alt": "仓库货架上已打托的货物正在备货出口"
     },
+    "partners": {
+      "heading": "我们的供应商网络",
+      "description": "GLEX 供应网络中的制造商与合作伙伴。",
+      "groupLabel": "我们的集团"
+    },
     "services": {
       "heading": "服务项目",
       "description": "将沙特产品送往国际市场所需的一切服务。",
@@ -325,7 +330,8 @@
     "emptyTitle": "没有符合筛选条件的产品",
     "emptyBody": "请尝试移除某项筛选条件，或更换搜索关键词。",
     "relatedProducts": "相关产品",
-    "equivalentsAccepted": "可接受同等替代产品"
+    "equivalentsAccepted": "可接受同等替代产品",
+    "illustrativeImage": "示意图，实际供货产品外观可能有所不同。"
   },
   "rfq": {
     "title": "询价单",

@@ -37,9 +37,9 @@ export default async function SavedProductsPage({
       <h1 className="text-2xl font-bold sm:text-3xl">{t('nav.saved')}</h1>
 
       {saved.length === 0 ? (
-        <div className="mt-10 rounded-xl border border-border-subtle bg-surface-muted p-12 text-center">
-          <Bookmark className="mx-auto size-10 text-glex-green-200" aria-hidden="true" />
-          <p className="mt-4 text-glex-green-800/70">{marketplace('emptyBody')}</p>
+        <div className="border-border-subtle bg-surface-muted mt-10 rounded-xl border p-12 text-center">
+          <Bookmark className="text-glex-green-200 mx-auto size-10" aria-hidden="true" />
+          <p className="text-glex-green-800/70 mt-4">{marketplace('emptyBody')}</p>
           <div className="mt-6">
             <Button asChild variant="primary">
               <Link href="/marketplace">{nav('marketplace')}</Link>
@@ -49,15 +49,10 @@ export default async function SavedProductsPage({
       ) : (
         <ul className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {saved.map((entry) => (
-            <li
-              key={entry.id}
-              className="overflow-hidden rounded-xl border border-border-subtle"
-            >
+            <li key={entry.id} className="border-border-subtle overflow-hidden rounded-xl border">
               <Link
-                href={
-                  `/products/${entry.product.slug}` as Parameters<typeof Link>[0]['href']
-                }
-                className="relative block aspect-4/3 bg-surface-muted"
+                href={`/products/${entry.product.slug}` as Parameters<typeof Link>[0]['href']}
+                className="bg-surface-muted relative block aspect-square"
               >
                 {entry.product.images[0] ? (
                   <Image
@@ -68,7 +63,7 @@ export default async function SavedProductsPage({
                     className="object-cover"
                   />
                 ) : (
-                  <span className="flex size-full items-center justify-center text-glex-green-200">
+                  <span className="text-glex-green-200 flex size-full items-center justify-center">
                     <ImageOff className="size-8" aria-hidden="true" />
                   </span>
                 )}
@@ -77,19 +72,17 @@ export default async function SavedProductsPage({
               <div className="p-5">
                 <h2 className="font-semibold">
                   <Link
-                    href={
-                      `/products/${entry.product.slug}` as Parameters<typeof Link>[0]['href']
-                    }
+                    href={`/products/${entry.product.slug}` as Parameters<typeof Link>[0]['href']}
                     className="hover:text-glex-green-600"
                   >
                     {entry.product.name}
                   </Link>
                 </h2>
                 {entry.product.brand ? (
-                  <p className="mt-1 text-sm text-glex-green-800/70">{entry.product.brand}</p>
+                  <p className="text-glex-green-800/70 mt-1 text-sm">{entry.product.brand}</p>
                 ) : null}
 
-                <p className="mt-3 text-sm font-semibold text-glex-gold-700">
+                <p className="text-glex-gold-700 mt-3 text-sm font-semibold">
                   {marketplace('priceOnRequest')}
                 </p>
 

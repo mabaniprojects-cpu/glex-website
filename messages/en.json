@@ -114,6 +114,11 @@
       "body": "Consolidation, palletisation and pre-export inspection are handled before departure, so shipments clear customs without avoidable delay.",
       "alt": "Palletised goods on warehouse racking being prepared for export"
     },
+    "partners": {
+      "heading": "Our supplier network",
+      "description": "Manufacturers and partners across GLEX's supply network.",
+      "groupLabel": "Our group"
+    },
     "services": {
       "heading": "Our Services",
       "description": "Everything required to move Saudi products into international markets.",
@@ -325,7 +330,8 @@
     "emptyTitle": "No products match your filters",
     "emptyBody": "Try removing a filter or searching for a different term.",
     "relatedProducts": "Related products",
-    "equivalentsAccepted": "Equivalent products accepted"
+    "equivalentsAccepted": "Equivalent products accepted",
+    "illustrativeImage": "Illustrative image. The supplied product may differ in appearance."
   },
   "rfq": {
     "title": "Request for Quotation",

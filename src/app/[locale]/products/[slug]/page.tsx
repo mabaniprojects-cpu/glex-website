@@ -113,7 +113,7 @@ export default async function ProductPage({
         <div className="grid gap-10 lg:grid-cols-2">
           {/* Media */}
           <div>
-            <div className="relative aspect-4/3 overflow-hidden rounded-xl bg-surface-muted">
+            <div className="bg-surface-muted relative aspect-square overflow-hidden rounded-xl">
               {product.images[0] ? (
                 <Image
                   src={product.images[0].url}
@@ -125,16 +125,29 @@ export default async function ProductPage({
                   loading="eager"
                 />
               ) : (
-                <span className="flex size-full items-center justify-center text-glex-green-200">
+                <span className="text-glex-green-200 flex size-full items-center justify-center">
                   <ImageOff className="size-16" aria-hidden="true" />
                 </span>
               )}
             </div>
 
+            {/*
+              Stated plainly because the photographs are generated and styled,
+              not shot of the goods a buyer will receive. An RFQ is a commercial
+              commitment; a buyer who expected the pictured item exactly has a
+              reasonable grievance, and one line prevents that dispute.
+            */}
+            {product.images[0] ? (
+              <p className="text-glex-green-800/60 mt-2 text-xs">{t('illustrativeImage')}</p>
+            ) : null}
+
             {product.images.length > 1 ? (
               <ul className="mt-3 grid grid-cols-4 gap-3">
                 {product.images.slice(1, 5).map((image) => (
-                  <li key={image.id} className="relative aspect-square overflow-hidden rounded-lg bg-surface-muted">
+                  <li
+                    key={image.id}
+                    className="bg-surface-muted relative aspect-square overflow-hidden rounded-lg"
+                  >
                     <Image
                       src={image.url}
                       alt={image.alt ?? product.displayName}
@@ -150,42 +163,42 @@ export default async function ProductPage({
 
           {/* Commercial summary */}
           <div>
-            <p className="text-sm font-medium tracking-wide text-glex-green-500 uppercase">
+            <p className="text-glex-green-500 text-sm font-medium tracking-wide uppercase">
               {product.categoryName}
             </p>
 
             <div className="mt-3 flex flex-wrap gap-2">
               {product.isSaudiMade ? (
-                <span className="rounded-full bg-glex-green-600 px-3 py-1 text-xs font-semibold text-white">
+                <span className="bg-glex-green-600 rounded-full px-3 py-1 text-xs font-semibold text-white">
                   {t('saudiMade')}
                 </span>
               ) : null}
               {product.allowEquivalents ? (
-                <span className="rounded-full bg-glex-green-50 px-3 py-1 text-xs font-semibold text-glex-green-700">
+                <span className="bg-glex-green-50 text-glex-green-700 rounded-full px-3 py-1 text-xs font-semibold">
                   {t('equivalentsAccepted')}
                 </span>
               ) : null}
             </div>
 
             {product.displayShortDescription ? (
-              <p className="mt-5 text-lg leading-relaxed text-glex-green-800/80">
+              <p className="text-glex-green-800/80 mt-5 text-lg leading-relaxed">
                 {product.displayShortDescription}
               </p>
             ) : null}
 
             {/* No price is ever shown. */}
-            <p className="mt-6 text-lg font-bold text-glex-gold-700">{t('priceOnRequest')}</p>
+            <p className="text-glex-gold-700 mt-6 text-lg font-bold">{t('priceOnRequest')}</p>
 
             <div className="mt-5">
               <AddToRfqButton productId={product.id} variant="gold" size="lg" />
             </div>
 
-            <dl className="mt-8 grid gap-x-8 gap-y-4 border-t border-border-subtle pt-6 sm:grid-cols-2">
+            <dl className="border-border-subtle mt-8 grid gap-x-8 gap-y-4 border-t pt-6 sm:grid-cols-2">
               {facts
                 .filter((fact) => fact.value)
                 .map((fact) => (
                   <div key={fact.label}>
-                    <dt className="text-sm text-glex-green-800/60">{fact.label}</dt>
+                    <dt className="text-glex-green-800/60 text-sm">{fact.label}</dt>
                     <dd className="mt-0.5 font-medium">{fact.value}</dd>
                   </div>
                 ))}
@@ -198,7 +211,7 @@ export default async function ProductPage({
                   {product.availableUnits.map((unit) => (
                     <li
                       key={unit}
-                      className="rounded-md bg-surface-muted px-2.5 py-1 text-sm text-glex-green-800"
+                      className="bg-surface-muted text-glex-green-800 rounded-md px-2.5 py-1 text-sm"
                     >
                       {units(unit)}
                     </li>
@@ -214,7 +227,7 @@ export default async function ProductPage({
                   {product.certifications.map((certification) => (
                     <li
                       key={certification}
-                      className="rounded-md border border-border-subtle px-2.5 py-1 text-sm"
+                      className="border-border-subtle rounded-md border px-2.5 py-1 text-sm"
                     >
                       {certification}
                     </li>
@@ -233,7 +246,7 @@ export default async function ProductPage({
             {product.displayDescription ? (
               <div>
                 <h2 className="text-xl font-bold">{nav('products')}</h2>
-                <div className="mt-4 space-y-4 leading-relaxed whitespace-pre-line text-glex-green-800/85">
+                <div className="text-glex-green-800/85 mt-4 space-y-4 leading-relaxed whitespace-pre-line">
                   {product.displayDescription}
                 </div>
               </div>
@@ -247,8 +260,11 @@ export default async function ProductPage({
                     <caption className="sr-only">{t('specifications')}</caption>
                     <tbody>
                       {specifications.map((specification) => (
-                        <tr key={specification.key} className="border-b border-border-subtle">
-                          <th scope="row" className="py-3 pe-4 text-start font-medium text-glex-green-800/70">
+                        <tr key={specification.key} className="border-border-subtle border-b">
+                          <th
+                            scope="row"
+                            className="text-glex-green-800/70 py-3 pe-4 text-start font-medium"
+                          >
                             {specification.key}
                           </th>
                           <td className="py-3 font-medium">
@@ -275,13 +291,13 @@ export default async function ProductPage({
               <li key={document.id}>
                 <a
                   href={`/api/files/${document.fileId}`}
-                  className="flex items-center gap-3 rounded-lg border border-border-subtle p-4 transition-colors hover:bg-glex-green-50"
+                  className="border-border-subtle hover:bg-glex-green-50 flex items-center gap-3 rounded-lg border p-4 transition-colors"
                 >
-                  <FileText className="size-5 shrink-0 text-glex-green-600" aria-hidden="true" />
+                  <FileText className="text-glex-green-600 size-5 shrink-0" aria-hidden="true" />
                   <span className="flex-1 text-sm font-medium">
                     {document.label ?? document.file.originalName}
                   </span>
-                  <Download className="size-4 shrink-0 text-glex-green-400" aria-hidden="true" />
+                  <Download className="text-glex-green-400 size-4 shrink-0" aria-hidden="true" />
                 </a>
               </li>
             ))}

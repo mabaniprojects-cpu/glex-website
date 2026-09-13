@@ -114,6 +114,11 @@
       "body": "Konsolidierung, Palettierung und Vorausfuhrkontrolle erfolgen vor dem Auslaufen, damit Sendungen ohne vermeidbare Verzögerung verzollt werden.",
       "alt": "Palettierte Waren im Lagerregal werden für den Export vorbereitet"
     },
+    "partners": {
+      "heading": "Unser Lieferantennetzwerk",
+      "description": "Hersteller und Partner im Liefernetzwerk von GLEX.",
+      "groupLabel": "Unsere Unternehmensgruppe"
+    },
     "services": {
       "heading": "Unsere Leistungen",
       "description": "Alles, was für den Weg saudischer Produkte in internationale Märkte erforderlich ist.",
@@ -325,7 +330,8 @@
     "emptyTitle": "Keine Produkte entsprechen Ihren Filtern",
     "emptyBody": "Entfernen Sie einen Filter oder suchen Sie nach einem anderen Begriff.",
     "relatedProducts": "Ähnliche Produkte",
-    "equivalentsAccepted": "Gleichwertige Produkte werden akzeptiert"
+    "equivalentsAccepted": "Gleichwertige Produkte werden akzeptiert",
+    "illustrativeImage": "Beispielbild. Das gelieferte Produkt kann im Aussehen abweichen."
   },
   "rfq": {
     "title": "Angebotsanfrage",

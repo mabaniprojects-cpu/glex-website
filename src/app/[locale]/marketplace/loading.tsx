@@ -10,23 +10,23 @@ export default function MarketplaceLoading() {
         <div className="hidden space-y-6 lg:block">
           {Array.from({ length: 4 }, (_, i) => (
             <div key={i} className="space-y-2">
-              <div className="h-4 w-24 rounded bg-glex-green-100" />
-              <div className="h-11 w-full rounded-lg bg-glex-green-50" />
+              <div className="bg-glex-green-100 h-4 w-24 rounded" />
+              <div className="bg-glex-green-50 h-11 w-full rounded-lg" />
             </div>
           ))}
         </div>
 
         <div>
-          <div className="h-4 w-32 rounded bg-glex-green-100" />
+          <div className="bg-glex-green-100 h-4 w-32 rounded" />
           <div className="mt-5 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {Array.from({ length: 6 }, (_, i) => (
-              <div key={i} className="overflow-hidden rounded-xl border border-border-subtle">
-                <div className="aspect-4/3 bg-glex-green-50" />
+              <div key={i} className="border-border-subtle overflow-hidden rounded-xl border">
+                <div className="bg-glex-green-50 aspect-square" />
                 <div className="space-y-3 p-5">
-                  <div className="h-3 w-20 rounded bg-glex-green-100" />
-                  <div className="h-4 w-full rounded bg-glex-green-100" />
-                  <div className="h-3 w-4/5 rounded bg-glex-green-50" />
-                  <div className="h-11 w-full rounded-lg bg-glex-green-50" />
+                  <div className="bg-glex-green-100 h-3 w-20 rounded" />
+                  <div className="bg-glex-green-100 h-4 w-full rounded" />
+                  <div className="bg-glex-green-50 h-3 w-4/5 rounded" />
+                  <div className="bg-glex-green-50 h-11 w-full rounded-lg" />
                 </div>
               </div>
             ))}
