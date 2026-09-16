@@ -51,6 +51,11 @@ const smtpProvider: MailProvider = {
       const nodemailer = (await import('nodemailer')).default
 
       const transport = nodemailer.createTransport({
+        // The name given in the SMTP greeting. Left unset, nodemailer falls
+        // back to the container's hostname, and production mail was received
+        // with "helo=[127.0.0.1]" — a greeting spam filters treat as a sign of
+        // a misconfigured or compromised sender.
+        name: new URL(config.APP_URL).hostname,
         host: config.SMTP_HOST,
         port: config.SMTP_PORT ?? 587,
         secure: (config.SMTP_PORT ?? 587) === 465,
