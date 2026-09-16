@@ -122,30 +122,41 @@ export async function submitFreightInquiry(input: FreightInquiryInput): Promise<
     // --- Notifications (best effort) ---
     // The enquiry is committed; a mail outage must never lose it.
 
-    await sendTemplate('contact-received', data.email.toLowerCase(), {
-      locale: dbLocale,
-      recipientName: data.fullName,
-      details: [{ label: 'Reference', value: reference }],
-    })
-
     const admin = internalRecipient('freight')
+
+    await sendTemplate(
+      'contact-received',
+      data.email.toLowerCase(),
+      {
+        locale: dbLocale,
+        recipientName: data.fullName,
+        details: [{ label: 'Reference', value: reference }],
+      },
+      { replyTo: admin }
+    )
+
     if (admin) {
-      await sendTemplate('internal-freight', admin, {
-        locale: 'en',
-        subjectSuffix: `${reference} · ${lane}`,
-        actionUrl: absoluteUrl('/en/admin/inquiries'),
-        actionLabel: 'Open in the admin portal',
-        details: [
-          { label: 'Reference', value: reference },
-          { label: 'Type', value: 'FREIGHT_QUOTE' },
-          { label: 'Lane', value: lane },
-          { label: 'Mode', value: data.mode },
-          // Surfaced in the notification rather than left for someone to find:
-          // dangerous goods change what can be carried and by whom.
-          ...(data.isHazardous ? [{ label: 'Hazardous', value: 'Yes — declared' }] : []),
-          { label: 'From', value: `${data.fullName} <${data.email.toLowerCase()}>` },
-        ],
-      })
+      await sendTemplate(
+        'internal-freight',
+        admin,
+        {
+          locale: 'en',
+          subjectSuffix: `${reference} · ${lane}`,
+          actionUrl: absoluteUrl('/en/admin/inquiries'),
+          actionLabel: 'Open in the admin portal',
+          details: [
+            { label: 'Reference', value: reference },
+            { label: 'Type', value: 'FREIGHT_QUOTE' },
+            { label: 'Lane', value: lane },
+            { label: 'Mode', value: data.mode },
+            // Surfaced in the notification rather than left for someone to find:
+            // dangerous goods change what can be carried and by whom.
+            ...(data.isHazardous ? [{ label: 'Hazardous', value: 'Yes — declared' }] : []),
+            { label: 'From', value: `${data.fullName} <${data.email.toLowerCase()}>` },
+          ],
+        },
+        { replyTo: data.email.toLowerCase() }
+      )
     }
 
     return { ok: true, reference }

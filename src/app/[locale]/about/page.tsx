@@ -8,6 +8,7 @@ import { PageHero } from '@/components/layout/page-hero'
 import { Card, CardContent } from '@/components/ui/card'
 import { routing } from '@/i18n/routing'
 import { GLEX_COMPANY } from '@/lib/company'
+import { pageMetadata } from '@/lib/seo'
 
 export async function generateMetadata(props: {
   params: Promise<{ locale: string }>
@@ -15,10 +16,7 @@ export async function generateMetadata(props: {
   const { locale } = await props.params
   if (!hasLocale(routing.locales, locale)) return {}
   const t = await getTranslations({ locale, namespace: 'nav' })
-  return {
-    title: t('about'),
-    alternates: { canonical: `/${locale}/about` },
-  }
+  return pageMetadata({ locale, path: '/about', title: t('about') })
 }
 
 export default async function AboutPage({ params }: { params: Promise<{ locale: string }> }) {

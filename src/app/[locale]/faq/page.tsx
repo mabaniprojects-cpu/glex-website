@@ -10,6 +10,7 @@ import { Link } from '@/i18n/navigation'
 import { toDbLocale } from '@/i18n/locale'
 import { routing } from '@/i18n/routing'
 import { db } from '@/lib/db'
+import { pageMetadata } from '@/lib/seo'
 
 export async function generateMetadata(props: {
   params: Promise<{ locale: string }>
@@ -17,7 +18,7 @@ export async function generateMetadata(props: {
   const { locale } = await props.params
   if (!hasLocale(routing.locales, locale)) return {}
   const t = await getTranslations({ locale, namespace: 'nav' })
-  return { title: t('faq'), alternates: { canonical: `/${locale}/faq` } }
+  return pageMetadata({ locale, path: '/faq', title: t('faq') })
 }
 
 export default async function FaqPage({ params }: { params: Promise<{ locale: string }> }) {
@@ -99,8 +100,8 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
               </div>
             ))}
 
-            <div className="rounded-xl bg-glex-green-50 p-6">
-              <p className="font-medium text-glex-green-900">
+            <div className="bg-glex-green-50 rounded-xl p-6">
+              <p className="text-glex-green-900 font-medium">
                 {nav('contact')} — {nav('faq')}
               </p>
               <div className="mt-4">

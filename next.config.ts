@@ -158,6 +158,36 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }]
   },
+
+  async redirects() {
+    return bareDomainRedirect()
+  },
+}
+
+/**
+ * Sends the bare domain to the canonical www origin, permanently.
+ *
+ * Both hosts answered with the full site, so every page existed at two
+ * addresses. The canonical tags already name www, but a 301 is what makes
+ * search engines consolidate links and ranking onto one host rather than
+ * treating the bare-domain copies as duplicates. Derived from
+ * NEXT_PUBLIC_APP_URL so it does nothing locally or on a non-www origin.
+ */
+function bareDomainRedirect() {
+  const publicUrl = process.env.NEXT_PUBLIC_APP_URL
+  if (!publicUrl) return []
+
+  const { hostname, origin } = new URL(publicUrl)
+  if (!hostname.startsWith('www.')) return []
+
+  return [
+    {
+      source: '/:path*',
+      has: [{ type: 'host' as const, value: hostname.slice('www.'.length) }],
+      destination: `${origin}/:path*`,
+      permanent: true,
+    },
+  ]
 }
 
 const config = withNextIntl(nextConfig)

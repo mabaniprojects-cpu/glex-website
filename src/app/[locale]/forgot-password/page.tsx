@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import { AuthShell } from '@/components/auth/auth-shell'
 import { ForgotPasswordForm } from '@/components/auth/password-forms'
 import { routing } from '@/i18n/routing'
+import { pageMetadata } from '@/lib/seo'
 
 export async function generateMetadata(props: {
   params: Promise<{ locale: string }>
@@ -13,8 +14,7 @@ export async function generateMetadata(props: {
   if (!hasLocale(routing.locales, locale)) return {}
   const t = await getTranslations({ locale, namespace: 'auth' })
   return {
-    title: t('resetTitle'),
-    alternates: { canonical: `/${locale}/forgot-password` },
+    ...(await pageMetadata({ locale, path: '/forgot-password', title: t('resetTitle') })),
     robots: { index: false, follow: false },
   }
 }

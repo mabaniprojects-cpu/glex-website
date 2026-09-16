@@ -10,6 +10,7 @@ import { Pagination } from '@/components/ui/pagination'
 import { ProductCard } from '@/components/marketplace/product-card'
 import { routing, type AppLocale } from '@/i18n/routing'
 import { getFilterOptions, listProducts, parseFilters } from '@/lib/catalogue'
+import { pageMetadata } from '@/lib/seo'
 
 export async function generateMetadata(props: {
   params: Promise<{ locale: string }>
@@ -17,11 +18,12 @@ export async function generateMetadata(props: {
   const { locale } = await props.params
   if (!hasLocale(routing.locales, locale)) return {}
   const t = await getTranslations({ locale, namespace: 'marketplace' })
-  return {
+  return pageMetadata({
+    locale,
+    path: '/marketplace',
     title: t('title'),
     description: t('description'),
-    alternates: { canonical: `/${locale}/marketplace` },
-  }
+  })
 }
 
 export default async function MarketplacePage({
@@ -78,15 +80,15 @@ export default async function MarketplacePage({
 
           <div className="mt-8 lg:col-start-2 lg:row-start-1 lg:mt-0">
             {/* Result count is announced so filter changes are perceivable. */}
-            <p aria-live="polite" className="text-sm font-medium text-glex-green-800/75">
+            <p aria-live="polite" className="text-glex-green-800/75 text-sm font-medium">
               {t('resultCount', { count: total })}
             </p>
 
             {items.length === 0 ? (
-              <div className="mt-10 rounded-xl border border-border-subtle bg-surface-muted p-12 text-center">
-                <PackageSearch className="mx-auto size-10 text-glex-green-200" aria-hidden="true" />
+              <div className="border-border-subtle bg-surface-muted mt-10 rounded-xl border p-12 text-center">
+                <PackageSearch className="text-glex-green-200 mx-auto size-10" aria-hidden="true" />
                 <h2 className="mt-4 text-lg font-semibold">{t('emptyTitle')}</h2>
-                <p className="mt-2 text-glex-green-800/70">{t('emptyBody')}</p>
+                <p className="text-glex-green-800/70 mt-2">{t('emptyBody')}</p>
               </div>
             ) : (
               <>

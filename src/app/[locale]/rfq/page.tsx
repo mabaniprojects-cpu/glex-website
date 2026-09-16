@@ -11,6 +11,7 @@ import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
 import { getSessionUser } from '@/lib/auth-guards'
 import { hydrateCart, readCart } from '@/lib/rfq-cart'
+import { pageMetadata } from '@/lib/seo'
 
 export async function generateMetadata(props: {
   params: Promise<{ locale: string }>
@@ -18,11 +19,7 @@ export async function generateMetadata(props: {
   const { locale } = await props.params
   if (!hasLocale(routing.locales, locale)) return {}
   const t = await getTranslations({ locale, namespace: 'rfq' })
-  return {
-    title: t('title'),
-    description: t('description'),
-    alternates: { canonical: `/${locale}/rfq` },
-  }
+  return pageMetadata({ locale, path: '/rfq', title: t('title'), description: t('description') })
 }
 
 export default async function RfqPage({ params }: { params: Promise<{ locale: string }> }) {
@@ -51,29 +48,25 @@ export default async function RfqPage({ params }: { params: Promise<{ locale: st
       <Section>
         <div className="grid gap-10 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            <RfqForm
-              cartLines={cart}
-              signedIn={Boolean(user)}
-              userName={user?.name ?? null}
-            />
+            <RfqForm cartLines={cart} signedIn={Boolean(user)} userName={user?.name ?? null} />
           </div>
 
           {/* Cart summary */}
           <aside aria-labelledby="rfq-cart-heading" className="lg:col-span-1">
-            <div className="sticky top-24 rounded-xl border border-border-subtle bg-surface-muted p-6">
+            <div className="border-border-subtle bg-surface-muted sticky top-24 rounded-xl border p-6">
               <h2 id="rfq-cart-heading" className="flex items-center gap-2 text-lg font-bold">
-                <ShoppingBag className="size-5 text-glex-green-600" aria-hidden="true" />
+                <ShoppingBag className="text-glex-green-600 size-5" aria-hidden="true" />
                 {t('cart')}
               </h2>
 
               {cart.length === 0 ? (
                 <div className="mt-5 text-center">
                   <ClipboardList
-                    className="mx-auto size-9 text-glex-green-200"
+                    className="text-glex-green-200 mx-auto size-9"
                     aria-hidden="true"
                   />
                   <p className="mt-3 font-medium">{t('cartEmpty')}</p>
-                  <p className="mt-1 text-sm text-glex-green-800/70">{t('cartEmptyBody')}</p>
+                  <p className="text-glex-green-800/70 mt-1 text-sm">{t('cartEmptyBody')}</p>
                   <div className="mt-5">
                     <Button asChild variant="primary" size="sm">
                       <Link href="/marketplace">{nav('marketplace')}</Link>
@@ -84,19 +77,16 @@ export default async function RfqPage({ params }: { params: Promise<{ locale: st
                 <>
                   <ul className="mt-5 space-y-3">
                     {cart.map((line) => (
-                      <li
-                        key={line.productId}
-                        className="rounded-lg bg-white p-3 text-sm"
-                      >
+                      <li key={line.productId} className="rounded-lg bg-white p-3 text-sm">
                         <p className="font-medium">{line.name}</p>
-                        <p className="mt-0.5 text-glex-green-800/65">
+                        <p className="text-glex-green-800/65 mt-0.5">
                           {line.quantity} · {line.unit}
                         </p>
                       </li>
                     ))}
                   </ul>
 
-                  <p className="mt-5 text-sm text-glex-green-800/70">
+                  <p className="text-glex-green-800/70 mt-5 text-sm">
                     {t('cart')}: {cart.length}
                   </p>
 

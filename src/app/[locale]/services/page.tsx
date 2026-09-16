@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import { CtaSections, HowItWorksSection, ServicesSection } from '@/components/home/sections'
 import { PageHero } from '@/components/layout/page-hero'
 import { routing } from '@/i18n/routing'
+import { pageMetadata } from '@/lib/seo'
 
 export async function generateMetadata(props: {
   params: Promise<{ locale: string }>
@@ -12,11 +13,12 @@ export async function generateMetadata(props: {
   const { locale } = await props.params
   if (!hasLocale(routing.locales, locale)) return {}
   const t = await getTranslations({ locale, namespace: 'home.services' })
-  return {
+  return pageMetadata({
+    locale,
+    path: '/services',
     title: t('heading'),
     description: t('description'),
-    alternates: { canonical: `/${locale}/services` },
-  }
+  })
 }
 
 export default async function ServicesPage({ params }: { params: Promise<{ locale: string }> }) {

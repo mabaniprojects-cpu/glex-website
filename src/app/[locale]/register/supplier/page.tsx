@@ -6,6 +6,7 @@ import { AuthShell } from '@/components/auth/auth-shell'
 import { SupplierRegistrationForm } from '@/components/supplier/registration-form'
 import { routing } from '@/i18n/routing'
 import { listCategoryOptions } from '@/lib/actions/supplier-registration-actions'
+import { pageMetadata } from '@/lib/seo'
 
 export async function generateMetadata(props: {
   params: Promise<{ locale: string }>
@@ -13,11 +14,12 @@ export async function generateMetadata(props: {
   const { locale } = await props.params
   if (!hasLocale(routing.locales, locale)) return {}
   const t = await getTranslations({ locale, namespace: 'supplier' })
-  return {
+  return pageMetadata({
+    locale,
+    path: '/register/supplier',
     title: t('registerTitle'),
     description: t('registerDescription'),
-    alternates: { canonical: `/${locale}/register/supplier` },
-  }
+  })
 }
 
 export default async function SupplierRegisterPage({

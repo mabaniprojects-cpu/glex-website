@@ -10,6 +10,7 @@ import { NewsCard } from '@/components/news/news-card'
 import { Link } from '@/i18n/navigation'
 import { routing, type AppLocale } from '@/i18n/routing'
 import { listNews, listNewsCategories, parseNewsFilters } from '@/lib/news'
+import { pageMetadata } from '@/lib/seo'
 import { cn } from '@/lib/utils'
 
 export async function generateMetadata(props: {
@@ -19,14 +20,13 @@ export async function generateMetadata(props: {
   if (!hasLocale(routing.locales, locale)) return {}
   const t = await getTranslations({ locale, namespace: 'news' })
 
-  return {
+  return pageMetadata({
+    locale,
+    path: '/news',
     title: t('title'),
     description: t('description'),
-    alternates: {
-      canonical: `/${locale}/news`,
-      types: { 'application/rss+xml': `/${locale}/news/rss.xml` },
-    },
-  }
+    types: { 'application/rss+xml': `/${locale}/news/rss.xml` },
+  })
 }
 
 export default async function NewsPage({
@@ -97,7 +97,7 @@ export default async function NewsPage({
                     'inline-flex h-10 items-center rounded-full px-4 text-sm font-medium transition-colors',
                     !filters.category
                       ? 'bg-glex-green-600 text-white'
-                      : 'border border-border-subtle text-glex-green-800 hover:bg-glex-green-50'
+                      : 'border-border-subtle text-glex-green-800 hover:bg-glex-green-50 border'
                   )}
                 >
                   {t('allCategories')}
@@ -114,7 +114,7 @@ export default async function NewsPage({
                         'inline-flex h-10 items-center rounded-full px-4 text-sm font-medium transition-colors',
                         active
                           ? 'bg-glex-green-600 text-white'
-                          : 'border border-border-subtle text-glex-green-800 hover:bg-glex-green-50'
+                          : 'border-border-subtle text-glex-green-800 hover:bg-glex-green-50 border'
                       )}
                     >
                       {category.name} ({category.count})
@@ -126,15 +126,15 @@ export default async function NewsPage({
           </nav>
         ) : null}
 
-        <p aria-live="polite" className="mt-6 text-sm text-glex-green-800/70">
+        <p aria-live="polite" className="text-glex-green-800/70 mt-6 text-sm">
           {total}
         </p>
 
         {items.length === 0 ? (
-          <div className="mt-10 rounded-xl border border-border-subtle bg-surface-muted p-12 text-center">
-            <Newspaper className="mx-auto size-10 text-glex-green-200" aria-hidden="true" />
+          <div className="border-border-subtle bg-surface-muted mt-10 rounded-xl border p-12 text-center">
+            <Newspaper className="text-glex-green-200 mx-auto size-10" aria-hidden="true" />
             <h2 className="mt-4 text-lg font-semibold">{common('noResults')}</h2>
-            <p className="mt-2 text-glex-green-800/70">{common('noResultsHint')}</p>
+            <p className="text-glex-green-800/70 mt-2">{common('noResultsHint')}</p>
           </div>
         ) : (
           <>
@@ -153,7 +153,7 @@ export default async function NewsPage({
         <p className="mt-10">
           <a
             href={`/${locale}/news/rss.xml`}
-            className="inline-flex items-center gap-2 text-sm text-glex-green-700 underline-offset-4 hover:underline"
+            className="text-glex-green-700 inline-flex items-center gap-2 text-sm underline-offset-4 hover:underline"
           >
             <Rss className="size-4" aria-hidden="true" />
             RSS

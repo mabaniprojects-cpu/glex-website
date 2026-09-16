@@ -87,36 +87,47 @@ export async function submitContactInquiry(input: ContactInput): Promise<Contact
     // The enquiry is already committed; a mail outage must never lose it, so
     // these are sent after the transaction and their failures are not fatal.
 
-    await sendTemplate('contact-received', data.email.toLowerCase(), {
-      locale: dbLocale,
-      recipientName: data.fullName,
-      details: [{ label: 'Reference', value: reference }],
-    })
-
-    // Without this, an enquiry is stored and nobody is ever told about it.
+    // Without the staff copy, an enquiry is stored and nobody is ever told.
     const admin = internalRecipient('contact')
+
+    await sendTemplate(
+      'contact-received',
+      data.email.toLowerCase(),
+      {
+        locale: dbLocale,
+        recipientName: data.fullName,
+        details: [{ label: 'Reference', value: reference }],
+      },
+      { replyTo: admin }
+    )
+
     if (admin) {
-      await sendTemplate('internal-contact', admin, {
-        // Internal mail is always English; staff are not per-locale.
-        locale: 'en',
-        // Reference and sender in the subject: this lands in a shared mailbox
-        // beside cold outreach, and a fixed subject is neither scannable at a
-        // glance nor searchable weeks later.
-        subjectSuffix: `${reference} · ${data.email.toLowerCase()}`,
-        actionUrl: absoluteUrl('/en/admin/inquiries'),
-        actionLabel: 'Open in the admin portal',
-        // The message body is deliberately not included: the portal is the one
-        // record of it, and there is no reason to copy a stranger's personal
-        // message into a shared mailbox.
-        details: [
-          { label: 'Reference', value: reference },
-          { label: 'Type', value: data.type },
-          { label: 'Subject', value: data.subject },
-          { label: 'From', value: `${data.fullName} <${data.email.toLowerCase()}>` },
-          ...(data.company ? [{ label: 'Company', value: data.company }] : []),
-          ...(data.country ? [{ label: 'Country', value: data.country }] : []),
-        ],
-      })
+      await sendTemplate(
+        'internal-contact',
+        admin,
+        {
+          // Internal mail is always English; staff are not per-locale.
+          locale: 'en',
+          // Reference and sender in the subject: this lands in a shared mailbox
+          // beside cold outreach, and a fixed subject is neither scannable at a
+          // glance nor searchable weeks later.
+          subjectSuffix: `${reference} · ${data.email.toLowerCase()}`,
+          actionUrl: absoluteUrl('/en/admin/inquiries'),
+          actionLabel: 'Open in the admin portal',
+          // The message body is deliberately not included: the portal is the one
+          // record of it, and there is no reason to copy a stranger's personal
+          // message into a shared mailbox.
+          details: [
+            { label: 'Reference', value: reference },
+            { label: 'Type', value: data.type },
+            { label: 'Subject', value: data.subject },
+            { label: 'From', value: `${data.fullName} <${data.email.toLowerCase()}>` },
+            ...(data.company ? [{ label: 'Company', value: data.company }] : []),
+            ...(data.country ? [{ label: 'Country', value: data.country }] : []),
+          ],
+        },
+        { replyTo: data.email.toLowerCase() }
+      )
     }
 
     return { ok: true, reference }

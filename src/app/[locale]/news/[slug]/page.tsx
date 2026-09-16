@@ -10,8 +10,9 @@ import { PageHero } from '@/components/layout/page-hero'
 import { NewsCard } from '@/components/news/news-card'
 import { ShareLinks } from '@/components/news/share-links'
 import { Link } from '@/i18n/navigation'
-import { localeHreflang, routing, type AppLocale } from '@/i18n/routing'
+import { routing, type AppLocale } from '@/i18n/routing'
 import { getNewsArticle, listRelatedNews, recordNewsView } from '@/lib/news'
+import { pageMetadata } from '@/lib/seo'
 import { formatDate, truncate } from '@/lib/utils'
 
 export async function generateMetadata(props: {
@@ -26,25 +27,15 @@ export async function generateMetadata(props: {
   const description = article.displaySeoDescription ?? truncate(article.displaySummary, 155)
   const image = article.socialImage ?? article.featuredImage
 
-  return {
+  return pageMetadata({
+    locale,
+    path: `/news/${slug}`,
     title: article.displaySeoTitle ?? article.displayTitle,
     description,
-    alternates: { canonical: `/${locale}/news/${slug}` },
-    openGraph: {
-      type: 'article',
-      title: article.displayTitle,
-      description,
-      publishedTime: article.publishedAt?.toISOString(),
-      locale: localeHreflang[locale as AppLocale],
-      images: image ? [{ url: image }] : undefined,
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: article.displayTitle,
-      description,
-      images: image ? [image] : undefined,
-    },
-  }
+    image,
+    type: 'article',
+    publishedTime: article.publishedAt?.toISOString(),
+  })
 }
 
 export default async function NewsArticlePage({
@@ -103,9 +94,9 @@ export default async function NewsArticlePage({
           { href: '/news', label: nav('news') },
         ]}
       >
-        <p className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-glex-green-800/70">
+        <p className="text-glex-green-800/70 mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
           {article.categoryName ? (
-            <span className="font-semibold tracking-wide text-glex-green-500 uppercase">
+            <span className="text-glex-green-500 font-semibold tracking-wide uppercase">
               {article.categoryName}
             </span>
           ) : null}
@@ -125,15 +116,15 @@ export default async function NewsArticlePage({
           {article.isSample ? (
             <div
               role="note"
-              className="mb-8 flex gap-3 rounded-xl border border-glex-gold-300 bg-glex-gold-50 p-5"
+              className="border-glex-gold-300 bg-glex-gold-50 mb-8 flex gap-3 rounded-xl border p-5"
             >
-              <Info className="mt-0.5 size-5 shrink-0 text-glex-gold-700" aria-hidden="true" />
-              <p className="text-sm leading-relaxed text-glex-green-900">{t('sampleNotice')}</p>
+              <Info className="text-glex-gold-700 mt-0.5 size-5 shrink-0" aria-hidden="true" />
+              <p className="text-glex-green-900 text-sm leading-relaxed">{t('sampleNotice')}</p>
             </div>
           ) : null}
 
           {article.featuredImage ? (
-            <div className="relative mb-8 aspect-16/9 overflow-hidden rounded-xl bg-surface-muted">
+            <div className="bg-surface-muted relative mb-8 aspect-16/9 overflow-hidden rounded-xl">
               <Image
                 src={article.featuredImage}
                 alt=""
@@ -145,11 +136,11 @@ export default async function NewsArticlePage({
             </div>
           ) : null}
 
-          <p className="text-lg leading-relaxed font-medium text-glex-green-800/90">
+          <p className="text-glex-green-800/90 text-lg leading-relaxed font-medium">
             {article.displaySummary}
           </p>
 
-          <div className="mt-6 space-y-5 leading-relaxed whitespace-pre-line text-glex-green-800/85">
+          <div className="text-glex-green-800/85 mt-6 space-y-5 leading-relaxed whitespace-pre-line">
             {article.displayBody}
           </div>
 
@@ -158,7 +149,7 @@ export default async function NewsArticlePage({
               {article.tags.map((entry) => (
                 <li
                   key={entry.tag.slug}
-                  className="rounded-md bg-surface-muted px-2.5 py-1 text-sm text-glex-green-800"
+                  className="bg-surface-muted text-glex-green-800 rounded-md px-2.5 py-1 text-sm"
                 >
                   {entry.tag.name}
                 </li>
@@ -166,12 +157,12 @@ export default async function NewsArticlePage({
             </ul>
           ) : null}
 
-          <div className="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-border-subtle pt-6">
+          <div className="border-border-subtle mt-10 flex flex-wrap items-center justify-between gap-4 border-t pt-6">
             <Link
               href="/news"
-              className="inline-flex items-center gap-2 text-sm text-glex-green-700 underline-offset-4 hover:underline"
+              className="text-glex-green-700 inline-flex items-center gap-2 text-sm underline-offset-4 hover:underline"
             >
-              <ArrowLeft className="size-4 rtl-flip" aria-hidden="true" />
+              <ArrowLeft className="rtl-flip size-4" aria-hidden="true" />
               {t('backToNews')}
             </Link>
 

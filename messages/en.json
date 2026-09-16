@@ -331,7 +331,9 @@
     "emptyBody": "Try removing a filter or searching for a different term.",
     "relatedProducts": "Related products",
     "equivalentsAccepted": "Equivalent products accepted",
-    "illustrativeImage": "Illustrative image. The supplied product may differ in appearance."
+    "illustrativeImage": "Illustrative image. The supplied product may differ in appearance.",
+    "productMetaDescription": "{name} ({category}) from Saudi manufacturers, exported worldwide by GLEX. Request a quotation online.",
+    "productMetaDescriptionHs": "{name} ({category}, HS code {hsCode}) from Saudi manufacturers, exported worldwide by GLEX. Request a quotation online."
   },
   "rfq": {
     "title": "Request for Quotation",

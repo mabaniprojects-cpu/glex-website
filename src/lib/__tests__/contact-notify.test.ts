@@ -19,13 +19,15 @@ type MailContext = {
   details?: Array<{ label: string; value: string }>
 }
 
+type SendOptions = { replyTo?: string | null }
 const sendTemplate = vi.fn<
-  (key: string, to: string, context: MailContext) => Promise<{ ok: true }>
+  (key: string, to: string, context: MailContext, options?: SendOptions) => Promise<{ ok: true }>
 >(async () => ({ ok: true }))
 const internalRecipient = vi.fn<(channel: string) => string | null>(() => 'ops@glex.test')
 
 vi.mock('@/lib/mail', () => ({
-  sendTemplate: (key: string, to: string, context: MailContext) => sendTemplate(key, to, context),
+  sendTemplate: (key: string, to: string, context: MailContext, options?: SendOptions) =>
+    sendTemplate(key, to, context, options),
   internalRecipient: (channel: string) => internalRecipient(channel),
 }))
 
@@ -95,6 +97,15 @@ describe('contact enquiry notifications', () => {
     // Staff get their own copy, not the customer's 'thank you for contacting us'.
     expect(staffKey).toBe('internal-contact')
     expect(staffTo).toBe('ops@glex.test')
+  })
+
+  it('routes replies to a person: staff reply to the sender, the sender replies to staff', async () => {
+    await submitContactInquiry(VALID)
+
+    // Both messages come from a no-reply address, so without Reply-To a reply
+    // in either direction goes nowhere.
+    expect(sendTemplate.mock.calls[0][3]?.replyTo).toBe('ops@glex.test')
+    expect(sendTemplate.mock.calls[1][3]?.replyTo).toBe('amina@example.com')
   })
 
   it('gives staff the reference and a link, but not the message body', async () => {

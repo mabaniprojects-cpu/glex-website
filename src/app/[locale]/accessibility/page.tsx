@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { LegalPage } from '@/components/legal/legal-page'
 import { routing } from '@/i18n/routing'
+import { pageMetadata } from '@/lib/seo'
 
 const LAST_UPDATED = new Date('2026-01-01T00:00:00Z')
 
@@ -13,7 +14,7 @@ export async function generateMetadata(props: {
   const { locale } = await props.params
   if (!hasLocale(routing.locales, locale)) return {}
   const t = await getTranslations({ locale, namespace: 'legal' })
-  return { title: t('accessibilityTitle'), alternates: { canonical: `/${locale}/accessibility` } }
+  return pageMetadata({ locale, path: '/accessibility', title: t('accessibilityTitle') })
 }
 
 export default async function AccessibilityPage({

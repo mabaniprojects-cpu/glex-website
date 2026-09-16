@@ -60,10 +60,27 @@ export async function checkRateLimit(
 /**
  * Best-effort client IP from the proxy headers. Only ever used as a rate-limit
  * bucket key and for consent/audit records — never for authorization.
+ *
+ * `do-connecting-ip` comes first because DigitalOcean App Platform sets it
+ * itself. The FIRST `x-forwarded-for` entry must never be trusted: proxies
+ * append to that header, so its first entry is whatever the client sent. Keying
+ * on it let every form's limit be bypassed by sending a new fake address with
+ * each request — verified against production on 2026-09-16, when 130 webhook
+ * calls with random addresses drew no 429 while the same calls without the
+ * header were refused after 120. The last entry is the one added by the
+ * nearest proxy, so it is the only one a client cannot choose.
  */
 export function clientIp(headers: Headers): string {
-  const forwarded = headers.get('x-forwarded-for')
-  if (forwarded) return forwarded.split(',')[0]!.trim()
+  const platform = headers.get('do-connecting-ip')?.trim()
+  if (platform) return platform
+
+  const forwarded = headers
+    .get('x-forwarded-for')
+    ?.split(',')
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+  if (forwarded?.length) return forwarded[forwarded.length - 1]!
+
   return headers.get('x-real-ip') ?? 'unknown'
 }
 

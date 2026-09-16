@@ -331,7 +331,9 @@
     "emptyBody": "Entfernen Sie einen Filter oder suchen Sie nach einem anderen Begriff.",
     "relatedProducts": "Ähnliche Produkte",
     "equivalentsAccepted": "Gleichwertige Produkte werden akzeptiert",
-    "illustrativeImage": "Beispielbild. Das gelieferte Produkt kann im Aussehen abweichen."
+    "illustrativeImage": "Beispielbild. Das gelieferte Produkt kann im Aussehen abweichen.",
+    "productMetaDescription": "{name} ({category}) von saudischen Herstellern, weltweit exportiert von GLEX. Jetzt online ein Angebot anfordern.",
+    "productMetaDescriptionHs": "{name} ({category}, HS-Code {hsCode}) von saudischen Herstellern, weltweit exportiert von GLEX. Jetzt online ein Angebot anfordern."
   },
   "rfq": {
     "title": "Angebotsanfrage",

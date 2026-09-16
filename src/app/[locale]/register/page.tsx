@@ -7,6 +7,7 @@ import { AuthShell } from '@/components/auth/auth-shell'
 import { Button } from '@/components/ui/button'
 import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
+import { pageMetadata } from '@/lib/seo'
 
 export async function generateMetadata(props: {
   params: Promise<{ locale: string }>
@@ -14,7 +15,7 @@ export async function generateMetadata(props: {
   const { locale } = await props.params
   if (!hasLocale(routing.locales, locale)) return {}
   const t = await getTranslations({ locale, namespace: 'auth' })
-  return { title: t('registerTitle'), alternates: { canonical: `/${locale}/register` } }
+  return pageMetadata({ locale, path: '/register', title: t('registerTitle') })
 }
 
 export default async function RegisterChooserPage({
@@ -53,18 +54,18 @@ export default async function RegisterChooserPage({
         {options.map((option) => (
           <div
             key={option.href}
-            className="flex flex-col rounded-xl border border-border-subtle p-6"
+            className="border-border-subtle flex flex-col rounded-xl border p-6"
           >
-            <option.icon className="size-8 text-glex-green-600" aria-hidden="true" />
+            <option.icon className="text-glex-green-600 size-8" aria-hidden="true" />
             <h2 className="mt-4 text-lg font-semibold">{option.title}</h2>
-            <p className="mt-2 flex-1 text-sm leading-relaxed text-glex-green-800/75">
+            <p className="text-glex-green-800/75 mt-2 flex-1 text-sm leading-relaxed">
               {option.body}
             </p>
             <div className="mt-6">
               <Button asChild variant={option.variant} className="w-full">
                 <Link href={option.href}>
                   {auth('registerAction')}
-                  <ArrowRight className="size-4 rtl-flip" aria-hidden="true" />
+                  <ArrowRight className="rtl-flip size-4" aria-hidden="true" />
                 </Link>
               </Button>
             </div>
@@ -72,11 +73,11 @@ export default async function RegisterChooserPage({
         ))}
       </div>
 
-      <p className="mt-7 text-center text-sm text-glex-green-800/70">
+      <p className="text-glex-green-800/70 mt-7 text-center text-sm">
         {auth('haveAccount')}{' '}
         <Link
           href="/login"
-          className="font-medium text-glex-green-700 underline-offset-4 hover:underline"
+          className="text-glex-green-700 font-medium underline-offset-4 hover:underline"
         >
           {auth('loginAction')}
         </Link>

@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Link } from '@/i18n/navigation'
 import { routing, type AppLocale } from '@/i18n/routing'
 import { getCategoryBySlug, listProducts, parseFilters } from '@/lib/catalogue'
+import { pageMetadata } from '@/lib/seo'
 
 export async function generateMetadata(props: {
   params: Promise<{ locale: string; category: string }>
@@ -21,11 +22,12 @@ export async function generateMetadata(props: {
   const category = await getCategoryBySlug(slug, locale as AppLocale)
   if (!category) return {}
 
-  return {
+  return pageMetadata({
+    locale,
+    path: `/marketplace/${slug}`,
     title: category.displayName,
     description: category.displayDescription ?? undefined,
-    alternates: { canonical: `/${locale}/marketplace/${slug}` },
-  }
+  })
 }
 
 export default async function CategoryPage({
@@ -76,15 +78,15 @@ export default async function CategoryPage({
       />
 
       <Section>
-        <p aria-live="polite" className="text-sm font-medium text-glex-green-800/75">
+        <p aria-live="polite" className="text-glex-green-800/75 text-sm font-medium">
           {t('resultCount', { count: total })}
         </p>
 
         {items.length === 0 ? (
-          <div className="mt-10 rounded-xl border border-border-subtle bg-surface-muted p-12 text-center">
-            <PackageSearch className="mx-auto size-10 text-glex-green-200" aria-hidden="true" />
+          <div className="border-border-subtle bg-surface-muted mt-10 rounded-xl border p-12 text-center">
+            <PackageSearch className="text-glex-green-200 mx-auto size-10" aria-hidden="true" />
             <h2 className="mt-4 text-lg font-semibold">{t('emptyTitle')}</h2>
-            <p className="mt-2 text-glex-green-800/70">{t('emptyBody')}</p>
+            <p className="text-glex-green-800/70 mt-2">{t('emptyBody')}</p>
             <div className="mt-6">
               <Button asChild variant="outline">
                 <Link href="/marketplace">{nav('marketplace')}</Link>

@@ -98,9 +98,23 @@ describe('pruneRateLimits', () => {
 })
 
 describe('clientIp', () => {
-  it('takes the first entry of x-forwarded-for', () => {
+  it('prefers the platform-set do-connecting-ip over anything the client sent', () => {
+    const headers = new Headers({
+      'do-connecting-ip': '192.0.2.10',
+      'x-forwarded-for': '203.0.113.4, 192.0.2.10',
+    })
+    expect(clientIp(headers)).toBe('192.0.2.10')
+  })
+
+  it('takes the proxy-appended last entry of x-forwarded-for, not the client-supplied first', () => {
     const headers = new Headers({ 'x-forwarded-for': '203.0.113.4, 70.41.3.18' })
-    expect(clientIp(headers)).toBe('203.0.113.4')
+    expect(clientIp(headers)).toBe('70.41.3.18')
+  })
+
+  it('cannot be steered to a new bucket by rotating a spoofed x-forwarded-for', () => {
+    const a = new Headers({ 'x-forwarded-for': '10.0.0.1, 70.41.3.18' })
+    const b = new Headers({ 'x-forwarded-for': '10.9.9.9, 70.41.3.18' })
+    expect(clientIp(a)).toBe(clientIp(b))
   })
 
   it('falls back to x-real-ip, then to a sentinel', () => {

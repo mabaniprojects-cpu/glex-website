@@ -331,7 +331,9 @@
     "emptyBody": "请尝试移除某项筛选条件，或更换搜索关键词。",
     "relatedProducts": "相关产品",
     "equivalentsAccepted": "可接受同等替代产品",
-    "illustrativeImage": "示意图，实际供货产品外观可能有所不同。"
+    "illustrativeImage": "示意图，实际供货产品外观可能有所不同。",
+    "productMetaDescription": "{name}（{category}），来自沙特制造商，由 GLEX 出口至全球。立即在线询价。",
+    "productMetaDescriptionHs": "{name}（{category}，HS 编码 {hsCode}），来自沙特制造商，由 GLEX 出口至全球。立即在线询价。"
   },
   "rfq": {
     "title": "询价单",

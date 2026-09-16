@@ -331,7 +331,9 @@
     "emptyBody": "جرّب إزالة أحد عوامل التصفية أو البحث بكلمة أخرى.",
     "relatedProducts": "منتجات ذات صلة",
     "equivalentsAccepted": "تُقبل المنتجات المكافئة",
-    "illustrativeImage": "صورة توضيحية. قد يختلف مظهر المنتج المورَّد."
+    "illustrativeImage": "صورة توضيحية. قد يختلف مظهر المنتج المورَّد.",
+    "productMetaDescription": "{name} ({category}) من مصنّعين سعوديين، تصدّره GLEX إلى جميع أنحاء العالم. اطلب عرض سعر عبر الإنترنت.",
+    "productMetaDescriptionHs": "{name} ({category}، رمز النظام المنسّق {hsCode}) من مصنّعين سعوديين، تصدّره GLEX إلى جميع أنحاء العالم. اطلب عرض سعر عبر الإنترنت."
   },
   "rfq": {
     "title": "طلب عرض سعر",

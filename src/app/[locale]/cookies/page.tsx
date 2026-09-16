@@ -6,6 +6,7 @@ import { CookiePreferences } from '@/components/layout/cookie-consent'
 import { LegalPage } from '@/components/legal/legal-page'
 import { routing } from '@/i18n/routing'
 import { readConsent } from '@/lib/consent'
+import { pageMetadata } from '@/lib/seo'
 
 const LAST_UPDATED = new Date('2026-01-01T00:00:00Z')
 
@@ -15,7 +16,7 @@ export async function generateMetadata(props: {
   const { locale } = await props.params
   if (!hasLocale(routing.locales, locale)) return {}
   const t = await getTranslations({ locale, namespace: 'legal' })
-  return { title: t('cookiesTitle'), alternates: { canonical: `/${locale}/cookies` } }
+  return pageMetadata({ locale, path: '/cookies', title: t('cookiesTitle') })
 }
 
 export default async function CookiesPage({ params }: { params: Promise<{ locale: string }> }) {
@@ -36,9 +37,7 @@ export default async function CookiesPage({ params }: { params: Promise<{ locale
       sections={[
         {
           heading: 'Strictly necessary cookies',
-          paragraphs: [
-            'These are required for the site to function and cannot be switched off.',
-          ],
+          paragraphs: ['These are required for the site to function and cannot be switched off.'],
           bullets: [
             'Session cookie — keeps you signed in. HTTP-only and SameSite-restricted.',
             'GLEX_LOCALE — remembers your chosen language.',

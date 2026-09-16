@@ -8,19 +8,9 @@ import { PageHero } from '@/components/layout/page-hero'
 import { Accordion, AccordionItem } from '@/components/ui/accordion'
 import { Card, CardContent } from '@/components/ui/card'
 import { routing } from '@/i18n/routing'
+import { pageMetadata } from '@/lib/seo'
 
-const INCOTERMS = [
-  'EXW',
-  'FCA',
-  'FOB',
-  'CFR',
-  'CIF',
-  'CPT',
-  'CIP',
-  'DAP',
-  'DPU',
-  'DDP',
-] as const
+const INCOTERMS = ['EXW', 'FCA', 'FOB', 'CFR', 'CIF', 'CPT', 'CIP', 'DAP', 'DPU', 'DDP'] as const
 
 /**
  * Nominal container types. Dimensions and capacities are deliberately NOT
@@ -55,11 +45,12 @@ export async function generateMetadata(props: {
   const { locale } = await props.params
   if (!hasLocale(routing.locales, locale)) return {}
   const t = await getTranslations({ locale, namespace: 'home.resources' })
-  return {
+  return pageMetadata({
+    locale,
+    path: '/resources',
     title: t('heading'),
     description: t('description'),
-    alternates: { canonical: `/${locale}/resources` },
-  }
+  })
 }
 
 export default async function ResourcesPage({ params }: { params: Promise<{ locale: string }> }) {
@@ -89,10 +80,10 @@ export default async function ResourcesPage({ params }: { params: Promise<{ loca
 
         <div
           role="note"
-          className="mt-6 flex max-w-3xl gap-3 rounded-xl border border-glex-gold-300 bg-glex-gold-50 p-5"
+          className="border-glex-gold-300 bg-glex-gold-50 mt-6 flex max-w-3xl gap-3 rounded-xl border p-5"
         >
-          <AlertTriangle className="mt-0.5 size-5 shrink-0 text-glex-gold-700" aria-hidden="true" />
-          <p className="text-sm leading-relaxed text-glex-green-900">{incoterms('disclaimer')}</p>
+          <AlertTriangle className="text-glex-gold-700 mt-0.5 size-5 shrink-0" aria-hidden="true" />
+          <p className="text-glex-green-900 text-sm leading-relaxed">{incoterms('disclaimer')}</p>
         </div>
 
         <div className="mt-8 max-w-3xl">
@@ -114,14 +105,14 @@ export default async function ResourcesPage({ params }: { params: Promise<{ loca
           {CONTAINERS.map((item) => (
             <Card key={item.key}>
               <CardContent className="p-6 pt-6">
-                <Container className="size-6 text-glex-green-600" aria-hidden="true" />
+                <Container className="text-glex-green-600 size-6" aria-hidden="true" />
                 <h3 className="mt-4 font-semibold">{item.name}</h3>
               </CardContent>
             </Card>
           ))}
         </div>
 
-        <p className="mt-6 max-w-3xl text-sm leading-relaxed text-glex-green-800/70">
+        <p className="text-glex-green-800/70 mt-6 max-w-3xl text-sm leading-relaxed">
           Internal dimensions, payload and tare weight vary between owners and builds. GLEX
           publishes verified figures for the specific equipment allocated to your shipment;
           capacities are maintained in the admin portal and are not guaranteed from this page.
@@ -137,10 +128,10 @@ export default async function ResourcesPage({ params }: { params: Promise<{ loca
             {DOCUMENTS.map((document) => (
               <li
                 key={document}
-                className="flex items-start gap-3 rounded-lg border border-border-subtle bg-white p-4"
+                className="border-border-subtle flex items-start gap-3 rounded-lg border bg-white p-4"
               >
                 <FileText
-                  className="mt-0.5 size-5 shrink-0 text-glex-green-500"
+                  className="text-glex-green-500 mt-0.5 size-5 shrink-0"
                   aria-hidden="true"
                 />
                 <span className="text-glex-green-900">{document}</span>
@@ -150,10 +141,10 @@ export default async function ResourcesPage({ params }: { params: Promise<{ loca
 
           <div
             role="note"
-            className="h-fit rounded-xl border border-glex-gold-300 bg-glex-gold-50 p-5"
+            className="border-glex-gold-300 bg-glex-gold-50 h-fit rounded-xl border p-5"
           >
-            <AlertTriangle className="size-5 text-glex-gold-700" aria-hidden="true" />
-            <p className="mt-3 text-sm leading-relaxed text-glex-green-900">
+            <AlertTriangle className="text-glex-gold-700 size-5" aria-hidden="true" />
+            <p className="text-glex-green-900 mt-3 text-sm leading-relaxed">
               This checklist is general guidance only. The documents actually required depend on the
               shipment mode, origin, destination and product category, and change over time. Final
               customs and legal requirements must be confirmed with qualified professionals and the

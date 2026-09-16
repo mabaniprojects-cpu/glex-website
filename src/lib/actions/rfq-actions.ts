@@ -156,43 +156,59 @@ export async function submitRfq(input: RfqSubmitInput): Promise<RfqSubmitResult>
     // --- Notifications (best effort) ---
     // The RFQ is already committed; a mail outage must never lose it.
 
+    const admin = internalRecipient('rfq')
+
     if (isGuest) {
       const token = await createToken(contactEmail, TOKEN_PURPOSE.EMAIL_VERIFICATION, {
         rfqReference: reference,
       })
-      await sendTemplate('rfq-submitted', contactEmail, {
-        locale: dbLocale,
-        recipientName: data.guestName || undefined,
-        actionUrl: absoluteUrl(`/${locale}/verify-email?token=${token}`),
-        actionLabel: 'Verify my email',
-        details: [{ label: 'Reference', value: reference }],
-      })
+      await sendTemplate(
+        'rfq-submitted',
+        contactEmail,
+        {
+          locale: dbLocale,
+          recipientName: data.guestName || undefined,
+          actionUrl: absoluteUrl(`/${locale}/verify-email?token=${token}`),
+          actionLabel: 'Verify my email',
+          details: [{ label: 'Reference', value: reference }],
+        },
+        { replyTo: admin }
+      )
     } else {
-      await sendTemplate('rfq-submitted', contactEmail, {
-        locale: dbLocale,
-        recipientName: user?.name ?? undefined,
-        actionUrl: absoluteUrl(`/${locale}/rfq/${reference}`),
-        actionLabel: 'View my request',
-        details: [{ label: 'Reference', value: reference }],
-      })
+      await sendTemplate(
+        'rfq-submitted',
+        contactEmail,
+        {
+          locale: dbLocale,
+          recipientName: user?.name ?? undefined,
+          actionUrl: absoluteUrl(`/${locale}/rfq/${reference}`),
+          actionLabel: 'View my request',
+          details: [{ label: 'Reference', value: reference }],
+        },
+        { replyTo: admin }
+      )
     }
 
-    const admin = internalRecipient('rfq')
     if (admin) {
-      await sendTemplate('internal-rfq', admin, {
-        locale: 'en',
-        subjectSuffix: `${reference} · ${data.destinationCountry}`,
-        // Previously absent, so the one notification that matters commercially
-        // was the only one with no way to open the record it described.
-        actionUrl: absoluteUrl('/en/admin/rfqs'),
-        actionLabel: 'Open in the admin portal',
-        details: [
-          { label: 'Reference', value: reference },
-          { label: 'Destination', value: data.destinationCountry },
-          { label: 'Items', value: String(data.items.length) },
-          { label: 'Submitted by', value: isGuest ? `Guest (${contactEmail})` : contactEmail },
-        ],
-      })
+      await sendTemplate(
+        'internal-rfq',
+        admin,
+        {
+          locale: 'en',
+          subjectSuffix: `${reference} · ${data.destinationCountry}`,
+          // Previously absent, so the one notification that matters commercially
+          // was the only one with no way to open the record it described.
+          actionUrl: absoluteUrl('/en/admin/rfqs'),
+          actionLabel: 'Open in the admin portal',
+          details: [
+            { label: 'Reference', value: reference },
+            { label: 'Destination', value: data.destinationCountry },
+            { label: 'Items', value: String(data.items.length) },
+            { label: 'Submitted by', value: isGuest ? `Guest (${contactEmail})` : contactEmail },
+          ],
+        },
+        { replyTo: contactEmail }
+      )
     }
 
     // The request has been captured; the cart has served its purpose.

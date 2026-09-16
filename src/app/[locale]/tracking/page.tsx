@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
 import { getTrackingProvider } from '@/lib/tracking/registry'
+import { pageMetadata } from '@/lib/seo'
 
 export async function generateMetadata(props: {
   params: Promise<{ locale: string }>
@@ -19,9 +20,12 @@ export async function generateMetadata(props: {
   if (!hasLocale(routing.locales, locale)) return {}
   const t = await getTranslations({ locale, namespace: 'tracking' })
   return {
-    title: t('title'),
-    description: t('description'),
-    alternates: { canonical: `/${locale}/tracking` },
+    ...(await pageMetadata({
+      locale,
+      path: '/tracking',
+      title: t('title'),
+      description: t('description'),
+    })),
     // Result pages are per-shipment and must not be indexed.
     robots: { index: false, follow: true },
   }
@@ -71,13 +75,10 @@ export default async function TrackingPage({
             <ShipmentView result={result} locale={locale} />
           ) : (
             <div className="mx-auto max-w-lg py-12 text-center">
-              <PackageSearch
-                className="mx-auto size-12 text-glex-green-200"
-                aria-hidden="true"
-              />
+              <PackageSearch className="text-glex-green-200 mx-auto size-12" aria-hidden="true" />
               <h2 className="mt-5 text-2xl font-bold">{t('notFoundTitle')}</h2>
-              <p className="mt-3 text-glex-green-800/75">{t('notFoundBody')}</p>
-              <p className="mt-2 font-mono text-sm text-glex-green-800/50" dir="ltr">
+              <p className="text-glex-green-800/75 mt-3">{t('notFoundBody')}</p>
+              <p className="text-glex-green-800/50 mt-2 font-mono text-sm" dir="ltr">
                 {query}
               </p>
               <div className="mt-7">

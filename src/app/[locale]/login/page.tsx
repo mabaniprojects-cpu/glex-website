@@ -6,6 +6,7 @@ import { Suspense } from 'react'
 import { AuthShell } from '@/components/auth/auth-shell'
 import { LoginForm } from '@/components/auth/login-form'
 import { routing } from '@/i18n/routing'
+import { pageMetadata } from '@/lib/seo'
 
 export async function generateMetadata(props: {
   params: Promise<{ locale: string }>
@@ -14,8 +15,7 @@ export async function generateMetadata(props: {
   if (!hasLocale(routing.locales, locale)) return {}
   const t = await getTranslations({ locale, namespace: 'auth' })
   return {
-    title: t('loginTitle'),
-    alternates: { canonical: `/${locale}/login` },
+    ...(await pageMetadata({ locale, path: '/login', title: t('loginTitle') })),
     robots: { index: false, follow: false },
   }
 }

@@ -13,6 +13,7 @@ import { SkipToContent } from '@/components/layout/skip-to-content'
 import { localeDirection, localeHreflang, locales, routing, type AppLocale } from '@/i18n/routing'
 import { readConsent } from '@/lib/consent'
 import { sweepIfDue } from '@/lib/maintenance'
+import { localeAlternates } from '@/lib/seo'
 import '../globals.css'
 
 /**
@@ -79,12 +80,6 @@ export async function generateMetadata(props: {
   const common = await getTranslations({ locale, namespace: 'common' })
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 
-  // hreflang map — every locale plus x-default pointing at English.
-  const languages = Object.fromEntries([
-    ...locales.map((l) => [localeHreflang[l], `/${l}`]),
-    ['x-default', `/${routing.defaultLocale}`],
-  ])
-
   return {
     metadataBase: new URL(baseUrl),
     title: {
@@ -93,10 +88,8 @@ export async function generateMetadata(props: {
     },
     description: t('metaDescription'),
     applicationName: common('brandFull'),
-    alternates: {
-      canonical: `/${locale}`,
-      languages,
-    },
+    // The home page's own tags; inner pages replace these via pageMetadata().
+    alternates: localeAlternates(locale, ''),
     openGraph: {
       type: 'website',
       siteName: common('brandFull'),

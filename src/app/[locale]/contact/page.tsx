@@ -8,6 +8,7 @@ import { OfficeCard } from '@/components/contact/office-card'
 import { PageHero } from '@/components/layout/page-hero'
 import { routing } from '@/i18n/routing'
 import { listOffices } from '@/lib/offices'
+import { pageMetadata } from '@/lib/seo'
 
 export async function generateMetadata(props: {
   params: Promise<{ locale: string }>
@@ -15,11 +16,12 @@ export async function generateMetadata(props: {
   const { locale } = await props.params
   if (!hasLocale(routing.locales, locale)) return {}
   const t = await getTranslations({ locale, namespace: 'contact' })
-  return {
+  return pageMetadata({
+    locale,
+    path: '/contact',
     title: t('title'),
     description: t('description'),
-    alternates: { canonical: `/${locale}/contact` },
-  }
+  })
 }
 
 export default async function ContactPage({ params }: { params: Promise<{ locale: string }> }) {
@@ -50,7 +52,7 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
           <div className="lg:col-span-3">
             <ContactForm />
           </div>
-          <div className="lg:col-span-2 space-y-6">
+          <div className="space-y-6 lg:col-span-2">
             {offices.map((office) => (
               <OfficeCard key={office.id} office={office} />
             ))}

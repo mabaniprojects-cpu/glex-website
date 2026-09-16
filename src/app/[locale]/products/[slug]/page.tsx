@@ -10,6 +10,7 @@ import { AddToRfqButton } from '@/components/marketplace/add-to-rfq-button'
 import { ProductCard } from '@/components/marketplace/product-card'
 import { routing, type AppLocale } from '@/i18n/routing'
 import { getProductBySlug, getRelatedProducts, parseSpecifications } from '@/lib/catalogue'
+import { pageMetadata } from '@/lib/seo'
 import { truncate } from '@/lib/utils'
 
 export async function generateMetadata(props: {
@@ -21,20 +22,24 @@ export async function generateMetadata(props: {
   const product = await getProductBySlug(slug, locale as AppLocale)
   if (!product) return {}
 
+  // The imported catalogue has names and HS codes but no written descriptions,
+  // so without a fallback every product page shipped with no description at
+  // all — and search results would show whatever text Google scraped instead.
+  const t = await getTranslations({ locale, namespace: 'marketplace' })
+  const fallback = { name: product.displayName, category: product.categoryName }
   const description = product.displayShortDescription
     ? truncate(product.displayShortDescription, 155)
-    : undefined
+    : product.hsCode
+      ? t('productMetaDescriptionHs', { ...fallback, hsCode: product.hsCode })
+      : t('productMetaDescription', fallback)
 
-  return {
+  return pageMetadata({
+    locale,
+    path: `/products/${slug}`,
     title: product.displayName,
     description,
-    alternates: { canonical: `/${locale}/products/${slug}` },
-    openGraph: {
-      title: product.displayName,
-      description,
-      images: product.images[0] ? [{ url: product.images[0].url }] : undefined,
-    },
-  }
+    image: product.images[0]?.url,
+  })
 }
 
 export default async function ProductPage({

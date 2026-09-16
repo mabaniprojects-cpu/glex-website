@@ -6,6 +6,7 @@ import { FreightForm } from '@/components/freight/freight-form'
 import { Section } from '@/components/home/sections'
 import { PageHero } from '@/components/layout/page-hero'
 import { routing } from '@/i18n/routing'
+import { pageMetadata } from '@/lib/seo'
 
 export async function generateMetadata(props: {
   params: Promise<{ locale: string }>
@@ -13,11 +14,12 @@ export async function generateMetadata(props: {
   const { locale } = await props.params
   if (!hasLocale(routing.locales, locale)) return {}
   const t = await getTranslations({ locale, namespace: 'freight' })
-  return {
+  return pageMetadata({
+    locale,
+    path: '/freight',
     title: t('title'),
     description: t('description'),
-    alternates: { canonical: `/${locale}/freight` },
-  }
+  })
 }
 
 export default async function FreightPage({ params }: { params: Promise<{ locale: string }> }) {

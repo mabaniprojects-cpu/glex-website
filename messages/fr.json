@@ -331,7 +331,9 @@
     "emptyBody": "Essayez de retirer un filtre ou de rechercher un autre terme.",
     "relatedProducts": "Produits associés",
     "equivalentsAccepted": "Produits équivalents acceptés",
-    "illustrativeImage": "Image d'illustration. L'aspect du produit livré peut différer."
+    "illustrativeImage": "Image d'illustration. L'aspect du produit livré peut différer.",
+    "productMetaDescription": "{name} ({category}) de fabricants saoudiens, exporté dans le monde entier par GLEX. Demandez un devis en ligne.",
+    "productMetaDescriptionHs": "{name} ({category}, code SH {hsCode}) de fabricants saoudiens, exporté dans le monde entier par GLEX. Demandez un devis en ligne."
   },
   "rfq": {
     "title": "Demande de devis",

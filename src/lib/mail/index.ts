@@ -127,15 +127,21 @@ export async function sendMail(message: MailMessage): Promise<MailResult> {
  * Delivery failure is reported, never thrown: the caller has already committed
  * its database work, and a mail outage must not roll back a registration or
  * lose a submitted RFQ.
+ *
+ * `replyTo` matters because everything is sent from a no-reply address. On a
+ * staff notification it is the submitter, so pressing Reply answers the
+ * customer; on a customer acknowledgement it is the team mailbox, so a
+ * customer's reply reaches a person instead of disappearing.
  */
 export async function sendTemplate(
   key: TemplateKey,
   to: MailMessage['to'],
-  context: TemplateContext
+  context: TemplateContext,
+  options: { replyTo?: string | null } = {}
 ): Promise<MailResult> {
   try {
     const { subject, html, text } = await renderTemplate(key, context)
-    return await sendMail({ to, subject, html, text })
+    return await sendMail({ to, subject, html, text, replyTo: options.replyTo ?? undefined })
   } catch (error) {
     const reason = error instanceof Error ? error.message : 'template render failed'
     console.error(`[mail] Failed to render "${key}": ${reason}`)

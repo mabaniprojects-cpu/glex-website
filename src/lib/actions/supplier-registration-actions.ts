@@ -259,28 +259,39 @@ export async function submitSupplierRegistration(
     // The application is committed; a mail outage must not lose it.
     const token = await createToken(email, TOKEN_PURPOSE.EMAIL_VERIFICATION)
 
-    await sendTemplate('supplier-submitted', email, {
-      locale: dbLocale,
-      recipientName: data.fullName,
-      actionUrl: absoluteUrl(`/${locale}/verify-email?token=${token}`),
-      actionLabel: 'Verify my email',
-      details: [{ label: 'Company', value: data.legalName }],
-    })
-
     const admin = internalRecipient('supplier')
+
+    await sendTemplate(
+      'supplier-submitted',
+      email,
+      {
+        locale: dbLocale,
+        recipientName: data.fullName,
+        actionUrl: absoluteUrl(`/${locale}/verify-email?token=${token}`),
+        actionLabel: 'Verify my email',
+        details: [{ label: 'Company', value: data.legalName }],
+      },
+      { replyTo: admin }
+    )
+
     if (admin) {
-      await sendTemplate('internal-supplier', admin, {
-        locale: 'en',
-        subjectSuffix: `${data.legalName} · ${data.country}`,
-        actionUrl: absoluteUrl('/en/admin/suppliers'),
-        actionLabel: 'Open in the admin portal',
-        details: [
-          { label: 'Company', value: data.legalName },
-          { label: 'Country', value: data.country },
-          { label: 'Categories', value: String(categories.length) },
-          { label: 'Documents', value: String(documents.length) },
-        ],
-      })
+      await sendTemplate(
+        'internal-supplier',
+        admin,
+        {
+          locale: 'en',
+          subjectSuffix: `${data.legalName} · ${data.country}`,
+          actionUrl: absoluteUrl('/en/admin/suppliers'),
+          actionLabel: 'Open in the admin portal',
+          details: [
+            { label: 'Company', value: data.legalName },
+            { label: 'Country', value: data.country },
+            { label: 'Categories', value: String(categories.length) },
+            { label: 'Documents', value: String(documents.length) },
+          ],
+        },
+        { replyTo: email }
+      )
     }
 
     return { ok: true }
