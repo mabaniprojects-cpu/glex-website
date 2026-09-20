@@ -87,6 +87,10 @@ for (const item of NEWS) {
   const englishBody = withSource(item.en.body, item.source, 'Source')
   const arabicBody = withSource(item.ar.body, item.source, 'المصدر')
 
+  // The photograph lives in the repository, not the database: the column holds
+  // the path the page renders.
+  const image = item.image ? `/news/${item.slug}.webp` : null
+
   const article = await db.newsArticle.upsert({
     where: { slug: item.slug },
     create: {
@@ -101,6 +105,8 @@ for (const item of NEWS) {
       // must not claim otherwise.
       isSample: false,
       readingMinutes: readingMinutes(englishBody),
+      featuredImage: image,
+      socialImage: image,
       seoTitle: item.en.title,
       seoDescription: item.en.summary,
       categoryId: categoryBySlug.get(item.category) ?? null,
@@ -114,6 +120,8 @@ for (const item of NEWS) {
       isFeatured: item.featured ?? false,
       isSample: false,
       readingMinutes: readingMinutes(englishBody),
+      featuredImage: image,
+      socialImage: image,
       categoryId: categoryBySlug.get(item.category) ?? null,
     },
     select: { id: true },

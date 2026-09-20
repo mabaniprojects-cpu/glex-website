@@ -17,6 +17,13 @@ export type NewsSeed = {
   category: string
   publishedAt: string
   featured?: boolean
+  /**
+   * A photograph in public/news/, where one exists and is usable. Two of the
+   * source posts carried a video thumbnail with a play button burned into it
+   * and a personal snapshot that crops badly, so those articles run without a
+   * picture rather than with a poor one.
+   */
+  image?: boolean
   source: string
   en: { title: string; summary: string; body: string }
   ar: { title: string; summary: string; body: string }
@@ -25,6 +32,7 @@ export type NewsSeed = {
 export const NEWS: NewsSeed[] = [
   {
     slug: 'glex-launched-by-mabani-al-jazeera',
+    image: true,
     category: 'company-news',
     publishedAt: '2025-08-14',
     featured: true,
@@ -57,6 +65,7 @@ From KSA to the world.`,
   },
   {
     slug: 'glex-launch-message-from-the-chairman',
+    image: true,
     category: 'company-news',
     publishedAt: '2025-08-13',
     source:
@@ -180,6 +189,7 @@ Africa is a priority market for Saudi building materials, and IATF is where its 
   },
   {
     slug: 'afreximbank-cooperation-talks',
+    image: true,
     category: 'partnerships',
     publishedAt: '2025-10-09',
     source:
@@ -203,6 +213,7 @@ The discussion centred on a pipeline of projects matching Africa's development p
   },
   {
     slug: 'saudi-exim-global-partners-forum-2025',
+    image: true,
     category: 'events',
     publishedAt: '2025-11-23',
     source:
