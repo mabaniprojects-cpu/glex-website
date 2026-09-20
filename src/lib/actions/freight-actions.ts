@@ -7,6 +7,7 @@ import { toDbLocale } from '@/i18n/locale'
 import { db } from '@/lib/db'
 import { internalRecipient, sendTemplate } from '@/lib/mail'
 import { checkRateLimit, clientIp } from '@/lib/rate-limit'
+import { notifyDesk } from '@/lib/staff-notifications'
 import { nextReference, REFERENCE_SCOPES } from '@/lib/references'
 import { absoluteUrl } from '@/lib/urls'
 import { fromDateTimeLocalInput } from '@/lib/utils'
@@ -158,6 +159,27 @@ export async function submitFreightInquiry(input: FreightInquiryInput): Promise<
         { replyTo: data.email.toLowerCase() }
       )
     }
+
+    await notifyDesk({
+      permission: 'inquiry:manage',
+      template: 'internal-freight',
+      context: {
+        locale: 'en',
+        subjectSuffix: `${reference} · ${lane}`,
+        actionUrl: absoluteUrl('/en/admin/inquiries'),
+        actionLabel: 'Open in the admin portal',
+        details: [
+          { label: 'Reference', value: reference },
+          { label: 'Type', value: 'FREIGHT_QUOTE' },
+          { label: 'Lane', value: lane },
+          { label: 'Mode', value: data.mode },
+          ...(data.isHazardous ? [{ label: 'Hazardous', value: 'Yes — declared' }] : []),
+          { label: 'From', value: `${data.fullName} <${data.email.toLowerCase()}>` },
+        ],
+      },
+      replyTo: data.email.toLowerCase(),
+      alreadySent: admin,
+    })
 
     return { ok: true, reference }
   } catch (error) {

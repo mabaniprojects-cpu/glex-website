@@ -6,6 +6,7 @@ import { toDbLocale } from '@/i18n/locale'
 import { db } from '@/lib/db'
 import { internalRecipient, sendTemplate } from '@/lib/mail'
 import { checkRateLimit, clientIp } from '@/lib/rate-limit'
+import { notifyDesk } from '@/lib/staff-notifications'
 import { nextReference } from '@/lib/references'
 import { absoluteUrl } from '@/lib/urls'
 import { contactSchema, type ContactInput } from '@/lib/validation/contact'
@@ -129,6 +130,29 @@ export async function submitContactInquiry(input: ContactInput): Promise<Contact
         { replyTo: data.email.toLowerCase() }
       )
     }
+
+    // And everyone whose desk this is, so seeing it does not depend on having
+    // been given access to the shared mailbox.
+    await notifyDesk({
+      permission: 'inquiry:manage',
+      template: 'internal-contact',
+      context: {
+        locale: 'en',
+        subjectSuffix: `${reference} · ${data.email.toLowerCase()}`,
+        actionUrl: absoluteUrl('/en/admin/inquiries'),
+        actionLabel: 'Open in the admin portal',
+        details: [
+          { label: 'Reference', value: reference },
+          { label: 'Type', value: data.type },
+          { label: 'Subject', value: data.subject },
+          { label: 'From', value: `${data.fullName} <${data.email.toLowerCase()}>` },
+          ...(data.company ? [{ label: 'Company', value: data.company }] : []),
+          ...(data.country ? [{ label: 'Country', value: data.country }] : []),
+        ],
+      },
+      replyTo: data.email.toLowerCase(),
+      alreadySent: admin,
+    })
 
     return { ok: true, reference }
   } catch (error) {

@@ -11,10 +11,10 @@ import {
   actionPermission,
   applyWorkflowAction,
   responsiblePermissions,
-  rolesWithPermission,
   type WorkflowAction,
 } from '@/lib/rfq-workflow'
 import { isRfqClosed } from '@/lib/rfq-status'
+import { deskRecipients } from '@/lib/staff-notifications'
 import { technicalOfficeRecipients } from '@/lib/technical-office'
 import { TECHNICAL_ORDER_THRESHOLD_USD } from '@/lib/rfq-workflow'
 import { can } from '@/lib/rbac'
@@ -295,17 +295,21 @@ async function notifyNextDesk(
   const permissions = responsiblePermissions(state)
   if (permissions.length === 0) return
 
-  const roles = [...new Set(permissions.flatMap(rolesWithPermission))]
+  // One desk at a time, through the shared lookup: it leaves administrators out
+  // while a desk is staffed, so the owner is not emailed about every hand-off
+  // in the company.
+  const seen = new Set<string>()
 
-  const recipients = await db.user.findMany({
-    where: { role: { in: roles }, isActive: true, deletedAt: null, emailVerified: { not: null } },
-    select: { email: true, name: true },
-  })
-  if (recipients.length === 0) return
+  for (const permission of permissions) {
+    const recipients = await deskRecipients(permission)
 
-  await Promise.all(
-    recipients.map((recipient) =>
-      sendTemplate('internal-rfq-stage', recipient.email, {
+    for (const recipient of recipients) {
+      const address = recipient.email.trim().toLowerCase()
+      // Pricing waits on two desks at once, and an administrator staffs both.
+      if (seen.has(address)) continue
+      seen.add(address)
+
+      await sendTemplate('internal-rfq-stage', address, {
         // Internal mail is always English; staff are not per-locale.
         locale: 'en',
         recipientName: recipient.name,
@@ -317,8 +321,8 @@ async function notifyNextDesk(
           { label: 'Stage', value: humanStage(state.workflowStage) },
         ],
       })
-    )
-  )
+    }
+  }
 }
 
 /** Plain USD, for a reader outside the application. */

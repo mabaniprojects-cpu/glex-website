@@ -8,6 +8,7 @@ import { getSessionUser } from '@/lib/auth-guards'
 import { db } from '@/lib/db'
 import { internalRecipient, sendTemplate } from '@/lib/mail'
 import { checkRateLimit, clientIp } from '@/lib/rate-limit'
+import { notifyDesk } from '@/lib/staff-notifications'
 import { nextReference } from '@/lib/references'
 import { resolveOwnedAttachments } from '@/lib/rfq-attachments'
 import { readCart, writeCart } from '@/lib/rfq-cart'
@@ -210,6 +211,28 @@ export async function submitRfq(input: RfqSubmitInput): Promise<RfqSubmitResult>
         { replyTo: contactEmail }
       )
     }
+
+    // Customer service is the first desk in the internal process, and a new
+    // request starts on theirs. The later hand-offs notify the desk they move
+    // to; this is the one that opens the file.
+    await notifyDesk({
+      permission: 'rfq:stage:cs',
+      template: 'internal-rfq',
+      context: {
+        locale: 'en',
+        subjectSuffix: `${reference} · ${data.destinationCountry}`,
+        actionUrl: absoluteUrl(`/en/admin/rfqs/${reference}`),
+        actionLabel: 'Open in the admin portal',
+        details: [
+          { label: 'Reference', value: reference },
+          { label: 'Destination', value: data.destinationCountry },
+          { label: 'Items', value: String(data.items.length) },
+          { label: 'Submitted by', value: isGuest ? `Guest (${contactEmail})` : contactEmail },
+        ],
+      },
+      replyTo: contactEmail,
+      alreadySent: admin,
+    })
 
     // The request has been captured; the cart has served its purpose.
     await writeCart([])

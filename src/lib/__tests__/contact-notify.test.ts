@@ -50,6 +50,15 @@ vi.mock('@/lib/urls', () => ({
   absoluteUrl: (path: string) => `https://glex.test${path}`,
 }))
 
+// The desk lookup reads the staff table; two colleagues hold the customer
+// service desk here, one of whom is the shared mailbox itself.
+const deskUsers = vi.hoisted(() => ({
+  rows: [
+    { email: 'omer@glex.test', name: 'Omer' },
+    { email: 'ops@glex.test', name: 'Shared mailbox' },
+  ],
+}))
+
 vi.mock('@/lib/db', () => ({
   db: {
     $transaction: async (fn: (tx: unknown) => Promise<unknown>) =>
@@ -57,6 +66,7 @@ vi.mock('@/lib/db', () => ({
         contactInquiry: { create: async () => ({}) },
         consentRecord: { create: async () => ({}) },
       }),
+    user: { findMany: async () => deskUsers.rows },
   },
 }))
 
@@ -85,7 +95,7 @@ describe('contact enquiry notifications', () => {
     const result = await submitContactInquiry(VALID)
     expect(result).toEqual({ ok: true, reference: 'GLEX-INQ-2026-000042' })
 
-    expect(sendTemplate).toHaveBeenCalledTimes(2)
+    expect(sendTemplate).toHaveBeenCalledTimes(3)
 
     const [ackKey, ackTo, ackContext] = sendTemplate.mock.calls[0]
     expect(ackKey).toBe('contact-received')
@@ -97,6 +107,17 @@ describe('contact enquiry notifications', () => {
     // Staff get their own copy, not the customer's 'thank you for contacting us'.
     expect(staffKey).toBe('internal-contact')
     expect(staffTo).toBe('ops@glex.test')
+  })
+
+  it('notifies the desk as well as the mailbox, and nobody twice', async () => {
+    await submitContactInquiry(VALID)
+
+    const staffCopies = sendTemplate.mock.calls.filter(([key]) => key === 'internal-contact')
+    const addressed = staffCopies.map(([, to]) => to)
+
+    // The shared mailbox, and the colleague whose desk this is — but the
+    // mailbox only once, even though it is also somebody's account.
+    expect(addressed).toEqual(['ops@glex.test', 'omer@glex.test'])
   })
 
   it('routes replies to a person: staff reply to the sender, the sender replies to staff', async () => {
@@ -125,15 +146,22 @@ describe('contact enquiry notifications', () => {
     expect(serialised).not.toContain('ordinary Portland cement')
   })
 
-  it('still acknowledges the sender when no internal address is configured', async () => {
+  it('still reaches the sender and the desk when no shared mailbox is configured', async () => {
     internalRecipient.mockReturnValue(null)
 
     const result = await submitContactInquiry(VALID)
 
     expect(result.ok).toBe(true)
     // The sender is never punished for a missing CONTACT_TO_EMAIL.
-    expect(sendTemplate).toHaveBeenCalledTimes(1)
     expect(sendTemplate.mock.calls[0][1]).toBe('amina@example.com')
+
+    // And the enquiry still reaches the people whose job it is. Addressing the
+    // desk by permission is what makes the shared mailbox optional rather than
+    // the single point of failure it used to be.
+    const staffCopies = sendTemplate.mock.calls
+      .filter(([key]) => key === 'internal-contact')
+      .map(([, to]) => to)
+    expect(staffCopies).toEqual(['omer@glex.test', 'ops@glex.test'])
   })
 
   it('sends nothing for a honeypot hit', async () => {
