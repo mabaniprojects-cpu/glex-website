@@ -233,7 +233,17 @@
       "callUs": "Rufen Sie uns an",
       "copyAddress": "Adresse kopieren",
       "addressCopied": "Adresse kopiert",
-      "directions": "Route planen"
+      "directions": "Route planen",
+      "days": {
+        "sunday": "Sonntag",
+        "monday": "Montag",
+        "tuesday": "Dienstag",
+        "wednesday": "Mittwoch",
+        "thursday": "Donnerstag",
+        "friday": "Freitag",
+        "saturday": "Samstag"
+      },
+      "hoursSeparator": ", "
     }
   },
   "footer": {

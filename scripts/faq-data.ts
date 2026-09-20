@@ -300,6 +300,19 @@ export const FAQ: FaqSeed[] = [
   {
     category: 'Contact',
     en: {
+      question: 'What are your business hours?',
+      answer:
+        'Sunday to Thursday, 08:00 to 17:00 Saudi time (GMT+3). Friday and Saturday are the weekend. A message sent outside those hours is answered on the next working day.',
+    },
+    ar: {
+      question: 'ما هي ساعات العمل لديكم؟',
+      answer:
+        'من الأحد إلى الخميس، من الساعة 08:00 حتى 17:00 بتوقيت السعودية (غرينتش +3)، والجمعة والسبت عطلة نهاية الأسبوع. وتُجاب الرسائل الواردة خارج هذه الأوقات في يوم العمل التالي.',
+    },
+  },
+  {
+    category: 'Contact',
+    en: {
       question: 'Where is GLEX based?',
       answer:
         'GLEX operates from King Road Tower, Floor 10, Office 03, Ash Shati District, Jeddah, Saudi Arabia. You can reach the office on +966 9200 31827.',

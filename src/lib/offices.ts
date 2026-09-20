@@ -27,6 +27,7 @@ function fallbackOffice(): OfficeView {
     latitude: GLEX_COMPANY.office.latitude,
     longitude: GLEX_COMPANY.office.longitude,
     isPrimary: true,
+    businessHours: [...GLEX_COMPANY.office.businessHours],
   }
 }
 
@@ -50,10 +51,20 @@ export async function listOffices(): Promise<OfficeView[]> {
         latitude: true,
         longitude: true,
         isPrimary: true,
+        businessHours: true,
       },
     })
 
-    return rows.length > 0 ? rows : [fallbackOffice()]
+    // `businessHours` is a JSON column, so it arrives as `unknown` and is
+    // narrowed here rather than trusted.
+    const offices: OfficeView[] = rows.map((row) => ({
+      ...row,
+      businessHours: Array.isArray(row.businessHours)
+        ? (row.businessHours as OfficeView['businessHours'])
+        : [],
+    }))
+
+    return offices.length > 0 ? offices : [fallbackOffice()]
   } catch (error) {
     console.error('[offices] Falling back to the hard-coded head office:', error)
     return [fallbackOffice()]

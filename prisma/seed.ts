@@ -27,8 +27,7 @@ import { hashPassword, isStrongPassword } from '../src/lib/password'
 import { formatReference } from '../src/lib/references'
 import { slugify } from '../src/lib/utils'
 
-const DEMO_ENABLED =
-  process.env.SEED_DEMO_DATA === 'true' && process.env.NODE_ENV !== 'production'
+const DEMO_ENABLED = process.env.SEED_DEMO_DATA === 'true' && process.env.NODE_ENV !== 'production'
 
 /**
  * No fallback, deliberately.
@@ -92,16 +91,76 @@ const ROUTES: ReadonlyArray<{
   destLng: number
   mode: ShipmentMode
 }> = [
-  { label: 'Jeddah → Rotterdam', destName: 'Rotterdam', destLat: 51.9244, destLng: 4.4777, mode: ShipmentMode.OCEAN },
-  { label: 'Jeddah → Shanghai', destName: 'Shanghai', destLat: 31.2304, destLng: 121.4737, mode: ShipmentMode.OCEAN },
-  { label: 'Jeddah → Mumbai', destName: 'Mumbai', destLat: 19.076, destLng: 72.8777, mode: ShipmentMode.OCEAN },
-  { label: 'Jeddah → Durban', destName: 'Durban', destLat: -29.8587, destLng: 31.0218, mode: ShipmentMode.OCEAN },
-  { label: 'Jeddah → Hamburg', destName: 'Hamburg', destLat: 53.5511, destLng: 9.9937, mode: ShipmentMode.OCEAN },
-  { label: 'Jeddah → Singapore', destName: 'Singapore', destLat: 1.3521, destLng: 103.8198, mode: ShipmentMode.OCEAN },
-  { label: 'Jeddah → New York', destName: 'New York', destLat: 40.7128, destLng: -74.006, mode: ShipmentMode.OCEAN },
-  { label: 'Jeddah → Casablanca', destName: 'Casablanca', destLat: 33.5731, destLng: -7.5898, mode: ShipmentMode.OCEAN },
-  { label: 'Jeddah → Istanbul', destName: 'Istanbul', destLat: 41.0082, destLng: 28.9784, mode: ShipmentMode.MULTIMODAL },
-  { label: 'Jeddah → Nairobi', destName: 'Nairobi', destLat: -1.2921, destLng: 36.8219, mode: ShipmentMode.AIR },
+  {
+    label: 'Jeddah → Rotterdam',
+    destName: 'Rotterdam',
+    destLat: 51.9244,
+    destLng: 4.4777,
+    mode: ShipmentMode.OCEAN,
+  },
+  {
+    label: 'Jeddah → Shanghai',
+    destName: 'Shanghai',
+    destLat: 31.2304,
+    destLng: 121.4737,
+    mode: ShipmentMode.OCEAN,
+  },
+  {
+    label: 'Jeddah → Mumbai',
+    destName: 'Mumbai',
+    destLat: 19.076,
+    destLng: 72.8777,
+    mode: ShipmentMode.OCEAN,
+  },
+  {
+    label: 'Jeddah → Durban',
+    destName: 'Durban',
+    destLat: -29.8587,
+    destLng: 31.0218,
+    mode: ShipmentMode.OCEAN,
+  },
+  {
+    label: 'Jeddah → Hamburg',
+    destName: 'Hamburg',
+    destLat: 53.5511,
+    destLng: 9.9937,
+    mode: ShipmentMode.OCEAN,
+  },
+  {
+    label: 'Jeddah → Singapore',
+    destName: 'Singapore',
+    destLat: 1.3521,
+    destLng: 103.8198,
+    mode: ShipmentMode.OCEAN,
+  },
+  {
+    label: 'Jeddah → New York',
+    destName: 'New York',
+    destLat: 40.7128,
+    destLng: -74.006,
+    mode: ShipmentMode.OCEAN,
+  },
+  {
+    label: 'Jeddah → Casablanca',
+    destName: 'Casablanca',
+    destLat: 33.5731,
+    destLng: -7.5898,
+    mode: ShipmentMode.OCEAN,
+  },
+  {
+    label: 'Jeddah → Istanbul',
+    destName: 'Istanbul',
+    destLat: 41.0082,
+    destLng: 28.9784,
+    mode: ShipmentMode.MULTIMODAL,
+  },
+  {
+    label: 'Jeddah → Nairobi',
+    destName: 'Nairobi',
+    destLat: -1.2921,
+    destLng: 36.8219,
+    mode: ShipmentMode.AIR,
+  },
 ]
 
 const FAQS: ReadonlyArray<{ question: string; answer: string; category: string }> = [
@@ -154,27 +213,132 @@ const FAQS: ReadonlyArray<{ question: string; answer: string; category: string }
   },
 ]
 
-const EMAIL_TEMPLATES: ReadonlyArray<{ key: string; subject: string; heading: string; body: string }> = [
-  { key: 'welcome', subject: 'Welcome to GLEX', heading: 'Welcome to GLEX', body: 'Your account has been created. You can now build RFQs, follow shipments and manage your documents.' },
-  { key: 'email-verification', subject: 'Verify your email address', heading: 'Confirm your email', body: 'Please confirm your email address to activate your GLEX account.' },
-  { key: 'password-reset', subject: 'Reset your GLEX password', heading: 'Password reset', body: 'A password reset was requested for your account. If this was not you, no action is needed.' },
-  { key: 'supplier-submitted', subject: 'Supplier application received', heading: 'Application received', body: 'Thank you for registering. Our team will review your application and respond by email.' },
-  { key: 'supplier-clarification', subject: 'Additional information required', heading: 'Clarification required', body: 'We need some additional information before we can complete our review.' },
-  { key: 'supplier-approved', subject: 'Your GLEX supplier application is approved', heading: 'Application approved', body: 'Your company has been approved. You can now manage your catalogue and receive sourcing opportunities.' },
-  { key: 'supplier-rejected', subject: 'Update on your GLEX supplier application', heading: 'Application update', body: 'Thank you for your interest. On this occasion we are unable to proceed with your application.' },
-  { key: 'client-registered', subject: 'Your GLEX account is ready', heading: 'Account created', body: 'Your client account is active. Explore the marketplace and submit your first request for quotation.' },
-  { key: 'rfq-submitted', subject: 'We have received your request for quotation', heading: 'RFQ received', body: 'Thank you. Your request has been logged and our team will respond shortly.' },
-  { key: 'rfq-clarification', subject: 'Clarification required on your RFQ', heading: 'Clarification required', body: 'We need a little more detail before we can prepare your quotation.' },
-  { key: 'quotation-available', subject: 'Your quotation is ready', heading: 'Quotation available', body: 'Your commercial offer is ready to review in your dashboard.' },
-  { key: 'rfq-accepted', subject: 'Quotation accepted', heading: 'Thank you', body: 'We have recorded your acceptance and will proceed with sourcing and logistics.' },
-  { key: 'shipment-created', subject: 'Your shipment has been booked', heading: 'Shipment created', body: 'A shipment has been created for your order. You can follow its progress at any time.' },
-  { key: 'shipment-departed', subject: 'Your shipment has departed', heading: 'Shipment departed', body: 'Your shipment has departed the origin port.' },
-  { key: 'shipment-delayed', subject: 'Update: your shipment is delayed', heading: 'Shipment delayed', body: 'We are tracking a delay on your shipment and will update you as soon as we have more information.' },
-  { key: 'shipment-exception', subject: 'Action may be required on your shipment', heading: 'Shipment exception', body: 'An exception has been recorded against your shipment. Our team is reviewing it.' },
-  { key: 'shipment-delivered', subject: 'Your shipment has been delivered', heading: 'Shipment delivered', body: 'Your shipment has been delivered. Thank you for working with GLEX.' },
-  { key: 'contact-received', subject: 'We have received your message', heading: 'Message received', body: 'Thank you for contacting GLEX. Our team will respond as soon as possible.' },
-  { key: 'support-response', subject: 'Update on your support request', heading: 'Support update', body: 'There is a new response on your support request.' },
-  { key: 'team-invitation', subject: 'You have been invited to a GLEX team', heading: 'Team invitation', body: 'You have been invited to join an organization on GLEX.' },
+const EMAIL_TEMPLATES: ReadonlyArray<{
+  key: string
+  subject: string
+  heading: string
+  body: string
+}> = [
+  {
+    key: 'welcome',
+    subject: 'Welcome to GLEX',
+    heading: 'Welcome to GLEX',
+    body: 'Your account has been created. You can now build RFQs, follow shipments and manage your documents.',
+  },
+  {
+    key: 'email-verification',
+    subject: 'Verify your email address',
+    heading: 'Confirm your email',
+    body: 'Please confirm your email address to activate your GLEX account.',
+  },
+  {
+    key: 'password-reset',
+    subject: 'Reset your GLEX password',
+    heading: 'Password reset',
+    body: 'A password reset was requested for your account. If this was not you, no action is needed.',
+  },
+  {
+    key: 'supplier-submitted',
+    subject: 'Supplier application received',
+    heading: 'Application received',
+    body: 'Thank you for registering. Our team will review your application and respond by email.',
+  },
+  {
+    key: 'supplier-clarification',
+    subject: 'Additional information required',
+    heading: 'Clarification required',
+    body: 'We need some additional information before we can complete our review.',
+  },
+  {
+    key: 'supplier-approved',
+    subject: 'Your GLEX supplier application is approved',
+    heading: 'Application approved',
+    body: 'Your company has been approved. You can now manage your catalogue and receive sourcing opportunities.',
+  },
+  {
+    key: 'supplier-rejected',
+    subject: 'Update on your GLEX supplier application',
+    heading: 'Application update',
+    body: 'Thank you for your interest. On this occasion we are unable to proceed with your application.',
+  },
+  {
+    key: 'client-registered',
+    subject: 'Your GLEX account is ready',
+    heading: 'Account created',
+    body: 'Your client account is active. Explore the marketplace and submit your first request for quotation.',
+  },
+  {
+    key: 'rfq-submitted',
+    subject: 'We have received your request for quotation',
+    heading: 'RFQ received',
+    body: 'Thank you. Your request has been logged and our team will respond shortly.',
+  },
+  {
+    key: 'rfq-clarification',
+    subject: 'Clarification required on your RFQ',
+    heading: 'Clarification required',
+    body: 'We need a little more detail before we can prepare your quotation.',
+  },
+  {
+    key: 'quotation-available',
+    subject: 'Your quotation is ready',
+    heading: 'Quotation available',
+    body: 'Your commercial offer is ready to review in your dashboard.',
+  },
+  {
+    key: 'rfq-accepted',
+    subject: 'Quotation accepted',
+    heading: 'Thank you',
+    body: 'We have recorded your acceptance and will proceed with sourcing and logistics.',
+  },
+  {
+    key: 'shipment-created',
+    subject: 'Your shipment has been booked',
+    heading: 'Shipment created',
+    body: 'A shipment has been created for your order. You can follow its progress at any time.',
+  },
+  {
+    key: 'shipment-departed',
+    subject: 'Your shipment has departed',
+    heading: 'Shipment departed',
+    body: 'Your shipment has departed the origin port.',
+  },
+  {
+    key: 'shipment-delayed',
+    subject: 'Update: your shipment is delayed',
+    heading: 'Shipment delayed',
+    body: 'We are tracking a delay on your shipment and will update you as soon as we have more information.',
+  },
+  {
+    key: 'shipment-exception',
+    subject: 'Action may be required on your shipment',
+    heading: 'Shipment exception',
+    body: 'An exception has been recorded against your shipment. Our team is reviewing it.',
+  },
+  {
+    key: 'shipment-delivered',
+    subject: 'Your shipment has been delivered',
+    heading: 'Shipment delivered',
+    body: 'Your shipment has been delivered. Thank you for working with GLEX.',
+  },
+  {
+    key: 'contact-received',
+    subject: 'We have received your message',
+    heading: 'Message received',
+    body: 'Thank you for contacting GLEX. Our team will respond as soon as possible.',
+  },
+  {
+    key: 'support-response',
+    subject: 'Update on your support request',
+    heading: 'Support update',
+    body: 'There is a new response on your support request.',
+  },
+  {
+    key: 'team-invitation',
+    subject: 'You have been invited to a GLEX team',
+    heading: 'Team invitation',
+    body: 'You have been invited to join an organization on GLEX.',
+  },
 ]
 
 // --- Seeding ----------------------------------------------------------------
@@ -196,15 +360,7 @@ async function seedReferenceData() {
       latitude: GLEX_COMPANY.office.latitude,
       longitude: GLEX_COMPANY.office.longitude,
       isPrimary: true,
-      businessHours: [
-        { day: 'sunday', open: '09:00', close: '18:00' },
-        { day: 'monday', open: '09:00', close: '18:00' },
-        { day: 'tuesday', open: '09:00', close: '18:00' },
-        { day: 'wednesday', open: '09:00', close: '18:00' },
-        { day: 'thursday', open: '09:00', close: '18:00' },
-        { day: 'friday', open: null, close: null },
-        { day: 'saturday', open: null, close: null },
-      ],
+      businessHours: [...GLEX_COMPANY.office.businessHours],
     },
     update: {},
   })
@@ -600,13 +756,53 @@ async function seedDemoData() {
         isDemo: true,
         events: {
           create: [
-            { status: ShipmentStatus.BOOKING_CREATED, title: 'Booking created', occurredAt: daysAgo(14), dedupeKey: 'seed-1' },
-            { status: ShipmentStatus.COLLECTED, title: 'Cargo collected', location: 'Jeddah', occurredAt: daysAgo(12), dedupeKey: 'seed-2' },
-            { status: ShipmentStatus.EXPORT_DOCUMENTATION, title: 'Export documentation prepared', location: 'Jeddah', occurredAt: daysAgo(11), dedupeKey: 'seed-3' },
-            { status: ShipmentStatus.AT_ORIGIN_PORT, title: 'Arrived at origin port', location: 'Jeddah Islamic Port', occurredAt: daysAgo(10), dedupeKey: 'seed-4' },
-            { status: ShipmentStatus.LOADED, title: 'Loaded on vessel', location: 'Jeddah Islamic Port', occurredAt: daysAgo(9), dedupeKey: 'seed-5' },
-            { status: ShipmentStatus.DEPARTED, title: 'Vessel departed', location: 'Jeddah Islamic Port', occurredAt: daysAgo(8), dedupeKey: 'seed-6' },
-            { status: ShipmentStatus.IN_TRANSIT, title: 'In transit', occurredAt: daysAgo(3), dedupeKey: 'seed-7' },
+            {
+              status: ShipmentStatus.BOOKING_CREATED,
+              title: 'Booking created',
+              occurredAt: daysAgo(14),
+              dedupeKey: 'seed-1',
+            },
+            {
+              status: ShipmentStatus.COLLECTED,
+              title: 'Cargo collected',
+              location: 'Jeddah',
+              occurredAt: daysAgo(12),
+              dedupeKey: 'seed-2',
+            },
+            {
+              status: ShipmentStatus.EXPORT_DOCUMENTATION,
+              title: 'Export documentation prepared',
+              location: 'Jeddah',
+              occurredAt: daysAgo(11),
+              dedupeKey: 'seed-3',
+            },
+            {
+              status: ShipmentStatus.AT_ORIGIN_PORT,
+              title: 'Arrived at origin port',
+              location: 'Jeddah Islamic Port',
+              occurredAt: daysAgo(10),
+              dedupeKey: 'seed-4',
+            },
+            {
+              status: ShipmentStatus.LOADED,
+              title: 'Loaded on vessel',
+              location: 'Jeddah Islamic Port',
+              occurredAt: daysAgo(9),
+              dedupeKey: 'seed-5',
+            },
+            {
+              status: ShipmentStatus.DEPARTED,
+              title: 'Vessel departed',
+              location: 'Jeddah Islamic Port',
+              occurredAt: daysAgo(8),
+              dedupeKey: 'seed-6',
+            },
+            {
+              status: ShipmentStatus.IN_TRANSIT,
+              title: 'In transit',
+              occurredAt: daysAgo(3),
+              dedupeKey: 'seed-7',
+            },
           ],
         },
       },
@@ -679,7 +875,8 @@ async function seedDemoData() {
     where: { id: announcementId },
     create: {
       id: announcementId,
-      message: 'Demo environment — sample content is clearly labelled and editable in the admin portal.',
+      message:
+        'Demo environment — sample content is clearly labelled and editable in the admin portal.',
       variant: 'info',
       isActive: true,
     },

@@ -39,6 +39,20 @@ export const GLEX_COMPANY = {
     /** Approximate coordinates for King Road Tower, Ash Shati, Jeddah. */
     latitude: 21.6009,
     longitude: 39.1077,
+    /**
+     * 08:00 to 17:00, Sunday to Thursday — the Saudi working week. Held here
+     * as the fallback for when the database is unreachable; the editable copy
+     * lives on the Office record and is what the contact page shows.
+     */
+    businessHours: [
+      { day: 'sunday', open: '08:00', close: '17:00' },
+      { day: 'monday', open: '08:00', close: '17:00' },
+      { day: 'tuesday', open: '08:00', close: '17:00' },
+      { day: 'wednesday', open: '08:00', close: '17:00' },
+      { day: 'thursday', open: '08:00', close: '17:00' },
+      { day: 'friday', open: null, close: null },
+      { day: 'saturday', open: null, close: null },
+    ],
   },
 } as const
 
