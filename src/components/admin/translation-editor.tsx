@@ -5,16 +5,18 @@ import { Languages, Save, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import * as React from 'react'
 import { Button } from '@/components/ui/button'
-import { Field, FieldDescription, FieldInput, FieldLabel, FieldTextarea } from '@/components/ui/field'
+import {
+  Field,
+  FieldDescription,
+  FieldInput,
+  FieldLabel,
+  FieldTextarea,
+} from '@/components/ui/field'
 import { fromDbLocale } from '@/i18n/locale'
 import { useRouter } from '@/i18n/navigation'
 import { localeLabels, type AppLocale } from '@/i18n/routing'
 import { deleteTranslation, saveTranslation } from '@/lib/actions/translation-actions'
-import {
-  TRANSLATABLE_LOCALES,
-  TRANSLATION_FIELDS,
-  type TranslatableKind,
-} from '@/lib/translations'
+import { TRANSLATABLE_LOCALES, TRANSLATION_FIELDS, type TranslatableKind } from '@/lib/translations'
 
 export type TranslationRow = { locale: Locale } & Record<string, unknown>
 
@@ -75,9 +77,7 @@ export function TranslationEditor({
     setValues(readRow(rowFor(target)))
   }
 
-  const missingRequired = fields.some(
-    (field) => field.required && !values[field.name]?.trim()
-  )
+  const missingRequired = fields.some((field) => field.required && !values[field.name]?.trim())
 
   function run(action: () => Promise<{ ok: boolean; error?: string }>, successText: string) {
     setMessage(null)
@@ -105,16 +105,20 @@ export function TranslationEditor({
   return (
     <section
       aria-labelledby="translations-heading"
-      className="rounded-xl border border-border-subtle p-6"
+      className="border-border-subtle rounded-xl border p-6"
     >
       <h2 id="translations-heading" className="flex items-center gap-2 text-lg font-semibold">
-        <Languages className="size-5 text-glex-green-600" aria-hidden="true" />
+        <Languages className="text-glex-green-600 size-5" aria-hidden="true" />
         {admin('translations.heading')}
       </h2>
-      <p className="mt-2 text-sm text-glex-green-800/70">{admin('translations.intro')}</p>
+      <p className="text-glex-green-800/70 mt-2 text-sm">{admin('translations.intro')}</p>
 
       {/* Locale tabs. English is the source, so it is not offered. */}
-      <div role="tablist" aria-label={admin('translations.heading')} className="mt-5 flex flex-wrap gap-2">
+      <div
+        role="tablist"
+        aria-label={admin('translations.heading')}
+        className="mt-5 flex flex-wrap gap-2"
+      >
         {TRANSLATABLE_LOCALES.map((candidate) => {
           const active = candidate === locale
           const translated = Boolean(rowFor(candidate))
@@ -128,8 +132,8 @@ export function TranslationEditor({
               onClick={() => switchTo(candidate)}
               className={
                 active
-                  ? 'rounded-lg bg-glex-green-700 px-3 py-1.5 text-sm font-medium text-white'
-                  : 'rounded-lg border border-border-subtle px-3 py-1.5 text-sm font-medium'
+                  ? 'bg-glex-green-700 rounded-lg px-3 py-1.5 text-sm font-medium text-white'
+                  : 'border-border-subtle rounded-lg border px-3 py-1.5 text-sm font-medium'
               }
             >
               {localeLabels[fromDbLocale(candidate) as AppLocale]}
@@ -152,10 +156,7 @@ export function TranslationEditor({
         className="mt-6 space-y-5"
         onSubmit={(event) => {
           event.preventDefault()
-          run(
-            () => saveTranslation({ kind, entityId, locale, values }),
-            admin('saved')
-          )
+          run(() => saveTranslation({ kind, entityId, locale, values }), admin('saved'))
         }}
       >
         {fields.map((field) => (
@@ -210,10 +211,7 @@ export function TranslationEditor({
               variant="ghost"
               disabled={pending}
               onClick={() =>
-                run(
-                  () => deleteTranslation({ kind, entityId, locale }),
-                  admin('deleted')
-                )
+                run(() => deleteTranslation({ kind, entityId, locale }), admin('deleted'))
               }
             >
               <Trash2 className="size-4" aria-hidden="true" />
@@ -228,7 +226,7 @@ export function TranslationEditor({
             className={
               message.kind === 'error'
                 ? 'rounded-lg bg-red-50 p-3 text-sm font-medium text-red-800'
-                : 'rounded-lg bg-glex-green-50 p-3 text-sm font-medium text-glex-green-800'
+                : 'bg-glex-green-50 text-glex-green-800 rounded-lg p-3 text-sm font-medium'
             }
           >
             {message.text}

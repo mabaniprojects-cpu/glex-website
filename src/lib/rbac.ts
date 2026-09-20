@@ -22,6 +22,14 @@ export const PERMISSIONS = [
   'rfq:manage',
   'rfq:assign',
   'rfq:quote',
+  // Desks in the internal quotation process. One permission per desk, so a
+  // role can hold exactly the hand-offs it is responsible for and no others.
+  'rfq:stage:cs',
+  'rfq:stage:supply',
+  'rfq:stage:procurement',
+  'rfq:stage:technical',
+  'rfq:stage:shipping',
+  'rfq:approve',
   // Suppliers
   'supplier:read:own',
   'supplier:read:all',
@@ -42,6 +50,9 @@ export const PERMISSIONS = [
   'inquiry:manage',
   'ticket:read:own',
   'ticket:manage',
+  // Finance
+  'finance:read',
+  'quotation:settle',
   // Administration
   'user:read',
   'user:write',
@@ -85,6 +96,15 @@ const STAFF_BASE: Permission[] = [
   'inquiry:read',
 ]
 
+/** Every desk permission, for "may this person act on the workflow at all". */
+export const STAGE_PERMISSIONS: Permission[] = [
+  'rfq:stage:cs',
+  'rfq:stage:supply',
+  'rfq:stage:procurement',
+  'rfq:stage:technical',
+  'rfq:stage:shipping',
+]
+
 /**
  * The permission matrix. Roles are intentionally explicit rather than
  * hierarchical so that widening one role can never silently widen another.
@@ -99,24 +119,38 @@ const MATRIX: Record<UserRole, readonly Permission[]> = {
     'rfq:manage',
     'rfq:assign',
     'rfq:quote',
+    'rfq:stage:cs',
+    'rfq:stage:supply',
     'inquiry:manage',
     'ticket:manage',
     'organization:write',
   ],
 
-  [UserRole.SALES_OFFICER]: [...STAFF_BASE, 'rfq:manage', 'rfq:quote', 'inquiry:manage'],
+  [UserRole.SALES_OFFICER]: [
+    ...STAFF_BASE,
+    'rfq:manage',
+    'rfq:quote',
+    'rfq:stage:cs',
+    'inquiry:manage',
+  ],
 
   [UserRole.PROCUREMENT_MANAGER]: [
     ...STAFF_BASE,
     'rfq:manage',
     'rfq:assign',
+    'rfq:stage:procurement',
     'product:write',
     'product:publish',
     'category:write',
     'supplier:approve',
   ],
 
-  [UserRole.LOGISTICS_MANAGER]: [...STAFF_BASE, 'shipment:write', 'rfq:manage'],
+  [UserRole.LOGISTICS_MANAGER]: [
+    ...STAFF_BASE,
+    'shipment:write',
+    'rfq:manage',
+    'rfq:stage:shipping',
+  ],
 
   [UserRole.CONTENT_EDITOR]: [
     'admin:access',
@@ -129,6 +163,84 @@ const MATRIX: Record<UserRole, readonly Permission[]> = {
     'page:write',
     'translation:write',
     'knowledge:write',
+  ],
+
+  /**
+   * Customer service, which in this company is also marketing: one person
+   * answers the client and keeps the public site current. They own both ends
+   * of the conversation — intake and sending the finished quotation — and
+   * nothing in between.
+   */
+  [UserRole.CUSTOMER_SERVICE]: [
+    'admin:access',
+    'product:read',
+    'product:write',
+    'news:read',
+    'news:write',
+    'news:publish',
+    'page:write',
+    'translation:write',
+    'knowledge:write',
+    'rfq:read:all',
+    'rfq:manage',
+    'rfq:quote',
+    'rfq:stage:cs',
+    'inquiry:read',
+    'inquiry:manage',
+    'ticket:manage',
+    'organization:read',
+    'shipment:read:all',
+  ],
+
+  /** Supply chain orchestrates: it dispatches the pricing work and compiles the result. */
+  [UserRole.SUPPLY_CHAIN_MANAGER]: [
+    'admin:access',
+    'product:read',
+    'news:read',
+    'rfq:read:all',
+    'rfq:assign',
+    'rfq:stage:supply',
+    'supplier:read:all',
+    'shipment:read:all',
+    'organization:read',
+  ],
+
+  /** The technical office studies large orders and returns the material list. */
+  [UserRole.PMO_TECHNICAL]: [
+    'admin:access',
+    'product:read',
+    'news:read',
+    'rfq:read:all',
+    'rfq:stage:technical',
+    'supplier:read:all',
+  ],
+
+  /** The shipping desk prices freight and maintains the shipments it creates. */
+  [UserRole.LOGISTICS_SUPPORT]: [
+    'admin:access',
+    'product:read',
+    'news:read',
+    'rfq:read:all',
+    'rfq:stage:shipping',
+    'shipment:read:all',
+    'shipment:write',
+  ],
+
+  /**
+   * Finance reads the commercial record and settles it. It deliberately holds
+   * no write permission over RFQs, products or people: recording that an order
+   * was invoiced must not come with the ability to change what was quoted.
+   */
+  [UserRole.ACCOUNTANT]: [
+    'admin:access',
+    'product:read',
+    'news:read',
+    'rfq:read:all',
+    'shipment:read:all',
+    'supplier:read:all',
+    'organization:read',
+    'finance:read',
+    'quotation:settle',
   ],
 
   [UserRole.SUPPORT_AGENT]: [
@@ -181,6 +293,10 @@ export const isSupplierRole = (role: UserRole | null | undefined) =>
 
 export const isClientRole = (role: UserRole | null | undefined) =>
   role === UserRole.CLIENT_ORG_ADMIN || role === UserRole.CLIENT_TEAM_MEMBER
+
+/** Whether a role takes part in the internal quotation process at all. */
+export const worksTheWorkflow = (role: UserRole | null | undefined) =>
+  canAny(role, [...STAGE_PERMISSIONS, 'rfq:approve'])
 
 /** Landing route for a role immediately after sign-in. */
 export function homeRouteFor(role: UserRole): '/admin' | '/supplier' | '/dashboard' {

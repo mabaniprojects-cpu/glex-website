@@ -44,7 +44,12 @@
     "language": "اللغة",
     "demoBadge": "عرض توضيحي",
     "sampleBadge": "نموذج",
-    "remove": "إزالة"
+    "remove": "إزالة",
+    "select": "اختر…",
+    "upload": "اختر ملفًا",
+    "unknown": "غير معروف",
+    "all": "الكل",
+    "undo": "تراجع"
   },
   "nav": {
     "home": "الرئيسية",
@@ -275,7 +280,12 @@
     "newPassword": "كلمة المرور الجديدة",
     "resetSuccess": "تم تحديث كلمة المرور الخاصة بك.",
     "resetInvalid": "رابط إعادة التعيين هذا غير صالح أو منتهي الصلاحية.",
-    "passwordHint": "10 أحرف على الأقل، تتضمّن حرفًا ورقمًا."
+    "passwordHint": "10 أحرف على الأقل، تتضمّن حرفًا ورقمًا.",
+    "inviteTitle": "تعيين كلمة المرور",
+    "inviteIntro": "اختر كلمة مرور للحساب {email}. لن يعرفها أحد غيرك.",
+    "inviteInvalid": "رابط الدعوة لم يعد صالحًا. اطلب من مدير النظام إرسال رابط جديد.",
+    "inviteAction": "تعيين كلمة المرور",
+    "inviteSuccess": "تم تعيين كلمة المرور. يمكنك تسجيل الدخول الآن."
   },
   "validation": {
     "required": "هذا الحقل مطلوب.",
@@ -405,7 +415,8 @@
     "replyClient": "العميل",
     "sendToClient": "إرسال إلى العميل",
     "saveNote": "حفظ ملاحظة داخلية",
-    "attachmentsSignedInOnly": "سجّل الدخول لإرفاق المخططات أو المواصفات بطلبك."
+    "attachmentsSignedInOnly": "سجّل الدخول لإرفاق المخططات أو المواصفات بطلبك.",
+    "errorNotApproved": "لم يُعتمد عرض السعر بعد، ولا يمكن إرساله إلا بعد الاعتماد."
   },
   "freight": {
     "title": "طلب عرض سعر شحن",
@@ -783,7 +794,8 @@
       "emails": "قوالب البريد الإلكتروني",
       "translations": "الترجمات",
       "audit": "سجلات التدقيق",
-      "settings": "الإعدادات"
+      "settings": "الإعدادات",
+      "finance": "عروض الأسعار"
     },
     "users": {
       "role": "الدور",
@@ -803,7 +815,19 @@
       "selfHint": "لا يمكنك تغيير دورك أو تعطيل حسابك.",
       "errorForbiddenRole": "لا يمكنك منح أو تعديل دور أعلى من دورك.",
       "errorLastAdmin": "هذا آخر مسؤول نشط ولا يمكن تعطيله.",
-      "errorSelf": "لا يمكنك تطبيق هذا على حسابك."
+      "errorSelf": "لا يمكنك تطبيق هذا على حسابك.",
+      "invite": "إضافة موظف",
+      "inviteHint": "يُنشئ حسابًا للموظف ويرسل دعوة بالبريد الإلكتروني. يختار الموظف كلمة المرور بنفسه ولا يطّلع عليها أحد غيره.",
+      "inviteName": "الاسم الكامل",
+      "inviteEmail": "البريد الإلكتروني للعمل",
+      "inviteRole": "الدور",
+      "inviteSubmit": "إرسال الدعوة",
+      "inviteSent": "تم إرسال الدعوة إلى {email}.",
+      "inviteErrorExists": "يوجد حساب مسجّل بهذا البريد الإلكتروني.",
+      "inviteErrorNotStaff": "هذا الدور مخصّص للعملاء أو الموردين، وهم يسجّلون بأنفسهم.",
+      "invitePending": "أُرسلت الدعوة ولم تُقبل بعد",
+      "resendInvite": "إعادة إرسال الدعوة",
+      "inviteResent": "تم إرسال الدعوة مرة أخرى."
     },
     "organizations": {
       "type": "النوع",
@@ -995,7 +1019,114 @@
     "approve": "اعتماد",
     "reject": "رفض",
     "impersonateWarning": "أنت تتصفّح المنصّة بصفة مستخدم آخر. يُسجَّل هذا الإجراء في سجل التدقيق.",
-    "stopImpersonating": "إنهاء انتحال الهوية"
+    "stopImpersonating": "إنهاء انتحال الهوية",
+    "roles": {
+      "SUPER_ADMIN": "مدير عام للنظام",
+      "ADMIN": "مدير النظام",
+      "SALES_MANAGER": "مدير المبيعات",
+      "SALES_OFFICER": "أخصائي مبيعات",
+      "PROCUREMENT_MANAGER": "مدير المشتريات",
+      "LOGISTICS_MANAGER": "مدير الخدمات اللوجستية",
+      "CONTENT_EDITOR": "محرّر المحتوى",
+      "SUPPORT_AGENT": "موظف الدعم",
+      "CUSTOMER_SERVICE": "خدمة العملاء والتسويق",
+      "SUPPLY_CHAIN_MANAGER": "مدير سلسلة الإمداد",
+      "PMO_TECHNICAL": "المكتب الفني / إدارة المشاريع",
+      "LOGISTICS_SUPPORT": "دعم الخدمات اللوجستية",
+      "ACCOUNTANT": "محاسب",
+      "APPROVED_SUPPLIER": "مورّد معتمد",
+      "PENDING_SUPPLIER": "مورّد قيد المراجعة",
+      "DISTRIBUTOR": "موزّع",
+      "CLIENT_ORG_ADMIN": "مدير حساب العميل",
+      "CLIENT_TEAM_MEMBER": "عضو فريق العميل"
+    },
+    "workflow": {
+      "heading": "مسار التسعير الداخلي",
+      "stage": "المرحلة",
+      "needsYou": "بانتظارك",
+      "waitingOn": "بانتظار {desk}",
+      "queueMine": "ما يخص قسمي",
+      "queueAll": "كل الطلبات",
+      "history": "سجل المسار",
+      "noEntries": "لم يُسجَّل أي إجراء بعد.",
+      "note": "ملاحظة",
+      "noteHint": "تُحفظ كملاحظة داخلية ولا يراها العميل.",
+      "amount": "المبلغ",
+      "currency": "العملة",
+      "file": "مرفق",
+      "estimatedValue": "القيمة التقديرية للطلب (دولار)",
+      "estimatedValueHint": "ما يتجاوز {threshold} يُحال عادةً إلى المكتب الفني.",
+      "orderClass": "نوع الطلب",
+      "technicalDue": "موعد تسليم الدراسة الفنية {date}",
+      "procurement": "تسعير البضاعة",
+      "shipping": "تسعير الشحن",
+      "submit": "تأكيد",
+      "trackPending": "بالانتظار",
+      "trackTechnical": "لدى المكتب الفني",
+      "trackTechnicalDone": "عادت الدراسة",
+      "trackSubmitted": "تم الإرسال",
+      "stages": {
+        "INTAKE": "خدمة العملاء",
+        "SUPPLY_CHAIN": "سلسلة الإمداد",
+        "PRICING": "التسعير",
+        "COMPILATION": "إعداد عرض السعر",
+        "APPROVAL": "بانتظار الاعتماد",
+        "READY_TO_SEND": "جاهز للإرسال",
+        "SENT": "أُرسل إلى العميل"
+      },
+      "tracks": {
+        "INTAKE": "خدمة العملاء",
+        "SUPPLY_CHAIN": "سلسلة الإمداد",
+        "PROCUREMENT": "المشتريات",
+        "TECHNICAL": "المكتب الفني",
+        "SHIPPING": "الشحن",
+        "COMPILATION": "إعداد العرض",
+        "APPROVAL": "الاعتماد"
+      },
+      "classes": {
+        "ORDINARY": "طلب اعتيادي",
+        "TECHNICAL": "طلب فني"
+      },
+      "actions": {
+        "forward_to_supply": "إحالة إلى سلسلة الإمداد",
+        "dispatch_pricing": "إرسال للتسعير",
+        "send_to_technical": "إحالة إلى المكتب الفني",
+        "submit_technical": "إرسال الدراسة الفنية",
+        "submit_procurement": "إرسال سعر البضاعة",
+        "submit_shipping": "إرسال سعر الشحن",
+        "submit_for_approval": "رفع للاعتماد",
+        "approve": "اعتماد",
+        "return_to_supply": "إعادة للمراجعة"
+      },
+      "errors": {
+        "forbidden": "هذه الخطوة من اختصاص قسم آخر.",
+        "wrong_stage": "تم تحديث الطلب بالفعل. أعد تحميل الصفحة.",
+        "note_required": "أضف ملاحظة قبل التأكيد.",
+        "amount_required": "أدخل مبلغًا أكبر من صفر.",
+        "closed": "هذا الطلب مغلق."
+      }
+    },
+    "finance": {
+      "title": "عروض الأسعار والفوترة",
+      "intro": "جميع عروض الأسعار المرسلة وما تمت فوترته منها.",
+      "quotation": "عرض السعر",
+      "request": "الطلب",
+      "client": "العميل",
+      "sent": "تاريخ الإرسال",
+      "validUntil": "صالح حتى",
+      "outcome": "النتيجة",
+      "accepted": "مقبول",
+      "rejected": "مرفوض",
+      "awaiting": "بانتظار العميل",
+      "invoiced": "تمت الفوترة",
+      "notInvoiced": "لم تتم الفوترة",
+      "markInvoiced": "تسجيل الفوترة",
+      "invoiceReference": "رقم الفاتورة",
+      "outstandingOnly": "مقبولة ولم تُفوتر",
+      "goods": "البضاعة",
+      "freight": "الشحن",
+      "saved": "تم الحفظ."
+    }
   },
   "legal": {
     "privacyTitle": "سياسة الخصوصية",

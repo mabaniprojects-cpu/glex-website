@@ -1,12 +1,17 @@
 'use client'
 
 import { UserRole } from '@prisma/client'
-import { LockOpen } from 'lucide-react'
+import { LockOpen, Send } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import * as React from 'react'
 import { Button } from '@/components/ui/button'
 import { useRouter } from '@/i18n/navigation'
-import { setUserActive, setUserRole, unlockUser } from '@/lib/actions/user-actions'
+import {
+  resendStaffInvitation,
+  setUserActive,
+  setUserRole,
+  unlockUser,
+} from '@/lib/actions/user-actions'
 
 /**
  * Per-row controls for the user list.
@@ -21,6 +26,7 @@ export function UserControls({
   isActive,
   isLocked,
   isSelf,
+  awaitingInvite = false,
   assignableRoles,
 }: {
   id: string
@@ -28,6 +34,8 @@ export function UserControls({
   isActive: boolean
   isLocked: boolean
   isSelf: boolean
+  /** Invited, but the account has never been opened. */
+  awaitingInvite?: boolean
   assignableRoles: UserRole[]
 }) {
   const admin = useTranslations('admin')
@@ -35,15 +43,20 @@ export function UserControls({
 
   const router = useRouter()
   const [error, setError] = React.useState<string | null>(null)
+  const [notice, setNotice] = React.useState<string | null>(null)
   const [pending, startTransition] = React.useTransition()
+
+  const roleLabel = (option: UserRole) => admin(`roles.${option}` as 'roles.ADMIN')
 
   type Result = { ok: boolean; error?: string }
 
-  function run(action: () => Promise<Result>) {
+  function run(action: () => Promise<Result>, onDone?: () => void) {
     setError(null)
+    setNotice(null)
     startTransition(async () => {
       const result = await action()
       if (result.ok) {
+        onDone?.()
         router.refresh()
         return
       }
@@ -76,17 +89,15 @@ export function UserControls({
           id={`role-${id}`}
           value={role}
           disabled={locked || !assignableRoles.includes(role)}
-          onChange={(event) =>
-            run(() => setUserRole({ id, role: event.target.value as UserRole }))
-          }
-          className="h-9 w-52 rounded-lg border border-border-subtle bg-white px-2 pe-7 text-sm disabled:opacity-60"
+          onChange={(event) => run(() => setUserRole({ id, role: event.target.value as UserRole }))}
+          className="border-border-subtle h-9 w-52 rounded-lg border bg-white px-2 pe-7 text-sm disabled:opacity-60"
         >
           {/* The current role is always listed, even when it is above the
               actor's own — otherwise the select would silently misreport it. */}
           {(assignableRoles.includes(role) ? assignableRoles : [role, ...assignableRoles]).map(
             (option) => (
               <option key={option} value={option}>
-                {option.replace(/_/g, ' ').toLowerCase()}
+                {roleLabel(option)}
               </option>
             )
           )}
@@ -102,6 +113,24 @@ export function UserControls({
           {isActive ? admin('users.deactivate') : admin('users.activate')}
         </Button>
 
+        {awaitingInvite ? (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={pending}
+            onClick={() =>
+              run(
+                () => resendStaffInvitation({ id }),
+                () => setNotice(admin('users.inviteResent'))
+              )
+            }
+          >
+            <Send className="rtl-flip size-4" aria-hidden="true" />
+            {admin('users.resendInvite')}
+          </Button>
+        ) : null}
+
         {isLocked ? (
           <Button
             type="button"
@@ -116,8 +145,12 @@ export function UserControls({
         ) : null}
       </div>
 
-      {isSelf ? (
-        <p className="text-xs text-glex-green-800/60">{admin('users.selfHint')}</p>
+      {isSelf ? <p className="text-glex-green-800/60 text-xs">{admin('users.selfHint')}</p> : null}
+
+      {notice ? (
+        <p role="status" className="text-glex-green-700 text-xs font-medium">
+          {notice}
+        </p>
       ) : null}
 
       {error ? (

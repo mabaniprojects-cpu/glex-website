@@ -44,7 +44,12 @@
     "language": "Language",
     "demoBadge": "Demo",
     "sampleBadge": "Sample",
-    "remove": "Remove"
+    "remove": "Remove",
+    "select": "Select…",
+    "upload": "Choose a file",
+    "unknown": "Unknown",
+    "all": "All",
+    "undo": "Undo"
   },
   "nav": {
     "home": "Home",
@@ -275,7 +280,12 @@
     "newPassword": "New password",
     "resetSuccess": "Your password has been updated.",
     "resetInvalid": "This reset link is invalid or has expired.",
-    "passwordHint": "At least 10 characters, including a letter and a number."
+    "passwordHint": "At least 10 characters, including a letter and a number.",
+    "inviteTitle": "Set your password",
+    "inviteIntro": "Choose a password for {email}. Only you will know it.",
+    "inviteInvalid": "This invitation link is no longer valid. Ask an administrator to send a new one.",
+    "inviteAction": "Set my password",
+    "inviteSuccess": "Your password is set. You can sign in now."
   },
   "validation": {
     "required": "This field is required.",
@@ -405,7 +415,8 @@
     "replyClient": "The client",
     "sendToClient": "Send to the client",
     "saveNote": "Save internal note",
-    "attachmentsSignedInOnly": "Sign in to attach drawings or specifications to your request."
+    "attachmentsSignedInOnly": "Sign in to attach drawings or specifications to your request.",
+    "errorNotApproved": "This quotation has not been approved yet. It can only be sent once it has been approved."
   },
   "freight": {
     "title": "Request a freight quote",
@@ -783,7 +794,8 @@
       "emails": "Email templates",
       "translations": "Translations",
       "audit": "Audit logs",
-      "settings": "Settings"
+      "settings": "Settings",
+      "finance": "Quotations"
     },
     "users": {
       "role": "Role",
@@ -803,7 +815,19 @@
       "selfHint": "You cannot change your own role or deactivate yourself.",
       "errorForbiddenRole": "You cannot grant or alter a role above your own.",
       "errorLastAdmin": "This is the last active administrator and cannot be deactivated.",
-      "errorSelf": "You cannot apply this to your own account."
+      "errorSelf": "You cannot apply this to your own account.",
+      "invite": "Add staff member",
+      "inviteHint": "Creates a staff account and emails an invitation. They choose their own password; nobody else ever sees it.",
+      "inviteName": "Full name",
+      "inviteEmail": "Work email",
+      "inviteRole": "Role",
+      "inviteSubmit": "Send invitation",
+      "inviteSent": "Invitation sent to {email}.",
+      "inviteErrorExists": "An account with that email already exists.",
+      "inviteErrorNotStaff": "That role is for clients or suppliers, who register themselves.",
+      "invitePending": "Invitation sent, not accepted yet",
+      "resendInvite": "Resend invitation",
+      "inviteResent": "Invitation sent again."
     },
     "organizations": {
       "type": "Type",
@@ -995,7 +1019,114 @@
     "approve": "Approve",
     "reject": "Reject",
     "impersonateWarning": "You are viewing the application as another user. This action is recorded in the audit log.",
-    "stopImpersonating": "Stop impersonating"
+    "stopImpersonating": "Stop impersonating",
+    "roles": {
+      "SUPER_ADMIN": "Super administrator",
+      "ADMIN": "Administrator",
+      "SALES_MANAGER": "Sales manager",
+      "SALES_OFFICER": "Sales officer",
+      "PROCUREMENT_MANAGER": "Procurement manager",
+      "LOGISTICS_MANAGER": "Logistics manager",
+      "CONTENT_EDITOR": "Content editor",
+      "SUPPORT_AGENT": "Support agent",
+      "CUSTOMER_SERVICE": "Customer service & marketing",
+      "SUPPLY_CHAIN_MANAGER": "Supply chain manager",
+      "PMO_TECHNICAL": "PMO / technical office",
+      "LOGISTICS_SUPPORT": "Logistics support",
+      "ACCOUNTANT": "Accountant",
+      "APPROVED_SUPPLIER": "Approved supplier",
+      "PENDING_SUPPLIER": "Pending supplier",
+      "DISTRIBUTOR": "Distributor",
+      "CLIENT_ORG_ADMIN": "Client administrator",
+      "CLIENT_TEAM_MEMBER": "Client team member"
+    },
+    "workflow": {
+      "heading": "Internal quotation process",
+      "stage": "Stage",
+      "needsYou": "Waiting on you",
+      "waitingOn": "Waiting on {desk}",
+      "queueMine": "Needs my desk",
+      "queueAll": "All requests",
+      "history": "Process history",
+      "noEntries": "Nothing has been recorded yet.",
+      "note": "Note",
+      "noteHint": "Saved as an internal note. The client never sees it.",
+      "amount": "Amount",
+      "currency": "Currency",
+      "file": "Attachment",
+      "estimatedValue": "Estimated order value (USD)",
+      "estimatedValueHint": "Above {threshold} an order usually goes to the technical office.",
+      "orderClass": "Order type",
+      "technicalDue": "Technical study due {date}",
+      "procurement": "Goods pricing",
+      "shipping": "Freight pricing",
+      "submit": "Confirm",
+      "trackPending": "Waiting",
+      "trackTechnical": "With the technical office",
+      "trackTechnicalDone": "Study returned",
+      "trackSubmitted": "Submitted",
+      "stages": {
+        "INTAKE": "Customer service",
+        "SUPPLY_CHAIN": "Supply chain",
+        "PRICING": "Pricing",
+        "COMPILATION": "Compiling the quotation",
+        "APPROVAL": "Awaiting approval",
+        "READY_TO_SEND": "Ready to send",
+        "SENT": "Sent to the client"
+      },
+      "tracks": {
+        "INTAKE": "Customer service",
+        "SUPPLY_CHAIN": "Supply chain",
+        "PROCUREMENT": "Procurement",
+        "TECHNICAL": "Technical office",
+        "SHIPPING": "Shipping",
+        "COMPILATION": "Compilation",
+        "APPROVAL": "Approval"
+      },
+      "classes": {
+        "ORDINARY": "Ordinary order",
+        "TECHNICAL": "Technical order"
+      },
+      "actions": {
+        "forward_to_supply": "Forward to supply chain",
+        "dispatch_pricing": "Send for pricing",
+        "send_to_technical": "Send to the technical office",
+        "submit_technical": "Submit the technical study",
+        "submit_procurement": "Submit the goods price",
+        "submit_shipping": "Submit the freight price",
+        "submit_for_approval": "Submit for approval",
+        "approve": "Approve",
+        "return_to_supply": "Return for rework"
+      },
+      "errors": {
+        "forbidden": "That step belongs to another desk.",
+        "wrong_stage": "The request has already moved on. Reload the page.",
+        "note_required": "Add a note before confirming.",
+        "amount_required": "Enter an amount greater than zero.",
+        "closed": "This request is closed."
+      }
+    },
+    "finance": {
+      "title": "Quotations & invoicing",
+      "intro": "Every quotation the company has sent, and what has been invoiced.",
+      "quotation": "Quotation",
+      "request": "Request",
+      "client": "Client",
+      "sent": "Sent",
+      "validUntil": "Valid until",
+      "outcome": "Outcome",
+      "accepted": "Accepted",
+      "rejected": "Rejected",
+      "awaiting": "Awaiting the client",
+      "invoiced": "Invoiced",
+      "notInvoiced": "Not invoiced",
+      "markInvoiced": "Mark as invoiced",
+      "invoiceReference": "Invoice number",
+      "outstandingOnly": "Accepted but not invoiced",
+      "goods": "Goods",
+      "freight": "Freight",
+      "saved": "Saved."
+    }
   },
   "legal": {
     "privacyTitle": "Privacy Policy",

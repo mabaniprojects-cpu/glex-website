@@ -122,7 +122,7 @@ export function CategoryManager({ categories }: { categories: AdminCategory[] })
             event.preventDefault()
             submit()
           }}
-          className="space-y-4 rounded-xl border border-border-subtle p-6"
+          className="border-border-subtle space-y-4 rounded-xl border p-6"
         >
           <h2 className="text-lg font-semibold">
             {draft.id ? admin('editCategory') : admin('newCategory')}
@@ -185,7 +185,7 @@ export function CategoryManager({ categories }: { categories: AdminCategory[] })
               type="checkbox"
               checked={draft.isActive}
               onChange={(event) => setDraft({ ...draft, isActive: event.target.checked })}
-              className="size-4 rounded border-border-subtle"
+              className="border-border-subtle size-4 rounded"
             />
             {admin('activeField')}
           </label>
@@ -209,7 +209,7 @@ export function CategoryManager({ categories }: { categories: AdminCategory[] })
           className={
             message.kind === 'error'
               ? 'mt-4 rounded-lg bg-red-50 p-3 text-sm font-medium text-red-800'
-              : 'mt-4 rounded-lg bg-glex-green-50 p-3 text-sm font-medium text-glex-green-800'
+              : 'bg-glex-green-50 text-glex-green-800 mt-4 rounded-lg p-3 text-sm font-medium'
           }
         >
           {message.text}
@@ -217,24 +217,24 @@ export function CategoryManager({ categories }: { categories: AdminCategory[] })
       ) : null}
 
       {categories.length === 0 ? (
-        <p className="mt-10 text-glex-green-800/70">{common('noResults')}</p>
+        <p className="text-glex-green-800/70 mt-10">{common('noResults')}</p>
       ) : (
         <ul className="mt-6 space-y-3">
           {categories.map((category) => (
             <li
               key={category.id}
-              className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border-subtle p-4"
+              className="border-border-subtle flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4"
             >
               <div>
                 <p className="font-semibold">
                   {category.name}
                   {!category.isActive ? (
-                    <span className="ms-2 rounded-full bg-surface-muted px-2 py-0.5 text-xs font-medium text-glex-green-800/70">
+                    <span className="bg-surface-muted text-glex-green-800/70 ms-2 rounded-full px-2 py-0.5 text-xs font-medium">
                       {admin('inactive')}
                     </span>
                   ) : null}
                 </p>
-                <p className="mt-1 text-xs text-glex-green-800/60">
+                <p className="text-glex-green-800/60 mt-1 text-xs">
                   {category.parent ? `${category.parent.name} · ` : ''}
                   <span dir="ltr">{category.slug}</span> ·{' '}
                   {admin('productCount', { count: category.productCount })}

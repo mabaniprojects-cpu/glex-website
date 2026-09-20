@@ -30,9 +30,7 @@ export default async function AdminLayout({
 
   // The sidebar only offers what this role may actually open. The pages
   // enforce the same permissions again server-side.
-  const items: AdminNavItem[] = [
-    { href: '/admin', label: t('nav.overview'), icon: 'overview' },
-  ]
+  const items: AdminNavItem[] = [{ href: '/admin', label: t('nav.overview'), icon: 'overview' }]
 
   if (can(user.role, 'product:write')) {
     items.push({ href: '/admin/products', label: t('nav.products'), icon: 'products' })
@@ -72,6 +70,9 @@ export default async function AdminLayout({
     items.push({ href: '/admin/routes', label: t('nav.routes'), icon: 'routes' })
     items.push({ href: '/admin/emails', label: t('nav.emails'), icon: 'emails' })
     items.push({ href: '/admin/settings', label: t('nav.settings'), icon: 'settings' })
+  }
+  if (can(user.role, 'finance:read')) {
+    items.push({ href: '/admin/finance', label: t('nav.finance'), icon: 'finance' })
   }
   if (can(user.role, 'user:read')) {
     items.push({ href: '/admin/users', label: t('nav.users'), icon: 'users' })

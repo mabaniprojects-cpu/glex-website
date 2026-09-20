@@ -44,7 +44,12 @@
     "language": "语言",
     "demoBadge": "演示",
     "sampleBadge": "示例",
-    "remove": "移除"
+    "remove": "移除",
+    "select": "请选择…",
+    "upload": "选择文件",
+    "unknown": "未知",
+    "all": "全部",
+    "undo": "撤销"
   },
   "nav": {
     "home": "首页",
@@ -275,7 +280,12 @@
     "newPassword": "新密码",
     "resetSuccess": "您的密码已更新。",
     "resetInvalid": "此重置链接无效或已过期。",
-    "passwordHint": "至少 10 个字符，且须包含字母和数字。"
+    "passwordHint": "至少 10 个字符，且须包含字母和数字。",
+    "inviteTitle": "设置密码",
+    "inviteIntro": "为 {email} 设置密码，只有您本人知道。",
+    "inviteInvalid": "该邀请链接已失效，请联系管理员重新发送。",
+    "inviteAction": "设置我的密码",
+    "inviteSuccess": "密码已设置，现在可以登录。"
   },
   "validation": {
     "required": "此项为必填项。",
@@ -405,7 +415,8 @@
     "replyClient": "客户",
     "sendToClient": "发送给客户",
     "saveNote": "保存内部备注",
-    "attachmentsSignedInOnly": "登录后可为您的请求附加图纸或规格文件。"
+    "attachmentsSignedInOnly": "登录后可为您的请求附加图纸或规格文件。",
+    "errorNotApproved": "该报价尚未获批，批准后方可发送。"
   },
   "freight": {
     "title": "申请货运报价",
@@ -783,7 +794,8 @@
       "emails": "邮件模板",
       "translations": "翻译管理",
       "audit": "审计日志",
-      "settings": "系统设置"
+      "settings": "系统设置",
+      "finance": "报价单"
     },
     "users": {
       "role": "角色",
@@ -803,7 +815,19 @@
       "selfHint": "您不能更改自己的角色，也不能停用自己的账户。",
       "errorForbiddenRole": "您不能授予或修改高于自身权限的角色。",
       "errorLastAdmin": "这是最后一名启用状态的管理员，无法停用。",
-      "errorSelf": "您不能对自己的账户执行此操作。"
+      "errorSelf": "您不能对自己的账户执行此操作。",
+      "invite": "添加员工",
+      "inviteHint": "创建员工账号并发送邀请邮件。密码由本人设置，其他人无法看到。",
+      "inviteName": "姓名",
+      "inviteEmail": "公司邮箱",
+      "inviteRole": "角色",
+      "inviteSubmit": "发送邀请",
+      "inviteSent": "邀请已发送至 {email}。",
+      "inviteErrorExists": "该邮箱已存在账号。",
+      "inviteErrorNotStaff": "该角色属于客户或供应商，由他们自行注册。",
+      "invitePending": "邀请已发送，尚未接受",
+      "resendInvite": "重新发送邀请",
+      "inviteResent": "邀请已重新发送。"
     },
     "organizations": {
       "type": "类型",
@@ -995,7 +1019,114 @@
     "approve": "通过",
     "reject": "拒绝",
     "impersonateWarning": "您正在以其他用户的身份查看本系统。此操作已记入审计日志。",
-    "stopImpersonating": "结束身份模拟"
+    "stopImpersonating": "结束身份模拟",
+    "roles": {
+      "SUPER_ADMIN": "超级管理员",
+      "ADMIN": "管理员",
+      "SALES_MANAGER": "销售经理",
+      "SALES_OFFICER": "销售专员",
+      "PROCUREMENT_MANAGER": "采购经理",
+      "LOGISTICS_MANAGER": "物流经理",
+      "CONTENT_EDITOR": "内容编辑",
+      "SUPPORT_AGENT": "客服支持专员",
+      "CUSTOMER_SERVICE": "客户服务与市场",
+      "SUPPLY_CHAIN_MANAGER": "供应链经理",
+      "PMO_TECHNICAL": "PMO / 技术部",
+      "LOGISTICS_SUPPORT": "物流支持",
+      "ACCOUNTANT": "会计",
+      "APPROVED_SUPPLIER": "已认证供应商",
+      "PENDING_SUPPLIER": "待审核供应商",
+      "DISTRIBUTOR": "分销商",
+      "CLIENT_ORG_ADMIN": "客户管理员",
+      "CLIENT_TEAM_MEMBER": "客户团队成员"
+    },
+    "workflow": {
+      "heading": "内部报价流程",
+      "stage": "阶段",
+      "needsYou": "等待您处理",
+      "waitingOn": "等待{desk}处理",
+      "queueMine": "我的待办",
+      "queueAll": "全部询价",
+      "history": "流程记录",
+      "noEntries": "暂无记录。",
+      "note": "备注",
+      "noteHint": "保存为内部备注，客户不会看到。",
+      "amount": "金额",
+      "currency": "币种",
+      "file": "附件",
+      "estimatedValue": "订单预估金额（美元）",
+      "estimatedValueHint": "超过 {threshold} 的订单通常转交技术部。",
+      "orderClass": "订单类型",
+      "technicalDue": "技术评估应于 {date} 前提交",
+      "procurement": "货品报价",
+      "shipping": "运费报价",
+      "submit": "确认",
+      "trackPending": "待处理",
+      "trackTechnical": "技术部处理中",
+      "trackTechnicalDone": "评估已返回",
+      "trackSubmitted": "已提交",
+      "stages": {
+        "INTAKE": "客户服务",
+        "SUPPLY_CHAIN": "供应链",
+        "PRICING": "报价",
+        "COMPILATION": "编制报价单",
+        "APPROVAL": "等待审批",
+        "READY_TO_SEND": "待发送",
+        "SENT": "已发送客户"
+      },
+      "tracks": {
+        "INTAKE": "客户服务",
+        "SUPPLY_CHAIN": "供应链",
+        "PROCUREMENT": "采购",
+        "TECHNICAL": "技术部",
+        "SHIPPING": "运输",
+        "COMPILATION": "编制",
+        "APPROVAL": "审批"
+      },
+      "classes": {
+        "ORDINARY": "普通订单",
+        "TECHNICAL": "技术订单"
+      },
+      "actions": {
+        "forward_to_supply": "转交供应链",
+        "dispatch_pricing": "发起报价",
+        "send_to_technical": "转交技术部",
+        "submit_technical": "提交技术评估",
+        "submit_procurement": "提交货品价格",
+        "submit_shipping": "提交运费价格",
+        "submit_for_approval": "提交审批",
+        "approve": "批准",
+        "return_to_supply": "退回修改"
+      },
+      "errors": {
+        "forbidden": "该步骤属于其他岗位。",
+        "wrong_stage": "该询价已更新，请刷新页面。",
+        "note_required": "确认前请填写备注。",
+        "amount_required": "请输入大于零的金额。",
+        "closed": "该询价已关闭。"
+      }
+    },
+    "finance": {
+      "title": "报价与开票",
+      "intro": "公司已发送的全部报价及其开票情况。",
+      "quotation": "报价单",
+      "request": "询价",
+      "client": "客户",
+      "sent": "发送时间",
+      "validUntil": "有效期至",
+      "outcome": "结果",
+      "accepted": "已接受",
+      "rejected": "已拒绝",
+      "awaiting": "等待客户回复",
+      "invoiced": "已开票",
+      "notInvoiced": "未开票",
+      "markInvoiced": "标记为已开票",
+      "invoiceReference": "发票号",
+      "outstandingOnly": "已接受未开票",
+      "goods": "货品",
+      "freight": "运费",
+      "saved": "已保存。"
+    }
   },
   "legal": {
     "privacyTitle": "隐私政策",

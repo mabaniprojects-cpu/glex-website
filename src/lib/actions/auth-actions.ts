@@ -252,10 +252,7 @@ export async function resetPassword(input: ResetPasswordInput): Promise<ActionRe
 
 // --- Resend verification ----------------------------------------------------
 
-export async function resendVerification(
-  email: string,
-  locale: string
-): Promise<ActionResult> {
+export async function resendVerification(email: string, locale: string): Promise<ActionResult> {
   const ip = clientIp(await headers())
   const limit = await checkRateLimit(`resend:${ip}`, 3, 60 * 60)
   if (!limit.allowed) return { ok: false, error: 'rate_limited' }
@@ -282,5 +279,55 @@ export async function resendVerification(
   } catch (error) {
     console.error('[auth] Resend verification failed:', error)
     return { ok: true }
+  }
+}
+
+// --- Staff invitation acceptance --------------------------------------------
+
+/**
+ * Sets the password on an invited staff account.
+ *
+ * Deliberately separate from `resetPassword`: the two consume different token
+ * purposes, so an invitation link cannot reset an existing colleague's
+ * password and a reset link cannot activate a dormant invitation.
+ */
+export async function acceptStaffInvitation(input: ResetPasswordInput): Promise<ActionResult> {
+  const parsed = resetPasswordSchema.safeParse(input)
+  if (!parsed.success) {
+    return { ok: false, error: 'validation', fields: fieldErrors(parsed.error) }
+  }
+
+  const consumed = await consumeToken(parsed.data.token, TOKEN_PURPOSE.TEAM_INVITE)
+  if (!consumed.valid) return { ok: false, error: consumed.reason }
+
+  try {
+    const user = await db.user.findUnique({
+      where: { email: consumed.email },
+      select: { id: true, passwordHash: true, isActive: true, deletedAt: true },
+    })
+
+    // An invitation is single-use in substance as well as in form: once the
+    // account has a password, this link must not be able to replace it.
+    if (!user || user.deletedAt || !user.isActive || user.passwordHash) {
+      return { ok: false, error: 'invalid' }
+    }
+
+    const passwordHash = await hashPassword(parsed.data.password)
+
+    await db.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash,
+        // Following the link proves the address receives mail.
+        emailVerified: new Date(),
+        failedLoginCount: 0,
+        lockedUntil: null,
+      },
+    })
+
+    return { ok: true }
+  } catch (error) {
+    console.error('[auth] Invitation acceptance failed:', error)
+    return { ok: false, error: 'server' }
   }
 }

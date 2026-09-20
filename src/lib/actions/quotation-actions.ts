@@ -1,11 +1,12 @@
 'use server'
 
-import { RfqStatus } from '@prisma/client'
+import { RfqStatus, RfqWorkflowStage } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { recordAudit } from '@/lib/audit'
 import { requirePermission } from '@/lib/auth-guards'
 import { db } from '@/lib/db'
+import { can } from '@/lib/rbac'
 import { nextReference, REFERENCE_SCOPES } from '@/lib/references'
 import { fromDateTimeLocalInput } from '@/lib/utils'
 
@@ -24,7 +25,7 @@ import { fromDateTimeLocalInput } from '@/lib/utils'
 
 export type QuotationActionResult =
   | { ok: true; reference?: string }
-  | { ok: false; error: 'validation' | 'not_found' | 'closed' | 'server' }
+  | { ok: false; error: 'validation' | 'not_found' | 'closed' | 'not_approved' | 'server' }
 
 const issueSchema = z.object({
   reference: z.string().trim().min(3).max(40),
@@ -53,9 +54,32 @@ export async function issueQuotation(input: unknown): Promise<QuotationActionRes
 
   const rfq = await db.rFQ.findFirst({
     where: { reference, deletedAt: null },
-    select: { id: true, status: true, _count: { select: { quotations: true } } },
+    select: {
+      id: true,
+      status: true,
+      workflowStage: true,
+      _count: { select: { quotations: true } },
+    },
   })
   if (!rfq) return { ok: false, error: 'not_found' }
+
+  /**
+   * The internal process ends here, and this is the gate that makes it real:
+   * a quotation may only be sent from READY_TO_SEND, the stage an approval
+   * produces. Without it, anyone holding `rfq:quote` could send an unapproved
+   * offer straight from the pricing stage and the approval step would be
+   * decoration.
+   *
+   * Whoever may approve may also send — that is the same authority, and it
+   * leaves an administrator able to answer a client when a desk is away.
+   */
+  if (
+    rfq.workflowStage !== RfqWorkflowStage.READY_TO_SEND &&
+    rfq.workflowStage !== RfqWorkflowStage.SENT &&
+    !can(user.role, 'rfq:approve')
+  ) {
+    return { ok: false, error: 'not_approved' }
+  }
 
   if (
     rfq.status === RfqStatus.CANCELLED ||
@@ -94,7 +118,7 @@ export async function issueQuotation(input: unknown): Promise<QuotationActionRes
 
       await tx.rFQ.update({
         where: { id: rfq.id },
-        data: { status: RfqStatus.QUOTATION_SENT },
+        data: { status: RfqStatus.QUOTATION_SENT, workflowStage: RfqWorkflowStage.SENT },
       })
 
       await tx.rFQActivity.create({

@@ -44,7 +44,12 @@
     "language": "Langue",
     "demoBadge": "Démo",
     "sampleBadge": "Exemple",
-    "remove": "Supprimer"
+    "remove": "Supprimer",
+    "select": "Sélectionner…",
+    "upload": "Choisir un fichier",
+    "unknown": "Inconnu",
+    "all": "Tout",
+    "undo": "Annuler"
   },
   "nav": {
     "home": "Accueil",
@@ -275,7 +280,12 @@
     "newPassword": "Nouveau mot de passe",
     "resetSuccess": "Votre mot de passe a été mis à jour.",
     "resetInvalid": "Ce lien de réinitialisation est invalide ou a expiré.",
-    "passwordHint": "Au moins 10 caractères, dont une lettre et un chiffre."
+    "passwordHint": "Au moins 10 caractères, dont une lettre et un chiffre.",
+    "inviteTitle": "Définir votre mot de passe",
+    "inviteIntro": "Choisissez un mot de passe pour {email}. Vous seul le connaîtrez.",
+    "inviteInvalid": "Ce lien d’invitation n’est plus valide. Demandez un nouveau lien à un administrateur.",
+    "inviteAction": "Définir mon mot de passe",
+    "inviteSuccess": "Votre mot de passe est défini. Vous pouvez vous connecter."
   },
   "validation": {
     "required": "Ce champ est obligatoire.",
@@ -405,7 +415,8 @@
     "replyClient": "Le client",
     "sendToClient": "Envoyer au client",
     "saveNote": "Enregistrer la note interne",
-    "attachmentsSignedInOnly": "Connectez-vous pour joindre des plans ou des spécifications à votre demande."
+    "attachmentsSignedInOnly": "Connectez-vous pour joindre des plans ou des spécifications à votre demande.",
+    "errorNotApproved": "Cette offre n’est pas encore approuvée. Elle ne peut être envoyée qu’après approbation."
   },
   "freight": {
     "title": "Demander un devis de fret",
@@ -783,7 +794,8 @@
       "emails": "Modèles d'e-mails",
       "translations": "Traductions",
       "audit": "Journaux d'audit",
-      "settings": "Paramètres"
+      "settings": "Paramètres",
+      "finance": "Offres"
     },
     "users": {
       "role": "Rôle",
@@ -803,7 +815,19 @@
       "selfHint": "Vous ne pouvez pas modifier votre propre rôle ni vous désactiver.",
       "errorForbiddenRole": "Vous ne pouvez pas accorder ni modifier un rôle supérieur au vôtre.",
       "errorLastAdmin": "Il s’agit du dernier administrateur actif ; il ne peut pas être désactivé.",
-      "errorSelf": "Vous ne pouvez pas appliquer ceci à votre propre compte."
+      "errorSelf": "Vous ne pouvez pas appliquer ceci à votre propre compte.",
+      "invite": "Ajouter un collaborateur",
+      "inviteHint": "Crée un compte interne et envoie une invitation par e-mail. La personne choisit son mot de passe ; personne d’autre ne le connaît.",
+      "inviteName": "Nom complet",
+      "inviteEmail": "E-mail professionnel",
+      "inviteRole": "Rôle",
+      "inviteSubmit": "Envoyer l’invitation",
+      "inviteSent": "Invitation envoyée à {email}.",
+      "inviteErrorExists": "Un compte existe déjà avec cet e-mail.",
+      "inviteErrorNotStaff": "Ce rôle est réservé aux clients ou aux fournisseurs, qui s’inscrivent eux-mêmes.",
+      "invitePending": "Invitation envoyée, pas encore acceptée",
+      "resendInvite": "Renvoyer l’invitation",
+      "inviteResent": "Invitation renvoyée."
     },
     "organizations": {
       "type": "Type",
@@ -995,7 +1019,114 @@
     "approve": "Approuver",
     "reject": "Refuser",
     "impersonateWarning": "Vous consultez l'application sous l'identité d'un autre utilisateur. Cette action est consignée dans le journal d'audit.",
-    "stopImpersonating": "Quitter l'identité empruntée"
+    "stopImpersonating": "Quitter l'identité empruntée",
+    "roles": {
+      "SUPER_ADMIN": "Super administrateur",
+      "ADMIN": "Administrateur",
+      "SALES_MANAGER": "Responsable des ventes",
+      "SALES_OFFICER": "Chargé des ventes",
+      "PROCUREMENT_MANAGER": "Responsable des achats",
+      "LOGISTICS_MANAGER": "Responsable logistique",
+      "CONTENT_EDITOR": "Éditeur de contenu",
+      "SUPPORT_AGENT": "Agent de support",
+      "CUSTOMER_SERVICE": "Service client et marketing",
+      "SUPPLY_CHAIN_MANAGER": "Responsable de la chaîne d’approvisionnement",
+      "PMO_TECHNICAL": "PMO / bureau technique",
+      "LOGISTICS_SUPPORT": "Support logistique",
+      "ACCOUNTANT": "Comptable",
+      "APPROVED_SUPPLIER": "Fournisseur agréé",
+      "PENDING_SUPPLIER": "Fournisseur en attente",
+      "DISTRIBUTOR": "Distributeur",
+      "CLIENT_ORG_ADMIN": "Administrateur client",
+      "CLIENT_TEAM_MEMBER": "Membre de l’équipe client"
+    },
+    "workflow": {
+      "heading": "Processus interne de cotation",
+      "stage": "Étape",
+      "needsYou": "En attente de vous",
+      "waitingOn": "En attente de {desk}",
+      "queueMine": "Pour mon service",
+      "queueAll": "Toutes les demandes",
+      "history": "Historique du processus",
+      "noEntries": "Rien n’a encore été enregistré.",
+      "note": "Note",
+      "noteHint": "Enregistrée comme note interne. Le client ne la voit jamais.",
+      "amount": "Montant",
+      "currency": "Devise",
+      "file": "Pièce jointe",
+      "estimatedValue": "Valeur estimée de la commande (USD)",
+      "estimatedValueHint": "Au-delà de {threshold}, une commande passe généralement au bureau technique.",
+      "orderClass": "Type de commande",
+      "technicalDue": "Étude technique attendue le {date}",
+      "procurement": "Prix des marchandises",
+      "shipping": "Prix du fret",
+      "submit": "Confirmer",
+      "trackPending": "En attente",
+      "trackTechnical": "Au bureau technique",
+      "trackTechnicalDone": "Étude rendue",
+      "trackSubmitted": "Transmis",
+      "stages": {
+        "INTAKE": "Service client",
+        "SUPPLY_CHAIN": "Chaîne d’approvisionnement",
+        "PRICING": "Chiffrage",
+        "COMPILATION": "Préparation de l’offre",
+        "APPROVAL": "En attente d’approbation",
+        "READY_TO_SEND": "Prêt à envoyer",
+        "SENT": "Envoyé au client"
+      },
+      "tracks": {
+        "INTAKE": "Service client",
+        "SUPPLY_CHAIN": "Chaîne d’approvisionnement",
+        "PROCUREMENT": "Achats",
+        "TECHNICAL": "Bureau technique",
+        "SHIPPING": "Transport",
+        "COMPILATION": "Préparation",
+        "APPROVAL": "Approbation"
+      },
+      "classes": {
+        "ORDINARY": "Commande ordinaire",
+        "TECHNICAL": "Commande technique"
+      },
+      "actions": {
+        "forward_to_supply": "Transmettre à la chaîne d’approvisionnement",
+        "dispatch_pricing": "Envoyer au chiffrage",
+        "send_to_technical": "Envoyer au bureau technique",
+        "submit_technical": "Transmettre l’étude technique",
+        "submit_procurement": "Transmettre le prix des marchandises",
+        "submit_shipping": "Transmettre le prix du fret",
+        "submit_for_approval": "Soumettre pour approbation",
+        "approve": "Approuver",
+        "return_to_supply": "Renvoyer pour révision"
+      },
+      "errors": {
+        "forbidden": "Cette étape relève d’un autre service.",
+        "wrong_stage": "La demande a déjà avancé. Rechargez la page.",
+        "note_required": "Ajoutez une note avant de confirmer.",
+        "amount_required": "Saisissez un montant supérieur à zéro.",
+        "closed": "Cette demande est clôturée."
+      }
+    },
+    "finance": {
+      "title": "Offres et facturation",
+      "intro": "Toutes les offres envoyées et leur état de facturation.",
+      "quotation": "Offre",
+      "request": "Demande",
+      "client": "Client",
+      "sent": "Envoyée",
+      "validUntil": "Valable jusqu’au",
+      "outcome": "Résultat",
+      "accepted": "Acceptée",
+      "rejected": "Refusée",
+      "awaiting": "En attente du client",
+      "invoiced": "Facturée",
+      "notInvoiced": "Non facturée",
+      "markInvoiced": "Marquer comme facturée",
+      "invoiceReference": "Numéro de facture",
+      "outstandingOnly": "Acceptées non facturées",
+      "goods": "Marchandises",
+      "freight": "Fret",
+      "saved": "Enregistré."
+    }
   },
   "legal": {
     "privacyTitle": "Politique de confidentialité",

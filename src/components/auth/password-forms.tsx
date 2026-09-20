@@ -8,7 +8,11 @@ import { useForm } from 'react-hook-form'
 import { Link } from '@/i18n/navigation'
 import { Button } from '@/components/ui/button'
 import { Field, FieldDescription, FieldInput, FieldLabel } from '@/components/ui/field'
-import { requestPasswordReset, resetPassword } from '@/lib/actions/auth-actions'
+import {
+  acceptStaffInvitation,
+  requestPasswordReset,
+  resetPassword,
+} from '@/lib/actions/auth-actions'
 import {
   forgotPasswordSchema,
   resetPasswordSchema,
@@ -48,10 +52,13 @@ export function ForgotPasswordForm() {
 
   if (sent) {
     return (
-      <div role="status" className="rounded-xl border border-glex-green-200 bg-glex-green-50 p-8 text-center">
-        <MailCheck className="mx-auto size-10 text-glex-green-600" aria-hidden="true" />
+      <div
+        role="status"
+        className="border-glex-green-200 bg-glex-green-50 rounded-xl border p-8 text-center"
+      >
+        <MailCheck className="text-glex-green-600 mx-auto size-10" aria-hidden="true" />
         {/* Deliberately does not confirm whether an account exists. */}
-        <p className="mt-4 text-glex-green-800/85">{t('resetSent')}</p>
+        <p className="text-glex-green-800/85 mt-4">{t('resetSent')}</p>
         <div className="mt-6">
           <Button asChild variant="outline">
             <Link href="/login">{t('loginAction')}</Link>
@@ -70,7 +77,14 @@ export function ForgotPasswordForm() {
 
       <Field error={errors.email ? v('email') : undefined}>
         <FieldLabel required>{t('email')}</FieldLabel>
-        <FieldInput type="email" inputMode="email" autoComplete="email" autoFocus dir="ltr" {...register('email')} />
+        <FieldInput
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          autoFocus
+          dir="ltr"
+          {...register('email')}
+        />
       </Field>
 
       {formError ? (
@@ -93,7 +107,20 @@ export function ForgotPasswordForm() {
 }
 
 /** Step 2 — choose a new password with a valid token. */
-export function ResetPasswordForm({ token }: { token: string }) {
+/**
+ * Step 2 — choose a password.
+ *
+ * Shared by the reset link and the staff invitation link. They differ only in
+ * which action consumes the token: the two token purposes are separate on
+ * purpose, so neither link can do the other's job.
+ */
+export function ResetPasswordForm({
+  token,
+  mode = 'reset',
+}: {
+  token: string
+  mode?: 'reset' | 'invite'
+}) {
   const t = useTranslations('auth')
   const v = useTranslations('validation')
   const common = useTranslations('common')
@@ -112,7 +139,8 @@ export function ResetPasswordForm({ token }: { token: string }) {
 
   async function onSubmit(values: ResetPasswordInput) {
     setFormError(null)
-    const result = await resetPassword(values)
+    const result =
+      mode === 'invite' ? await acceptStaffInvitation(values) : await resetPassword(values)
 
     if (result.ok) {
       setDone(true)
@@ -128,9 +156,14 @@ export function ResetPasswordForm({ token }: { token: string }) {
 
   if (done) {
     return (
-      <div role="status" className="rounded-xl border border-glex-green-200 bg-glex-green-50 p-8 text-center">
-        <CheckCircle2 className="mx-auto size-10 text-glex-green-600" aria-hidden="true" />
-        <p className="mt-4 font-medium text-glex-green-900">{t('resetSuccess')}</p>
+      <div
+        role="status"
+        className="border-glex-green-200 bg-glex-green-50 rounded-xl border p-8 text-center"
+      >
+        <CheckCircle2 className="text-glex-green-600 mx-auto size-10" aria-hidden="true" />
+        <p className="text-glex-green-900 mt-4 font-medium">
+          {mode === 'invite' ? t('inviteSuccess') : t('resetSuccess')}
+        </p>
         <div className="mt-6">
           <Button asChild variant="primary">
             <Link href="/login">{t('loginAction')}</Link>
@@ -146,13 +179,24 @@ export function ResetPasswordForm({ token }: { token: string }) {
 
       <Field error={errors.password ? v('passwordWeak') : undefined}>
         <FieldLabel required>{t('newPassword')}</FieldLabel>
-        <FieldInput type="password" autoComplete="new-password" autoFocus dir="ltr" {...register('password')} />
+        <FieldInput
+          type="password"
+          autoComplete="new-password"
+          autoFocus
+          dir="ltr"
+          {...register('password')}
+        />
         <FieldDescription>{t('passwordHint')}</FieldDescription>
       </Field>
 
       <Field error={errors.confirmPassword ? v('passwordMismatch') : undefined}>
         <FieldLabel required>{t('confirmPassword')}</FieldLabel>
-        <FieldInput type="password" autoComplete="new-password" dir="ltr" {...register('confirmPassword')} />
+        <FieldInput
+          type="password"
+          autoComplete="new-password"
+          dir="ltr"
+          {...register('confirmPassword')}
+        />
       </Field>
 
       {formError ? (
@@ -163,7 +207,11 @@ export function ResetPasswordForm({ token }: { token: string }) {
 
       <Button type="submit" variant="primary" size="lg" className="w-full" disabled={isSubmitting}>
         <KeyRound className="size-4" aria-hidden="true" />
-        {isSubmitting ? common('loading') : t('resetAction')}
+        {isSubmitting
+          ? common('loading')
+          : mode === 'invite'
+            ? t('inviteAction')
+            : t('resetAction')}
       </Button>
     </form>
   )

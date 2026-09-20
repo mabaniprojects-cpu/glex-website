@@ -41,9 +41,11 @@ function useRfqAction() {
         text:
           result.error === 'closed'
             ? rfq('errorClosed')
-            : result.error === 'validation'
-              ? admin('checkFields')
-              : common('errorBody'),
+            : result.error === 'not_approved'
+              ? rfq('errorNotApproved')
+              : result.error === 'validation'
+                ? admin('checkFields')
+                : common('errorBody'),
       })
     })
   }
@@ -60,7 +62,7 @@ function Feedback({ message }: { message: { kind: 'ok' | 'error'; text: string }
       className={
         message.kind === 'error'
           ? 'mt-3 rounded-lg bg-red-50 p-3 text-sm font-medium text-red-800'
-          : 'mt-3 rounded-lg bg-glex-green-50 p-3 text-sm font-medium text-glex-green-800'
+          : 'bg-glex-green-50 text-glex-green-800 mt-3 rounded-lg p-3 text-sm font-medium'
       }
     >
       {message.text}
@@ -115,7 +117,7 @@ export function IssueQuotationForm({ reference }: { reference: string }) {
 
   return (
     <form
-      className="rounded-xl border border-border-subtle p-6"
+      className="border-border-subtle rounded-xl border p-6"
       onSubmit={(event) => {
         event.preventDefault()
         run(
@@ -143,14 +145,10 @@ export function IssueQuotationForm({ reference }: { reference: string }) {
               const file = event.target.files?.[0]
               if (file) void upload(file)
             }}
-            className="block w-full text-sm file:me-3 file:rounded-lg file:border-0 file:bg-glex-green-700 file:px-3 file:py-2 file:text-sm file:font-medium file:text-white"
+            className="file:bg-glex-green-700 block w-full text-sm file:me-3 file:rounded-lg file:border-0 file:px-3 file:py-2 file:text-sm file:font-medium file:text-white"
           />
           <FieldDescription>
-            {uploading
-              ? common('loading')
-              : fileName
-                ? fileName
-                : rfq('quotationNotes')}
+            {uploading ? common('loading') : fileName ? fileName : rfq('quotationNotes')}
           </FieldDescription>
           {uploadError ? (
             <p role="alert" className="text-xs font-medium text-red-800">
@@ -215,11 +213,13 @@ export function StaffReplyForm({ reference }: { reference: string }) {
 
   return (
     <form
-      className="rounded-xl border border-border-subtle p-6"
+      className="border-border-subtle rounded-xl border p-6"
       onSubmit={(event) => {
         event.preventDefault()
-        run(() => replyOnRfqAsStaff({ reference, body, isInternal }), rfq('replySent'), () =>
-          setBody('')
+        run(
+          () => replyOnRfqAsStaff({ reference, body, isInternal }),
+          rfq('replySent'),
+          () => setBody('')
         )
       }}
     >
@@ -260,7 +260,7 @@ export function StaffReplyForm({ reference }: { reference: string }) {
         className="mt-4"
         disabled={pending || body.trim().length < 2}
       >
-        <Send className="size-4 rtl-flip" aria-hidden="true" />
+        <Send className="rtl-flip size-4" aria-hidden="true" />
         {/* Not a bare "Save": the status form on this same page already has
             one, and a button should say which of the two things it does. */}
         {pending ? common('loading') : isInternal ? rfq('saveNote') : rfq('sendToClient')}

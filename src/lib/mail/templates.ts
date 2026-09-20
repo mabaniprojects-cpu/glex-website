@@ -127,6 +127,16 @@ const FALLBACKS: Record<TemplateKey, TemplateCopy> = {
     heading: 'New request for quotation',
     body: 'A client has submitted a request for quotation and is waiting on a commercial offer.',
   },
+  'internal-rfq-stage': {
+    subject: 'RFQ waiting on your desk',
+    heading: 'A request needs your desk',
+    body: 'A request for quotation has reached your stage of the internal process. Open it in the admin portal to see what is waiting and to report back.',
+  },
+  'internal-staff-invitation': {
+    subject: 'Your GLEX staff account',
+    heading: 'Set your password',
+    body: 'An account has been created for you on the GLEX portal. Use the button below to choose a password and sign in. The link is valid for seven days.',
+  },
   'internal-freight': {
     subject: 'New freight quote request',
     heading: 'New freight quote request',

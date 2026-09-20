@@ -134,7 +134,7 @@ export function RecordEditor({
             event.preventDefault()
             submit()
           }}
-          className="space-y-4 rounded-xl border border-border-subtle p-6"
+          className="border-border-subtle space-y-4 rounded-xl border p-6"
         >
           <h2 className="text-lg font-semibold">{draft.id ? labels.edit : labels.add}</h2>
 
@@ -144,15 +144,12 @@ export function RecordEditor({
 
               if (field.kind === 'checkbox') {
                 return (
-                  <label
-                    key={field.name}
-                    className="flex items-center gap-2 text-sm sm:col-span-2"
-                  >
+                  <label key={field.name} className="flex items-center gap-2 text-sm sm:col-span-2">
                     <input
                       type="checkbox"
                       checked={Boolean(value)}
                       onChange={(event) => set(field.name, event.target.checked)}
-                      className="size-4 rounded border-border-subtle"
+                      className="border-border-subtle size-4 rounded"
                     />
                     {field.label}
                   </label>
@@ -226,7 +223,7 @@ export function RecordEditor({
           className={
             message.kind === 'error'
               ? 'mt-4 rounded-lg bg-red-50 p-3 text-sm font-medium text-red-800'
-              : 'mt-4 rounded-lg bg-glex-green-50 p-3 text-sm font-medium text-glex-green-800'
+              : 'bg-glex-green-50 text-glex-green-800 mt-4 rounded-lg p-3 text-sm font-medium'
           }
         >
           {message.text}
@@ -234,25 +231,25 @@ export function RecordEditor({
       ) : null}
 
       {records.length === 0 ? (
-        <p className="mt-10 text-glex-green-800/70">{labels.empty}</p>
+        <p className="text-glex-green-800/70 mt-10">{labels.empty}</p>
       ) : (
         <ul className="mt-6 space-y-3">
           {records.map((record) => (
             <li
               key={record.id}
-              className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-border-subtle p-4"
+              className="border-border-subtle flex flex-wrap items-start justify-between gap-3 rounded-xl border p-4"
             >
               <div className="min-w-0">
                 <p className="font-semibold">
                   {record.title}
                   {record.muted && labels.inactive ? (
-                    <span className="ms-2 rounded-full bg-surface-muted px-2 py-0.5 text-xs font-medium text-glex-green-800/70">
+                    <span className="bg-surface-muted text-glex-green-800/70 ms-2 rounded-full px-2 py-0.5 text-xs font-medium">
                       {labels.inactive}
                     </span>
                   ) : null}
                 </p>
                 {record.subtitle ? (
-                  <p className="mt-1 truncate text-xs text-glex-green-800/60">{record.subtitle}</p>
+                  <p className="text-glex-green-800/60 mt-1 truncate text-xs">{record.subtitle}</p>
                 ) : null}
               </div>
 

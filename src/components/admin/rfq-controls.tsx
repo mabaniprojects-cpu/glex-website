@@ -68,7 +68,7 @@ export function RfqAdminControls({
   }
 
   return (
-    <div className="space-y-6 rounded-xl border border-border-subtle p-6">
+    <div className="border-border-subtle space-y-6 rounded-xl border p-6">
       <div>
         <h2 className="text-lg font-semibold">{common('status')}</h2>
 
@@ -106,7 +106,7 @@ export function RfqAdminControls({
       </div>
 
       {canAssign ? (
-        <div className="border-t border-border-subtle pt-6">
+        <div className="border-border-subtle border-t pt-6">
           <h2 className="text-lg font-semibold">{admin('assignTo')}</h2>
 
           <div className="mt-4 space-y-4">
@@ -143,7 +143,7 @@ export function RfqAdminControls({
           className={
             message.kind === 'error'
               ? 'rounded-lg bg-red-50 p-3 text-sm font-medium text-red-800'
-              : 'rounded-lg bg-glex-green-50 p-3 text-sm font-medium text-glex-green-800'
+              : 'bg-glex-green-50 text-glex-green-800 rounded-lg p-3 text-sm font-medium'
           }
         >
           {message.text}

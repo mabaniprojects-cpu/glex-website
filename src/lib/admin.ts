@@ -2,11 +2,13 @@ import {
   OrganizationType,
   Prisma,
   RfqStatus,
+  RfqWorkflowStage,
   SupplierStatus,
   TicketStatus,
   UserRole,
 } from '@prisma/client'
 import { db } from '@/lib/db'
+import { isStaff } from '@/lib/rbac'
 
 /**
  * Admin portal queries.
@@ -85,10 +87,21 @@ export async function getAdminMetrics() {
  */
 export async function listAllRfqs({
   status,
+  stages,
   take = 30,
   skip = 0,
-}: { status?: RfqStatus; take?: number; skip?: number } = {}) {
-  const where = { deletedAt: null, ...(status ? { status } : {}) }
+}: {
+  status?: RfqStatus
+  /** Internal stages to include — the desk queue filter. */
+  stages?: RfqWorkflowStage[]
+  take?: number
+  skip?: number
+} = {}) {
+  const where = {
+    deletedAt: null,
+    ...(status ? { status } : {}),
+    ...(stages?.length ? { workflowStage: { in: stages } } : {}),
+  }
 
   const [items, total] = await Promise.all([
     db.rFQ.findMany({
@@ -105,6 +118,11 @@ export async function listAllRfqs({
         destinationCountry: true,
         isGuest: true,
         emailVerified: true,
+        workflowStage: true,
+        procurementStatus: true,
+        shippingStatus: true,
+        orderClass: true,
+        technicalDueAt: true,
         organization: { select: { name: true } },
         createdBy: { select: { name: true } },
         assignee: { select: { id: true, name: true } },
@@ -134,9 +152,25 @@ export async function getRfqForAdmin(reference: string) {
       organization: { select: { name: true, country: true } },
       createdBy: { select: { name: true, email: true } },
       assignee: { select: { id: true, name: true } },
+      // What each desk contributed, and what the client has been sent.
+      workflowEntries: {
+        orderBy: { createdAt: 'asc' },
+        include: {
+          author: { select: { name: true, role: true } },
+          file: { select: { id: true, originalName: true } },
+        },
+      },
+      quotations: { orderBy: { version: 'desc' } },
     },
   })
 }
+
+/**
+ * Every role that may open the admin portal, derived from the permission
+ * matrix. The previous hard-coded list silently excluded each new team as it
+ * was added, so nobody on those desks could be assigned an RFQ.
+ */
+const STAFF_ROLES = Object.values(UserRole).filter(isStaff)
 
 /** Staff who can be assigned an RFQ. */
 export async function listAssignableStaff() {
@@ -144,16 +178,7 @@ export async function listAssignableStaff() {
     where: {
       isActive: true,
       deletedAt: null,
-      role: {
-        in: [
-          'SUPER_ADMIN',
-          'ADMIN',
-          'SALES_MANAGER',
-          'SALES_OFFICER',
-          'PROCUREMENT_MANAGER',
-          'LOGISTICS_MANAGER',
-        ],
-      },
+      role: { in: STAFF_ROLES },
     },
     select: { id: true, name: true, role: true },
     orderBy: { name: 'asc' },
@@ -494,6 +519,7 @@ const USER_LIST_SELECT = {
   lockedUntil: true,
   failedLoginCount: true,
   lastLoginAt: true,
+  invitedAt: true,
   createdAt: true,
   organization: { select: { id: true, name: true } },
 } as const
@@ -549,6 +575,10 @@ export async function listUsersForAdmin({
   const items = rows.map((row) => ({
     ...row,
     isLocked: Boolean(row.lockedUntil && row.lockedUntil.getTime() > now),
+    // An invited colleague who has not set a password yet. Acceptance verifies
+    // the address, so an unverified invitation is an outstanding one — and the
+    // password hash itself stays out of this query.
+    awaitingInvite: Boolean(row.invitedAt && !row.emailVerified),
   }))
 
   return { items, total }
@@ -740,4 +770,61 @@ export async function getTicketForAdmin(reference: string) {
       },
     },
   })
+}
+
+/**
+ * Quotations, for the finance desk.
+ *
+ * Only quotations that were actually sent are listed: a record of what the
+ * company committed to, which is what invoicing is reconciled against.
+ */
+export async function listQuotationsForAdmin({
+  take = 30,
+  skip = 0,
+  outstandingOnly = false,
+}: { take?: number; skip?: number; outstandingOnly?: boolean } = {}) {
+  const where: Prisma.QuotationWhereInput = {
+    sentAt: { not: null },
+    ...(outstandingOnly ? { invoicedAt: null, acceptedAt: { not: null } } : {}),
+  }
+
+  const [items, total] = await Promise.all([
+    db.quotation.findMany({
+      where,
+      orderBy: [{ sentAt: 'desc' }, { id: 'desc' }],
+      take,
+      skip,
+      select: {
+        id: true,
+        reference: true,
+        version: true,
+        currency: true,
+        sentAt: true,
+        validUntil: true,
+        acceptedAt: true,
+        rejectedAt: true,
+        invoicedAt: true,
+        invoiceReference: true,
+        rfq: {
+          select: {
+            reference: true,
+            destinationCountry: true,
+            organization: { select: { name: true } },
+            createdBy: { select: { name: true } },
+            guestCompany: true,
+            // The agreed figures, so finance can reconcile without opening
+            // every file: goods from procurement, freight from logistics.
+            workflowEntries: {
+              where: { track: { in: ['PROCUREMENT', 'SHIPPING'] }, amount: { not: null } },
+              orderBy: { createdAt: 'desc' },
+              select: { track: true, amount: true, currency: true },
+            },
+          },
+        },
+      },
+    }),
+    db.quotation.count({ where }),
+  ])
+
+  return { items, total }
 }

@@ -1,3 +1,4 @@
+import { RfqWorkflowStage } from '@prisma/client'
 import type { Metadata } from 'next'
 import { hasLocale } from 'next-intl'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
@@ -10,7 +11,9 @@ import { routing } from '@/i18n/routing'
 import { requirePermission } from '@/lib/auth-guards'
 import { listAllRfqs } from '@/lib/admin'
 import { buildPageHref, pageCount, pageWindow } from '@/lib/pagination'
-import { formatDate } from '@/lib/utils'
+import { isWaitingOn, WORKFLOW_STAGES } from '@/lib/rfq-workflow'
+import { worksTheWorkflow } from '@/lib/rbac'
+import { cn, formatDate } from '@/lib/utils'
 
 export const metadata: Metadata = { robots: { index: false, follow: false } }
 
@@ -25,7 +28,7 @@ export default async function AdminRfqsPage({
   if (!hasLocale(routing.locales, locale)) notFound()
   setRequestLocale(locale)
 
-  await requirePermission('rfq:read:all')
+  const user = await requirePermission('rfq:read:all')
 
   const t = await getTranslations('rfq')
   const admin = await getTranslations('admin')
@@ -34,27 +37,72 @@ export default async function AdminRfqsPage({
   const rawParams = await searchParams
   const { page, skip, take } = pageWindow(rawParams.page)
 
-  const { items, total } = await listAllRfqs({ take, skip })
+  // "Needs my desk" is the default view for anyone who works the process:
+  // opening the list should answer "what is mine?" without a search.
+  const onTheWorkflow = worksTheWorkflow(user.role)
+  const queue = rawParams.queue === 'all' ? 'all' : 'mine'
+  const stages =
+    onTheWorkflow && queue === 'mine'
+      ? WORKFLOW_STAGES.filter((stage) =>
+          isWaitingOn(user.role, {
+            workflowStage: stage,
+            // The two pricing desks are both outstanding at this point, which
+            // is what makes PRICING "mine" for either of them.
+            procurementStatus: 'PENDING',
+            shippingStatus: 'PENDING',
+            orderClass: null,
+          })
+        )
+      : undefined
+
+  const { items, total } = await listAllRfqs({ take, skip, stages })
+
+  const stageLabel = (stage: RfqWorkflowStage) =>
+    admin(`workflow.stages.${stage}` as 'workflow.stages.INTAKE')
 
   return (
     <div>
       <h1 className="text-2xl font-bold sm:text-3xl">{admin('nav.rfqs')}</h1>
+
+      {onTheWorkflow ? (
+        <nav aria-label={admin('workflow.heading')} className="mt-5 flex flex-wrap gap-2">
+          {(['mine', 'all'] as const).map((option) => (
+            <Link
+              key={option}
+              href={`/admin/rfqs?queue=${option}` as Parameters<typeof Link>[0]['href']}
+              aria-current={queue === option ? 'page' : undefined}
+              className={cn(
+                'inline-flex h-10 items-center rounded-full px-4 text-sm font-medium transition-colors',
+                queue === option
+                  ? 'bg-glex-green-600 text-white'
+                  : 'border-border-subtle text-glex-green-800 hover:bg-glex-green-50 border'
+              )}
+            >
+              {option === 'mine' ? admin('workflow.queueMine') : admin('workflow.queueAll')}
+            </Link>
+          ))}
+        </nav>
+      ) : null}
+
       <ListRange page={page} take={take} count={items.length} total={total} />
 
       {items.length === 0 ? (
-        <p className="mt-10 text-glex-green-800/70">{common('noResults')}</p>
+        <p className="text-glex-green-800/70 mt-10">{common('noResults')}</p>
       ) : (
         <>
           <div className="mt-6 hidden overflow-x-auto lg:block">
             <table className="w-full border-collapse text-sm">
               <caption className="sr-only">{admin('nav.rfqs')}</caption>
               <thead>
-                <tr className="border-b border-border-subtle">
+                <tr className="border-border-subtle border-b">
                   <th scope="col" className="py-3 pe-4 text-start font-semibold">
                     {common('reference')}
                   </th>
                   <th scope="col" className="py-3 pe-4 text-start font-semibold">
                     {common('status')}
+                  </th>
+                  <th scope="col" className="py-3 pe-4 text-start font-semibold">
+                    {admin('workflow.stage')}
                   </th>
                   <th scope="col" className="py-3 pe-4 text-start font-semibold">
                     {t('destination')}
@@ -72,25 +120,35 @@ export default async function AdminRfqsPage({
               </thead>
               <tbody>
                 {items.map((row) => (
-                  <tr key={row.id} className="border-b border-border-subtle">
+                  <tr key={row.id} className="border-border-subtle border-b">
                     <td className="py-3 pe-4">
                       <Link
-                        href={
-                          `/admin/rfqs/${row.reference}` as Parameters<typeof Link>[0]['href']
-                        }
-                        className="font-mono font-medium text-glex-green-700 underline-offset-4 hover:underline"
+                        href={`/admin/rfqs/${row.reference}` as Parameters<typeof Link>[0]['href']}
+                        className="text-glex-green-700 font-mono font-medium underline-offset-4 hover:underline"
                         dir="ltr"
                       >
                         {row.reference}
                       </Link>
                       {row.isGuest && !row.emailVerified ? (
-                        <span className="ms-2 rounded-full bg-glex-gold-100 px-2 py-0.5 text-xs font-semibold text-glex-gold-800">
+                        <span className="bg-glex-gold-100 text-glex-gold-800 ms-2 rounded-full px-2 py-0.5 text-xs font-semibold">
                           {t('verifyRequired')}
                         </span>
                       ) : null}
                     </td>
                     <td className="py-3 pe-4">
                       <RfqStatusBadge status={row.status} label={t(`status.${row.status}`)} />
+                    </td>
+                    <td className="py-3 pe-4">
+                      <span
+                        className={cn(
+                          'rounded-full px-2.5 py-1 text-xs font-medium',
+                          isWaitingOn(user.role, row)
+                            ? 'bg-glex-gold-100 text-glex-gold-800'
+                            : 'bg-surface-muted text-glex-green-800/80'
+                        )}
+                      >
+                        {stageLabel(row.workflowStage)}
+                      </span>
                     </td>
                     <td className="py-3 pe-4">{row.destinationCountry}</td>
                     <td className="py-3 pe-4">
@@ -111,11 +169,11 @@ export default async function AdminRfqsPage({
           {/* Mobile cards */}
           <ul className="mt-6 space-y-4 lg:hidden">
             {items.map((row) => (
-              <li key={row.id} className="rounded-xl border border-border-subtle p-5">
+              <li key={row.id} className="border-border-subtle rounded-xl border p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <Link
                     href={`/admin/rfqs/${row.reference}` as Parameters<typeof Link>[0]['href']}
-                    className="font-mono font-medium text-glex-green-700 underline-offset-4 hover:underline"
+                    className="text-glex-green-700 font-mono font-medium underline-offset-4 hover:underline"
                     dir="ltr"
                   >
                     {row.reference}
@@ -123,6 +181,10 @@ export default async function AdminRfqsPage({
                   <RfqStatusBadge status={row.status} label={t(`status.${row.status}`)} />
                 </div>
                 <dl className="mt-3 space-y-1 text-sm">
+                  <div className="flex gap-2">
+                    <dt className="text-glex-green-800/60">{admin('workflow.stage')}:</dt>
+                    <dd className="font-medium">{stageLabel(row.workflowStage)}</dd>
+                  </div>
                   <div className="flex gap-2">
                     <dt className="text-glex-green-800/60">{t('destination')}:</dt>
                     <dd>{row.destinationCountry}</dd>

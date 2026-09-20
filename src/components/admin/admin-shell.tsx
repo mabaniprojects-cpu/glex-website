@@ -12,6 +12,7 @@ import {
   Megaphone,
   Newspaper,
   Route,
+  Receipt,
   ScrollText,
   Settings,
   Building2,
@@ -56,6 +57,7 @@ const ICONS = {
   chats: MessageSquare,
   tickets: LifeBuoy,
   audit: ScrollText,
+  finance: Receipt,
 } satisfies Record<string, LucideIcon>
 
 export type AdminIconName = keyof typeof ICONS

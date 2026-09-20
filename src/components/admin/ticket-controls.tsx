@@ -60,7 +60,7 @@ function Feedback({ message }: { message: { kind: 'ok' | 'error'; text: string }
       className={
         message.kind === 'error'
           ? 'mt-3 rounded-lg bg-red-50 p-3 text-sm font-medium text-red-800'
-          : 'mt-3 rounded-lg bg-glex-green-50 p-3 text-sm font-medium text-glex-green-800'
+          : 'bg-glex-green-50 text-glex-green-800 mt-3 rounded-lg p-3 text-sm font-medium'
       }
     >
       {message.text}
@@ -84,7 +84,7 @@ export function TicketStatusControls({
   const [priority, setPriority] = React.useState<TicketPriority>(currentPriority)
 
   return (
-    <div className="rounded-xl border border-border-subtle p-6">
+    <div className="border-border-subtle rounded-xl border p-6">
       <h2 className="text-lg font-semibold">{support('updateAction')}</h2>
 
       <div className="mt-4 space-y-4">
@@ -122,9 +122,7 @@ export function TicketStatusControls({
         variant="primary"
         className="mt-4"
         disabled={pending}
-        onClick={() =>
-          run(() => updateTicket({ reference, status, priority }), common('save'))
-        }
+        onClick={() => run(() => updateTicket({ reference, status, priority }), common('save'))}
       >
         <Save className="size-4" aria-hidden="true" />
         {pending ? common('loading') : support('updateAction')}
@@ -150,7 +148,7 @@ export function TicketReplyControls({ reference }: { reference: string }) {
 
   return (
     <form
-      className="rounded-xl border border-border-subtle p-6"
+      className="border-border-subtle rounded-xl border p-6"
       onSubmit={(event) => {
         event.preventDefault()
         run(
@@ -197,7 +195,7 @@ export function TicketReplyControls({ reference }: { reference: string }) {
         className="mt-4"
         disabled={pending || body.trim().length < 2}
       >
-        <Send className="size-4 rtl-flip" aria-hidden="true" />
+        <Send className="rtl-flip size-4" aria-hidden="true" />
         {pending ? common('loading') : isInternal ? support('saveNote') : support('sendToClient')}
       </Button>
 

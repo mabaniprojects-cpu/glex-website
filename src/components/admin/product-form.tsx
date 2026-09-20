@@ -175,7 +175,7 @@ export function ProductForm({
       }}
       className="mt-6 max-w-3xl space-y-6"
     >
-      <div className="space-y-4 rounded-xl border border-border-subtle p-6">
+      <div className="border-border-subtle space-y-4 rounded-xl border p-6">
         <Field>
           <FieldLabel required>{admin('productName')}</FieldLabel>
           <FieldInput
@@ -224,7 +224,7 @@ export function ProductForm({
         </Field>
       </div>
 
-      <div className="grid gap-4 rounded-xl border border-border-subtle p-6 sm:grid-cols-2">
+      <div className="border-border-subtle grid gap-4 rounded-xl border p-6 sm:grid-cols-2">
         <Field>
           <FieldLabel>{marketplace('brand')}</FieldLabel>
           <FieldInput
@@ -302,7 +302,7 @@ export function ProductForm({
         </Field>
       </div>
 
-      <fieldset className="rounded-xl border border-border-subtle p-6">
+      <fieldset className="border-border-subtle rounded-xl border p-6">
         <legend className="px-2 text-sm font-semibold">{admin('availableUnits')}</legend>
         <div className="grid gap-2 sm:grid-cols-3">
           {UNITS.map((unit) => (
@@ -311,7 +311,7 @@ export function ProductForm({
                 type="checkbox"
                 checked={draft.availableUnits.includes(unit)}
                 onChange={(event) => toggleUnit(unit, event.target.checked)}
-                className="size-4 rounded border-border-subtle"
+                className="border-border-subtle size-4 rounded"
               />
               {units(unit)}
             </label>
@@ -319,13 +319,13 @@ export function ProductForm({
         </div>
       </fieldset>
 
-      <div className="space-y-3 rounded-xl border border-border-subtle p-6">
+      <div className="border-border-subtle space-y-3 rounded-xl border p-6">
         <label className="flex items-center gap-2 text-sm">
           <input
             type="checkbox"
             checked={draft.isVisible}
             onChange={(event) => set('isVisible', event.target.checked)}
-            className="size-4 rounded border-border-subtle"
+            className="border-border-subtle size-4 rounded"
           />
           {admin('visibleField')}
         </label>
@@ -334,7 +334,7 @@ export function ProductForm({
             type="checkbox"
             checked={draft.isFeatured}
             onChange={(event) => set('isFeatured', event.target.checked)}
-            className="size-4 rounded border-border-subtle"
+            className="border-border-subtle size-4 rounded"
           />
           {marketplace('sortFeatured')}
         </label>
@@ -343,7 +343,7 @@ export function ProductForm({
             type="checkbox"
             checked={draft.isSaudiMade}
             onChange={(event) => set('isSaudiMade', event.target.checked)}
-            className="size-4 rounded border-border-subtle"
+            className="border-border-subtle size-4 rounded"
           />
           {marketplace('saudiMade')}
         </label>
@@ -352,7 +352,7 @@ export function ProductForm({
             type="checkbox"
             checked={draft.allowEquivalents}
             onChange={(event) => set('allowEquivalents', event.target.checked)}
-            className="size-4 rounded border-border-subtle"
+            className="border-border-subtle size-4 rounded"
           />
           {marketplace('equivalentsAccepted')}
         </label>
@@ -364,7 +364,7 @@ export function ProductForm({
           className={
             message.kind === 'error'
               ? 'rounded-lg bg-red-50 p-3 text-sm font-medium text-red-800'
-              : 'rounded-lg bg-glex-green-50 p-3 text-sm font-medium text-glex-green-800'
+              : 'bg-glex-green-50 text-glex-green-800 rounded-lg p-3 text-sm font-medium'
           }
         >
           {message.text}

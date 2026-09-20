@@ -17,6 +17,7 @@ export default function robots(): MetadataRoute.Robots {
           '/*/admin',
           '/*/login',
           '/*/reset-password',
+          '/*/accept-invite',
           '/*/verify-email',
         ],
       },

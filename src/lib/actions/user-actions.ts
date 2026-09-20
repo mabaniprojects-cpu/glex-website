@@ -6,7 +6,10 @@ import { z } from 'zod'
 import { recordAudit } from '@/lib/audit'
 import { requirePermission } from '@/lib/auth-guards'
 import { db } from '@/lib/db'
-import { canAssignRole } from '@/lib/rbac'
+import { sendTemplate } from '@/lib/mail'
+import { canAssignRole, isStaff } from '@/lib/rbac'
+import { createToken, TOKEN_PURPOSE } from '@/lib/tokens'
+import { absoluteUrl } from '@/lib/urls'
 
 /**
  * User administration.
@@ -231,4 +234,142 @@ export async function unlockUser(input: unknown): Promise<UserActionResult> {
     console.error('[users] Unlock failed:', error)
     return { ok: false, error: 'server' }
   }
+}
+
+// --- Staff invitations ------------------------------------------------------
+
+/**
+ * Adding a colleague.
+ *
+ * Staff accounts are created here rather than by asking people to sign up: the
+ * public form is for clients and would give every employee a client
+ * organization they do not belong to. The account is created without a
+ * password — the invitation link is the only way to set one, so a staff
+ * password is never chosen, transmitted or known by anyone but its owner.
+ */
+const inviteSchema = z.object({
+  name: z.string().trim().min(2).max(120),
+  email: z.string().trim().toLowerCase().email().max(200),
+  role: z.nativeEnum(UserRole),
+  locale: z.string().max(10).optional(),
+})
+
+export type InviteResult =
+  | { ok: true; email: string }
+  | { ok: false; error: 'validation' | 'forbidden_role' | 'not_staff' | 'exists' | 'server' }
+
+export async function inviteStaffMember(input: unknown): Promise<InviteResult> {
+  const actor = await requirePermission('user:write')
+
+  const parsed = inviteSchema.safeParse(input)
+  if (!parsed.success) return { ok: false, error: 'validation' }
+  const { name, email, role } = parsed.data
+  const locale = parsed.data.locale ?? 'en'
+
+  // This form creates colleagues, not clients or suppliers. Those arrive
+  // through their own registration flows, which build the organization and
+  // profile records those roles need.
+  if (!isStaff(role)) return { ok: false, error: 'not_staff' }
+  if (!canAssignRole(actor.role, role)) return { ok: false, error: 'forbidden_role' }
+
+  const existing = await db.user.findUnique({ where: { email }, select: { id: true } })
+  if (existing) return { ok: false, error: 'exists' }
+
+  try {
+    await db.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: {
+          name,
+          email,
+          role,
+          // No password and no verified address yet: `src/lib/auth.ts` refuses
+          // to sign in an account in this state, so the invitation link is the
+          // only door in.
+          passwordHash: null,
+          emailVerified: null,
+          invitedAt: new Date(),
+        },
+        select: { id: true },
+      })
+
+      await recordAudit(
+        {
+          actorId: actor.id,
+          action: 'user.invited',
+          entityType: 'User',
+          entityId: user.id,
+          after: { email, role },
+        },
+        tx
+      )
+
+      return user
+    })
+
+    await sendInvitation({ email, name, locale })
+
+    revalidatePath('/admin/users')
+    return { ok: true, email }
+  } catch (error) {
+    console.error('[users] Invitation failed:', error)
+    return { ok: false, error: 'server' }
+  }
+}
+
+/** Sends the invitation again — links expire after a week, and mail gets lost. */
+export async function resendStaffInvitation(input: unknown): Promise<InviteResult> {
+  const actor = await requirePermission('user:write')
+
+  const parsed = idSchema.safeParse(input)
+  if (!parsed.success) return { ok: false, error: 'validation' }
+
+  const target = await db.user.findFirst({
+    where: { id: parsed.data.id, deletedAt: null },
+    select: { email: true, name: true, role: true, passwordHash: true, preferredLocale: true },
+  })
+  if (!target) return { ok: false, error: 'validation' }
+
+  // Someone who already has a password is not waiting on an invitation; they
+  // need a password reset, which only they can start.
+  if (target.passwordHash) return { ok: false, error: 'exists' }
+  if (!canAssignRole(actor.role, target.role)) return { ok: false, error: 'forbidden_role' }
+
+  try {
+    await sendInvitation({
+      email: target.email,
+      name: target.name,
+      locale: target.preferredLocale,
+    })
+
+    await recordAudit({
+      actorId: actor.id,
+      action: 'user.invitation_resent',
+      entityType: 'User',
+      entityId: parsed.data.id,
+    })
+
+    return { ok: true, email: target.email }
+  } catch (error) {
+    console.error('[users] Invitation resend failed:', error)
+    return { ok: false, error: 'server' }
+  }
+}
+
+async function sendInvitation({
+  email,
+  name,
+  locale,
+}: {
+  email: string
+  name: string
+  locale: string
+}) {
+  const token = await createToken(email, TOKEN_PURPOSE.TEAM_INVITE)
+
+  await sendTemplate('internal-staff-invitation', email, {
+    locale: 'en',
+    recipientName: name,
+    actionUrl: absoluteUrl(`/${locale}/accept-invite?token=${token}`),
+    actionLabel: 'Set my password',
+  })
 }

@@ -56,6 +56,8 @@ export const TEMPLATE_KEYS = [
    */
   'internal-contact',
   'internal-rfq',
+  'internal-rfq-stage',
+  'internal-staff-invitation',
   'internal-freight',
   'internal-supplier',
 ] as const

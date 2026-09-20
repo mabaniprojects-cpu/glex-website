@@ -4,7 +4,13 @@ import { Save, Trash2, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import * as React from 'react'
 import { Button } from '@/components/ui/button'
-import { Field, FieldDescription, FieldInput, FieldLabel, FieldTextarea } from '@/components/ui/field'
+import {
+  Field,
+  FieldDescription,
+  FieldInput,
+  FieldLabel,
+  FieldTextarea,
+} from '@/components/ui/field'
 import { useRouter } from '@/i18n/navigation'
 import {
   deleteOrganization,
@@ -87,9 +93,12 @@ export function OrganizationControls({ record }: { record: OrganizationRecord })
       <form
         onSubmit={(event) => {
           event.preventDefault()
-          run(() => updateOrganization({ id: record.id, ...draft }), () => setDraft(null))
+          run(
+            () => updateOrganization({ id: record.id, ...draft }),
+            () => setDraft(null)
+          )
         }}
-        className="space-y-4 rounded-xl border border-border-subtle p-4 text-start"
+        className="border-border-subtle space-y-4 rounded-xl border p-4 text-start"
       >
         <Field>
           <FieldLabel required>{admin('organizations.name')}</FieldLabel>
@@ -138,7 +147,12 @@ export function OrganizationControls({ record }: { record: OrganizationRecord })
         </Field>
 
         <div className="flex flex-wrap gap-2">
-          <Button type="submit" variant="primary" size="sm" disabled={pending || !draft.name.trim()}>
+          <Button
+            type="submit"
+            variant="primary"
+            size="sm"
+            disabled={pending || !draft.name.trim()}
+          >
             <Save className="size-4" aria-hidden="true" />
             {pending ? common('loading') : common('save')}
           </Button>
@@ -184,7 +198,9 @@ export function OrganizationControls({ record }: { record: OrganizationRecord })
           variant={record.isActive ? 'ghost' : 'primary'}
           size="sm"
           disabled={pending || (record.isActive && record.isOwn)}
-          onClick={() => run(() => setOrganizationActive({ id: record.id, isActive: !record.isActive }))}
+          onClick={() =>
+            run(() => setOrganizationActive({ id: record.id, isActive: !record.isActive }))
+          }
         >
           {record.isActive ? admin('organizations.disable') : admin('organizations.enable')}
         </Button>
@@ -206,7 +222,7 @@ export function OrganizationControls({ record }: { record: OrganizationRecord })
       </div>
 
       {record.isActive && record.isOwn ? (
-        <p className="text-xs text-glex-green-800/60">{admin('organizations.ownHint')}</p>
+        <p className="text-glex-green-800/60 text-xs">{admin('organizations.ownHint')}</p>
       ) : null}
 
       {message ? (
@@ -215,7 +231,7 @@ export function OrganizationControls({ record }: { record: OrganizationRecord })
           className={
             message.kind === 'error'
               ? 'text-xs font-medium text-red-800'
-              : 'text-xs font-medium text-glex-green-700'
+              : 'text-glex-green-700 text-xs font-medium'
           }
         >
           {message.text}

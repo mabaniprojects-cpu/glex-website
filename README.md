@@ -827,23 +827,25 @@ with `toDbLocale()` / `fromDbLocale()` from `src/i18n/locale.ts`.
 
 **Editable from the admin portal today**, no deploy required:
 
-| Content                                | Where                                                                                                                                                                                                                     |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Product categories                     | `/admin/categories` — create, edit, re-order, activate; a category with products or sub-categories cannot be deleted                                                                                                      |
-| Products                               | `/admin/products` — create, edit, publish/hide, soft-delete, search                                                                                                                                                       |
-| News articles                          | `/admin/news` — write, schedule, publish, soft-delete, search. A future publication date keeps the article hidden until it arrives; no cron job is involved                                                               |
-| RFQ status, assignment, internal notes | `/admin/rfqs`                                                                                                                                                                                                             |
-| Supplier applications                  | `/admin/suppliers`                                                                                                                                                                                                        |
-| Announcement bar                       | `/admin/settings` — one active announcement at a time, with an optional schedule                                                                                                                                          |
-| Social links                           | `/admin/settings` — rendered in the footer; http(s) only                                                                                                                                                                  |
-| FAQ entries                            | `/admin/faq` — also the source the GLEX Assistant quotes when no AI provider is configured                                                                                                                                |
-| Staff and client accounts              | `/admin/users` — change a role, deactivate or reactivate, clear a brute-force lockout. Nobody can alter their own account, grant a role above their own, or switch off the last administrator                             |
-| Client and supplier organizations      | `/admin/organizations` — edit details, enable or disable. **Disabling denies a session to every member**, so it ends a whole company's access at once. An organization holding users, RFQs or shipments cannot be deleted |
-| Office locations                       | `/admin/offices` — drives the addresses on the public contact page. Exactly one head office; the last office cannot be deleted                                                                                            |
-| News categories                        | `/admin/news/categories` — slug derived from the name. A category holding articles cannot be deleted                                                                                                                      |
-| Email copy                             | `/admin/emails` — subject, heading and body per template and locale. Only keys the code actually sends can be chosen. Deleting a row degrades to English and then to built-in copy, so mail never stops                   |
-| Chat transcripts                       | `/admin/chats` — read-only record of what the GLEX Assistant told visitors, with an escalated-only filter                                                                                                                 |
-| Trade routes                           | `/admin/routes` — the lanes drawn on the homepage map and network page                                                                                                                                                    |
+| Content                                | Where                                                                                                                                                                                                                                                                                          |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Product categories                     | `/admin/categories` — create, edit, re-order, activate; a category with products or sub-categories cannot be deleted                                                                                                                                                                           |
+| Products                               | `/admin/products` — create, edit, publish/hide, soft-delete, search                                                                                                                                                                                                                            |
+| News articles                          | `/admin/news` — write, schedule, publish, soft-delete, search. A future publication date keeps the article hidden until it arrives; no cron job is involved                                                                                                                                    |
+| The internal quotation process         | `/admin/rfqs` — each desk (customer service, supply chain, procurement, technical office, shipping) takes its own hand-off; prices, studies and files are recorded per desk. A quotation can only be sent once it has been approved. See the workflow section below                            |
+| RFQ status, assignment, internal notes | `/admin/rfqs`                                                                                                                                                                                                                                                                                  |
+| Supplier applications                  | `/admin/suppliers`                                                                                                                                                                                                                                                                             |
+| Announcement bar                       | `/admin/settings` — one active announcement at a time, with an optional schedule                                                                                                                                                                                                               |
+| Social links                           | `/admin/settings` — rendered in the footer; http(s) only                                                                                                                                                                                                                                       |
+| FAQ entries                            | `/admin/faq` — also the source the GLEX Assistant quotes when no AI provider is configured                                                                                                                                                                                                     |
+| Staff and client accounts              | `/admin/users` — invite a colleague (they set their own password from an emailed link; nobody else ever sees it), change a role, deactivate or reactivate, clear a brute-force lockout. Nobody can alter their own account, grant a role above their own, or switch off the last administrator |
+| Client and supplier organizations      | `/admin/organizations` — edit details, enable or disable. **Disabling denies a session to every member**, so it ends a whole company's access at once. An organization holding users, RFQs or shipments cannot be deleted                                                                      |
+| Office locations                       | `/admin/offices` — drives the addresses on the public contact page. Exactly one head office; the last office cannot be deleted                                                                                                                                                                 |
+| News categories                        | `/admin/news/categories` — slug derived from the name. A category holding articles cannot be deleted                                                                                                                                                                                           |
+| Email copy                             | `/admin/emails` — subject, heading and body per template and locale. Only keys the code actually sends can be chosen. Deleting a row degrades to English and then to built-in copy, so mail never stops                                                                                        |
+| Chat transcripts                       | `/admin/chats` — read-only record of what the GLEX Assistant told visitors, with an escalated-only filter                                                                                                                                                                                      |
+| Quotations and invoicing               | `/admin/finance` — every quotation that was sent, with the goods and freight figures behind it, and whether it has been invoiced. The only write the finance desk has                                                                                                                          |
+| Trade routes                           | `/admin/routes` — the lanes drawn on the homepage map and network page                                                                                                                                                                                                                         |
 
 Every mutation writes an `AuditLog` row in the same transaction as the change.
 Slugs are derived server-side from the name and are never accepted from the client.
@@ -858,6 +860,33 @@ admin-editable — see [`STATUS.md`](./STATUS.md) for why.
 Seeded shipments and news articles are flagged `isDemo` / `isSample` and are safe
 to delete. Seeded products, organizations and RFQs are not flagged — remove those
 from the admin portal, where you can see what each one is.
+
+### The internal quotation process
+
+Modelled on the company's own business model, in `src/lib/rfq-workflow.ts`:
+
+```
+customer service  →  supply chain  →  ┌ procurement ─(technical order)→ technical office ┐
+                                      │                                                  │→ supply chain
+                                      └ shipping ────────────────────────────────────────┘   compiles
+                                                                       → approval → customer service sends
+```
+
+Each desk holds exactly one `rfq:stage:*` permission, so a role can take its own
+hand-off and no other. Two rules are worth knowing:
+
+- **Pricing runs in parallel.** Goods and freight are quoted at the same time, and
+  the file moves on by itself once both have reported — nobody has to notice.
+- **A quotation cannot reach a client unapproved.** `issueQuotation` refuses
+  unless the request has been approved, so the approval step is a gate and not a
+  formality.
+
+The rules are a pure function with no database, tested in
+`src/lib/__tests__/rfq-workflow.test.ts`. Adding a desk means adding a permission,
+a rule and a test — not editing a screen.
+
+The stage is deliberately separate from `RfqStatus`: the client sees "under
+review" or "quotation prepared", never which desk is holding their file.
 
 ---
 

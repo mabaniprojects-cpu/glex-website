@@ -135,7 +135,7 @@ export function ArticleForm({
       }}
       className="mt-6 max-w-3xl space-y-6"
     >
-      <div className="space-y-4 rounded-xl border border-border-subtle p-6">
+      <div className="border-border-subtle space-y-4 rounded-xl border p-6">
         <Field>
           <FieldLabel required>{admin('articleTitle')}</FieldLabel>
           <FieldInput
@@ -171,7 +171,7 @@ export function ArticleForm({
         </Field>
       </div>
 
-      <div className="grid gap-4 rounded-xl border border-border-subtle p-6 sm:grid-cols-2">
+      <div className="border-border-subtle grid gap-4 rounded-xl border p-6 sm:grid-cols-2">
         <Field>
           <FieldLabel>{news('allCategories')}</FieldLabel>
           <FieldSelect
@@ -226,13 +226,13 @@ export function ArticleForm({
             type="checkbox"
             checked={draft.isFeatured}
             onChange={(event) => set('isFeatured', event.target.checked)}
-            className="size-4 rounded border-border-subtle"
+            className="border-border-subtle size-4 rounded"
           />
           {admin('featuredOnHomepage')}
         </label>
       </div>
 
-      <div className="space-y-4 rounded-xl border border-border-subtle p-6">
+      <div className="border-border-subtle space-y-4 rounded-xl border p-6">
         <h2 className="text-lg font-semibold">{admin('seoSection')}</h2>
 
         <Field>
@@ -256,15 +256,12 @@ export function ArticleForm({
       </div>
 
       {/* States plainly whether saving makes this visible to the public. */}
-      <p className="rounded-lg bg-surface-muted p-3 text-sm text-glex-green-800/80">
+      <p className="bg-surface-muted text-glex-green-800/80 rounded-lg p-3 text-sm">
         {willBePublic ? admin('willBePublic') : admin('willStayPrivate')}
       </p>
 
       {message ? (
-        <p
-          role="alert"
-          className="rounded-lg bg-red-50 p-3 text-sm font-medium text-red-800"
-        >
+        <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm font-medium text-red-800">
           {message.text}
         </p>
       ) : null}

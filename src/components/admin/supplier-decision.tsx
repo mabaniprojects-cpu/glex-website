@@ -5,7 +5,13 @@ import { useTranslations } from 'next-intl'
 import * as React from 'react'
 import { useRouter } from '@/i18n/navigation'
 import { Button } from '@/components/ui/button'
-import { Field, FieldDescription, FieldLabel, FieldSelect, FieldTextarea } from '@/components/ui/field'
+import {
+  Field,
+  FieldDescription,
+  FieldLabel,
+  FieldSelect,
+  FieldTextarea,
+} from '@/components/ui/field'
 import { decideSupplier } from '@/lib/actions/admin-actions'
 
 /** Decisions an approver may record. Mirrors the server-side schema. */
@@ -50,7 +56,7 @@ export function SupplierDecisionForm({
   }
 
   return (
-    <div className="space-y-5 rounded-xl border border-border-subtle p-6">
+    <div className="border-border-subtle space-y-5 rounded-xl border p-6">
       <h2 className="text-lg font-semibold">{common('status')}</h2>
 
       <Field>
@@ -87,7 +93,7 @@ export function SupplierDecisionForm({
           className={
             message.kind === 'error'
               ? 'rounded-lg bg-red-50 p-3 text-sm font-medium text-red-800'
-              : 'rounded-lg bg-glex-green-50 p-3 text-sm font-medium text-glex-green-800'
+              : 'bg-glex-green-50 text-glex-green-800 rounded-lg p-3 text-sm font-medium'
           }
         >
           {message.text}

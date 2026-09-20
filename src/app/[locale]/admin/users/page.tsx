@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { hasLocale } from 'next-intl'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
+import { InviteStaffForm } from '@/components/admin/invite-staff-form'
 import { UserControls } from '@/components/admin/user-controls'
 import { Button } from '@/components/ui/button'
 import { ListRange } from '@/components/ui/list-range'
@@ -11,7 +12,7 @@ import { routing } from '@/i18n/routing'
 import { listUsersForAdmin } from '@/lib/admin'
 import { requirePermission } from '@/lib/auth-guards'
 import { buildPageHref, pageCount, pageWindow } from '@/lib/pagination'
-import { canAssignRole } from '@/lib/rbac'
+import { canAssignRole, isStaff } from '@/lib/rbac'
 import { formatDate } from '@/lib/utils'
 
 export const metadata: Metadata = { robots: { index: false, follow: false } }
@@ -51,10 +52,19 @@ export default async function AdminUsersPage({
   const assignableRoles = Object.values(UserRole).filter((candidate) =>
     canAssignRole(actor.role, candidate)
   )
+  // Only colleagues are invited from here. Clients and suppliers register
+  // themselves, which is what builds their organization and profile records.
+  const invitableRoles = assignableRoles.filter(isStaff)
+
+  // Roles read as their job title rather than as the enum name: "Supply chain
+  // manager", not "supply_chain_manager".
+  const roleLabel = (role: UserRole) => admin(`roles.${role}` as 'roles.ADMIN')
 
   return (
     <div>
       <h1 className="text-2xl font-bold sm:text-3xl">{admin('nav.users')}</h1>
+
+      {canWrite && invitableRoles.length > 0 ? <InviteStaffForm roles={invitableRoles} /> : null}
 
       {/* A plain GET form, so results stay linkable and work without JS. */}
       <form action="" method="get" className="mt-6 flex flex-wrap items-end gap-3">
@@ -67,7 +77,7 @@ export default async function AdminUsersPage({
             name="q"
             defaultValue={search ?? ''}
             maxLength={120}
-            className="h-11 w-64 rounded-lg border border-border-subtle px-3 text-sm"
+            className="border-border-subtle h-11 w-64 rounded-lg border px-3 text-sm"
           />
         </div>
 
@@ -76,12 +86,12 @@ export default async function AdminUsersPage({
           <select
             name="role"
             defaultValue={role ?? ''}
-            className="h-11 rounded-lg border border-border-subtle bg-white px-3 pe-8 text-sm"
+            className="border-border-subtle h-11 rounded-lg border bg-white px-3 pe-8 text-sm"
           >
             <option value="">{admin('users.allRoles')}</option>
             {Object.values(UserRole).map((option) => (
               <option key={option} value={option}>
-                {option.replace(/_/g, ' ').toLowerCase()}
+                {roleLabel(option)}
               </option>
             ))}
           </select>
@@ -95,13 +105,13 @@ export default async function AdminUsersPage({
       <ListRange page={page} take={take} count={items.length} total={total} />
 
       {items.length === 0 ? (
-        <p className="mt-10 text-glex-green-800/70">{common('noResults')}</p>
+        <p className="text-glex-green-800/70 mt-10">{common('noResults')}</p>
       ) : (
         <div className="mt-6 overflow-x-auto">
           <table className="w-full border-collapse text-sm">
             <caption className="sr-only">{admin('nav.users')}</caption>
             <thead>
-              <tr className="border-b border-border-subtle text-start">
+              <tr className="border-border-subtle border-b text-start">
                 <th scope="col" className="py-2 pe-4 text-start font-semibold">
                   {admin('users.person')}
                 </th>
@@ -121,10 +131,10 @@ export default async function AdminUsersPage({
                 const isSelf = item.id === actor.id
 
                 return (
-                  <tr key={item.id} className="border-b border-border-subtle/60 align-top">
+                  <tr key={item.id} className="border-border-subtle/60 border-b align-top">
                     <td className="py-3 pe-4">
                       <p className="font-medium">{item.name}</p>
-                      <p className="text-xs text-glex-green-800/60" dir="ltr">
+                      <p className="text-glex-green-800/60 text-xs" dir="ltr">
                         {item.email}
                       </p>
                     </td>
@@ -134,14 +144,19 @@ export default async function AdminUsersPage({
                     <td className="py-3 pe-4">
                       <p>{item.isActive ? admin('users.active') : admin('users.inactive')}</p>
                       {!item.emailVerified ? (
-                        <p className="text-xs text-glex-green-800/60">
+                        <p className="text-glex-green-800/60 text-xs">
                           {admin('users.unverified')}
+                        </p>
+                      ) : null}
+                      {item.awaitingInvite ? (
+                        <p className="text-glex-gold-700 text-xs font-medium">
+                          {admin('users.invitePending')}
                         </p>
                       ) : null}
                       {item.isLocked ? (
                         <p className="text-xs font-medium text-red-800">{admin('users.locked')}</p>
                       ) : null}
-                      <p className="mt-1 text-xs text-glex-green-800/60">
+                      <p className="text-glex-green-800/60 mt-1 text-xs">
                         {item.lastLoginAt
                           ? admin('users.lastSignIn', {
                               date: formatDate(item.lastLoginAt, locale),
@@ -158,11 +173,12 @@ export default async function AdminUsersPage({
                           isActive={item.isActive}
                           isLocked={item.isLocked}
                           isSelf={isSelf}
+                          awaitingInvite={item.awaitingInvite}
                           assignableRoles={assignableRoles}
                         />
                       ) : (
-                        <span className="text-xs text-glex-green-800/60">
-                          {item.role.replace(/_/g, ' ').toLowerCase()}
+                        <span className="text-glex-green-800/60 text-xs">
+                          {roleLabel(item.role)}
                         </span>
                       )}
                     </td>
