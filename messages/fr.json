@@ -1055,15 +1055,15 @@
       "currency": "Devise",
       "file": "Pièce jointe",
       "estimatedValue": "Valeur estimée de la commande (USD)",
-      "estimatedValueHint": "Au-delà de {threshold}, une commande passe généralement au bureau technique.",
+      "estimatedValueHint": "À partir de {threshold}, la commande doit être confiée à Mabani.",
       "orderClass": "Type de commande",
-      "technicalDue": "Étude technique attendue le {date}",
+      "technicalDue": "Étude de Mabani attendue le {date}",
       "procurement": "Prix des marchandises",
       "shipping": "Prix du fret",
       "submit": "Confirmer",
       "trackPending": "En attente",
-      "trackTechnical": "Au bureau technique",
-      "trackTechnicalDone": "Étude rendue",
+      "trackTechnical": "Chez Mabani",
+      "trackTechnicalDone": "Étude reçue",
       "trackSubmitted": "Transmis",
       "stages": {
         "INTAKE": "Service client",
@@ -1078,7 +1078,7 @@
         "INTAKE": "Service client",
         "SUPPLY_CHAIN": "Chaîne d’approvisionnement",
         "PROCUREMENT": "Achats",
-        "TECHNICAL": "Bureau technique",
+        "TECHNICAL": "Étude technique (Mabani)",
         "SHIPPING": "Transport",
         "COMPILATION": "Préparation",
         "APPROVAL": "Approbation"
@@ -1090,8 +1090,8 @@
       "actions": {
         "forward_to_supply": "Transmettre à la chaîne d’approvisionnement",
         "dispatch_pricing": "Envoyer au chiffrage",
-        "send_to_technical": "Envoyer au bureau technique",
-        "submit_technical": "Transmettre l’étude technique",
+        "send_to_technical": "Confier à Mabani (étude technique)",
+        "submit_technical": "Enregistrer l’étude technique de Mabani",
         "submit_procurement": "Transmettre le prix des marchandises",
         "submit_shipping": "Transmettre le prix du fret",
         "submit_for_approval": "Soumettre pour approbation",
@@ -1103,7 +1103,8 @@
         "wrong_stage": "La demande a déjà avancé. Rechargez la page.",
         "note_required": "Ajoutez une note avant de confirmer.",
         "amount_required": "Saisissez un montant supérieur à zéro.",
-        "closed": "Cette demande est clôturée."
+        "closed": "Cette demande est clôturée.",
+        "study_required": "Cette commande atteint {threshold} ou plus : l’étude technique de Mabani doit être enregistrée avant le chiffrage."
       }
     },
     "finance": {

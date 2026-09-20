@@ -1055,15 +1055,15 @@
       "currency": "Currency",
       "file": "Attachment",
       "estimatedValue": "Estimated order value (USD)",
-      "estimatedValueHint": "Above {threshold} an order usually goes to the technical office.",
+      "estimatedValueHint": "At {threshold} or more the order must be referred to Mabani.",
       "orderClass": "Order type",
-      "technicalDue": "Technical study due {date}",
+      "technicalDue": "Mabani’s study due {date}",
       "procurement": "Goods pricing",
       "shipping": "Freight pricing",
       "submit": "Confirm",
       "trackPending": "Waiting",
-      "trackTechnical": "With the technical office",
-      "trackTechnicalDone": "Study returned",
+      "trackTechnical": "With Mabani",
+      "trackTechnicalDone": "Study received",
       "trackSubmitted": "Submitted",
       "stages": {
         "INTAKE": "Customer service",
@@ -1078,7 +1078,7 @@
         "INTAKE": "Customer service",
         "SUPPLY_CHAIN": "Supply chain",
         "PROCUREMENT": "Procurement",
-        "TECHNICAL": "Technical office",
+        "TECHNICAL": "Technical study (Mabani)",
         "SHIPPING": "Shipping",
         "COMPILATION": "Compilation",
         "APPROVAL": "Approval"
@@ -1090,8 +1090,8 @@
       "actions": {
         "forward_to_supply": "Forward to supply chain",
         "dispatch_pricing": "Send for pricing",
-        "send_to_technical": "Send to the technical office",
-        "submit_technical": "Submit the technical study",
+        "send_to_technical": "Refer to Mabani (technical study)",
+        "submit_technical": "Record Mabani’s technical study",
         "submit_procurement": "Submit the goods price",
         "submit_shipping": "Submit the freight price",
         "submit_for_approval": "Submit for approval",
@@ -1103,7 +1103,8 @@
         "wrong_stage": "The request has already moved on. Reload the page.",
         "note_required": "Add a note before confirming.",
         "amount_required": "Enter an amount greater than zero.",
-        "closed": "This request is closed."
+        "closed": "This request is closed.",
+        "study_required": "This order is {threshold} or more, so Mabani’s technical study has to be recorded before it can be priced."
       }
     },
     "finance": {

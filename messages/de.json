@@ -1055,15 +1055,15 @@
       "currency": "Währung",
       "file": "Anhang",
       "estimatedValue": "Geschätzter Auftragswert (USD)",
-      "estimatedValueHint": "Über {threshold} geht ein Auftrag in der Regel an das technische Büro.",
+      "estimatedValueHint": "Ab {threshold} muss der Auftrag an Mabani verwiesen werden.",
       "orderClass": "Auftragsart",
-      "technicalDue": "Technische Studie fällig am {date}",
+      "technicalDue": "Studie von Mabani fällig am {date}",
       "procurement": "Warenpreis",
       "shipping": "Frachtpreis",
       "submit": "Bestätigen",
       "trackPending": "Offen",
-      "trackTechnical": "Beim technischen Büro",
-      "trackTechnicalDone": "Studie zurück",
+      "trackTechnical": "Bei Mabani",
+      "trackTechnicalDone": "Studie eingegangen",
       "trackSubmitted": "Eingereicht",
       "stages": {
         "INTAKE": "Kundenservice",
@@ -1078,7 +1078,7 @@
         "INTAKE": "Kundenservice",
         "SUPPLY_CHAIN": "Supply Chain",
         "PROCUREMENT": "Einkauf",
-        "TECHNICAL": "Technisches Büro",
+        "TECHNICAL": "Technische Studie (Mabani)",
         "SHIPPING": "Versand",
         "COMPILATION": "Erstellung",
         "APPROVAL": "Freigabe"
@@ -1090,8 +1090,8 @@
       "actions": {
         "forward_to_supply": "An Supply Chain weiterleiten",
         "dispatch_pricing": "Zur Preisermittlung senden",
-        "send_to_technical": "An das technische Büro senden",
-        "submit_technical": "Technische Studie einreichen",
+        "send_to_technical": "An Mabani verweisen (technische Studie)",
+        "submit_technical": "Technische Studie von Mabani erfassen",
         "submit_procurement": "Warenpreis einreichen",
         "submit_shipping": "Frachtpreis einreichen",
         "submit_for_approval": "Zur Freigabe vorlegen",
@@ -1103,7 +1103,8 @@
         "wrong_stage": "Die Anfrage wurde bereits weiterbewegt. Bitte neu laden.",
         "note_required": "Bitte vor dem Bestätigen eine Notiz hinzufügen.",
         "amount_required": "Bitte einen Betrag größer als null eingeben.",
-        "closed": "Diese Anfrage ist abgeschlossen."
+        "closed": "Diese Anfrage ist abgeschlossen.",
+        "study_required": "Dieser Auftrag liegt bei {threshold} oder darüber; die technische Studie von Mabani muss vor der Preisbildung erfasst werden."
       }
     },
     "finance": {

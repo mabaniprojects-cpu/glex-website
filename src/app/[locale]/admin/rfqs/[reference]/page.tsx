@@ -46,6 +46,7 @@ export default async function AdminRfqDetailPage({
     procurementStatus: rfq.procurementStatus,
     shippingStatus: rfq.shippingStatus,
     orderClass: rfq.orderClass,
+    estimatedValueUsd: rfq.estimatedValueUsd === null ? null : Number(rfq.estimatedValueUsd),
   }
   const formatMoney = (amount: { toString(): string }, currency: string) =>
     new Intl.NumberFormat(locale, { style: 'currency', currency, maximumFractionDigits: 0 }).format(

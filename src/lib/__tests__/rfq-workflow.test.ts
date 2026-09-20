@@ -10,8 +10,10 @@ import {
   applyWorkflowAction,
   availableActions,
   isWaitingOn,
+  requiresTechnicalStudy,
   responsiblePermissions,
   rolesWithPermission,
+  TECHNICAL_ORDER_THRESHOLD_USD,
   TECHNICAL_STUDY_DAYS,
   type WorkflowState,
 } from '../rfq-workflow'
@@ -195,6 +197,78 @@ describe('a technical order', () => {
     )
     // The classification survives pricing: it was a technical order.
     expect(priced.state.orderClass).toBe(RfqOrderClass.TECHNICAL)
+  })
+})
+
+describe('the 100,000 USD referral rule', () => {
+  // Mabani is a separate company in the group, not a GLEX desk: at or above
+  // this figure the order goes to them before anyone prices it.
+  const large = at({
+    workflowStage: RfqWorkflowStage.PRICING,
+    estimatedValueUsd: TECHNICAL_ORDER_THRESHOLD_USD,
+  })
+
+  it('refuses to price a large order from the market alone', () => {
+    expect(
+      applyWorkflowAction(UserRole.PROCUREMENT_MANAGER, large, 'submit_procurement', {
+        amount: 96_000,
+      })
+    ).toEqual({ ok: false, error: 'study_required' })
+  })
+
+  it('allows it once the study has been recorded', () => {
+    const referred = expectOk(
+      applyWorkflowAction(UserRole.PROCUREMENT_MANAGER, large, 'send_to_technical')
+    )
+    const filed = expectOk(
+      applyWorkflowAction(UserRole.PROCUREMENT_MANAGER, referred.state, 'submit_technical', {
+        note: "Mabani's material list received.",
+      })
+    )
+    expect(
+      applyWorkflowAction(UserRole.PROCUREMENT_MANAGER, filed.state, 'submit_procurement', {
+        amount: 96_000,
+      }).ok
+    ).toBe(true)
+  })
+
+  it('leaves smaller orders alone', () => {
+    const small = at({
+      workflowStage: RfqWorkflowStage.PRICING,
+      estimatedValueUsd: TECHNICAL_ORDER_THRESHOLD_USD - 1,
+    })
+    expect(
+      applyWorkflowAction(UserRole.PROCUREMENT_MANAGER, small, 'submit_procurement', {
+        amount: 40_000,
+      }).ok
+    ).toBe(true)
+  })
+
+  it('treats an unknown estimate as small — the rule keys off a figure someone entered', () => {
+    expect(
+      applyWorkflowAction(
+        UserRole.PROCUREMENT_MANAGER,
+        at({ workflowStage: RfqWorkflowStage.PRICING }),
+        'submit_procurement',
+        { amount: 40_000 }
+      ).ok
+    ).toBe(true)
+  })
+
+  it('lets an approver override, because the estimate is a judgement', () => {
+    expect(
+      applyWorkflowAction(UserRole.ADMIN, large, 'submit_procurement', { amount: 96_000 }).ok
+    ).toBe(true)
+  })
+
+  it('offers procurement the referral and nothing else until the study is in', () => {
+    expect(availableActions(UserRole.PROCUREMENT_MANAGER, large)).toEqual(['send_to_technical'])
+  })
+
+  it('answers whether a referral is required', () => {
+    expect(requiresTechnicalStudy(large)).toBe(true)
+    expect(requiresTechnicalStudy(at({ estimatedValueUsd: 99_999 }))).toBe(false)
+    expect(requiresTechnicalStudy(at({ estimatedValueUsd: null }))).toBe(false)
   })
 })
 

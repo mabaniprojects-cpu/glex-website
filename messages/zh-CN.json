@@ -1055,15 +1055,15 @@
       "currency": "币种",
       "file": "附件",
       "estimatedValue": "订单预估金额（美元）",
-      "estimatedValueHint": "超过 {threshold} 的订单通常转交技术部。",
+      "estimatedValueHint": "金额达到 {threshold} 及以上的订单须转交 Mabani。",
       "orderClass": "订单类型",
-      "technicalDue": "技术评估应于 {date} 前提交",
+      "technicalDue": "Mabani 评估应于 {date} 前提交",
       "procurement": "货品报价",
       "shipping": "运费报价",
       "submit": "确认",
       "trackPending": "待处理",
-      "trackTechnical": "技术部处理中",
-      "trackTechnicalDone": "评估已返回",
+      "trackTechnical": "Mabani 处理中",
+      "trackTechnicalDone": "评估已收到",
       "trackSubmitted": "已提交",
       "stages": {
         "INTAKE": "客户服务",
@@ -1078,7 +1078,7 @@
         "INTAKE": "客户服务",
         "SUPPLY_CHAIN": "供应链",
         "PROCUREMENT": "采购",
-        "TECHNICAL": "技术部",
+        "TECHNICAL": "技术评估（Mabani）",
         "SHIPPING": "运输",
         "COMPILATION": "编制",
         "APPROVAL": "审批"
@@ -1090,8 +1090,8 @@
       "actions": {
         "forward_to_supply": "转交供应链",
         "dispatch_pricing": "发起报价",
-        "send_to_technical": "转交技术部",
-        "submit_technical": "提交技术评估",
+        "send_to_technical": "转交 Mabani（技术评估）",
+        "submit_technical": "登记 Mabani 的技术评估",
         "submit_procurement": "提交货品价格",
         "submit_shipping": "提交运费价格",
         "submit_for_approval": "提交审批",
@@ -1103,7 +1103,8 @@
         "wrong_stage": "该询价已更新，请刷新页面。",
         "note_required": "确认前请填写备注。",
         "amount_required": "请输入大于零的金额。",
-        "closed": "该询价已关闭。"
+        "closed": "该询价已关闭。",
+        "study_required": "该订单金额达到 {threshold} 及以上，需先登记 Mabani 的技术评估才能报价。"
       }
     },
     "finance": {

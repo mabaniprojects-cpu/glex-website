@@ -43,6 +43,7 @@ export type WorkflowActionResult =
         | 'wrong_stage'
         | 'note_required'
         | 'amount_required'
+        | 'study_required'
         | 'server'
     }
 
@@ -99,6 +100,7 @@ export async function advanceRfqWorkflow(input: unknown): Promise<WorkflowAction
       procurementStatus: true,
       shippingStatus: true,
       orderClass: true,
+      estimatedValueUsd: true,
     },
   })
   if (!rfq) return { ok: false, error: 'not_found' }
@@ -114,6 +116,7 @@ export async function advanceRfqWorkflow(input: unknown): Promise<WorkflowAction
       procurementStatus: rfq.procurementStatus,
       shippingStatus: rfq.shippingStatus,
       orderClass: rfq.orderClass,
+      estimatedValueUsd: rfq.estimatedValueUsd === null ? null : Number(rfq.estimatedValueUsd),
     },
     data.action,
     { note: data.note, amount: data.amount, estimatedValueUsd: data.estimatedValueUsd }

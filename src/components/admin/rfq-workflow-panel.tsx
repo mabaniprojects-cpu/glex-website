@@ -143,13 +143,17 @@ export function RfqWorkflowPanel({
       }
 
       setError(
-        result.error === 'forbidden' ||
-          result.error === 'wrong_stage' ||
-          result.error === 'note_required' ||
-          result.error === 'amount_required' ||
-          result.error === 'closed'
-          ? admin(`workflow.errors.${result.error}` as 'workflow.errors.forbidden')
-          : common('errorBody')
+        result.error === 'study_required'
+          ? // The only refusal that needs the figure behind it, so the desk can
+            // see why the button stopped rather than guess.
+            admin('workflow.errors.study_required', { threshold: technicalThreshold })
+          : result.error === 'forbidden' ||
+              result.error === 'wrong_stage' ||
+              result.error === 'note_required' ||
+              result.error === 'amount_required' ||
+              result.error === 'closed'
+            ? admin(`workflow.errors.${result.error}` as 'workflow.errors.forbidden')
+            : common('errorBody')
       )
     })
   }

@@ -55,9 +55,17 @@ export const WORKFLOW_STAGES: RfqWorkflowStage[] = [
 export const TECHNICAL_STUDY_DAYS = 6
 
 /**
- * The value at which an order stops being priced from the market and goes to
- * the technical office. Advisory: procurement still decides, and the figure is
- * only an estimate at this point.
+ * At or above this estimate the technical study is not optional.
+ *
+ * The technical office is Mabani, a separate company in the group rather than a
+ * GLEX desk, so this is a decision to consult someone outside the business: the
+ * company's rule is that an order of this size is always referred to them.
+ * Enforced rather than suggested, because the failure it prevents — quoting a
+ * large technical order from the market alone — is expensive and only surfaces
+ * once the order is won.
+ *
+ * The estimate is supply chain's judgement, so an approver can still price
+ * without a study when that figure turns out to be wrong.
  */
 export const TECHNICAL_ORDER_THRESHOLD_USD = 100_000
 
@@ -128,6 +136,8 @@ export type WorkflowState = {
   procurementStatus: RfqTrackStatus
   shippingStatus: RfqTrackStatus
   orderClass: RfqOrderClass | null
+  /** Supply chain's estimate, which decides whether Mabani must be consulted. */
+  estimatedValueUsd?: number | null
 }
 
 export type WorkflowInput = {
@@ -146,7 +156,10 @@ export type WorkflowTransition = {
 
 export type WorkflowOutcome =
   | { ok: true; transition: WorkflowTransition }
-  | { ok: false; error: 'forbidden' | 'wrong_stage' | 'note_required' | 'amount_required' }
+  | {
+      ok: false
+      error: 'forbidden' | 'wrong_stage' | 'note_required' | 'amount_required' | 'study_required'
+    }
 
 /**
  * Applies one action. Pure: no database, no clock beyond the `now` handed in,
@@ -172,6 +185,18 @@ export function applyWorkflowAction(
   if (rule.requiresNote && !input.note?.trim()) return { ok: false, error: 'note_required' }
   if (rule.requiresAmount && !(typeof input.amount === 'number' && input.amount > 0)) {
     return { ok: false, error: 'amount_required' }
+  }
+
+  // A large order may not be priced from the market alone: Mabani is consulted
+  // first. Whoever may approve the quotation may override, because the estimate
+  // behind this rule is itself a judgement.
+  if (
+    action === 'submit_procurement' &&
+    requiresTechnicalStudy(state) &&
+    state.procurementStatus !== RfqTrackStatus.TECHNICAL_DONE &&
+    !can(role, 'rfq:approve')
+  ) {
+    return { ok: false, error: 'study_required' }
   }
 
   const next: WorkflowState = { ...state }
@@ -249,6 +274,11 @@ export function applyWorkflowAction(
       ...(estimatedValueUsd !== undefined ? { estimatedValueUsd } : {}),
     },
   }
+}
+
+/** Whether this order is large enough that Mabani must be consulted first. */
+export function requiresTechnicalStudy(state: WorkflowState): boolean {
+  return (state.estimatedValueUsd ?? 0) >= TECHNICAL_ORDER_THRESHOLD_USD
 }
 
 /** Every action a role could take on this RFQ right now. */

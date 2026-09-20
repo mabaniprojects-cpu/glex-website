@@ -139,6 +139,9 @@ const MATRIX: Record<UserRole, readonly Permission[]> = {
     'rfq:manage',
     'rfq:assign',
     'rfq:stage:procurement',
+    // Mabani, the technical office, is a separate company in the group with no
+    // account here. Procurement commissions the study and files the answer.
+    'rfq:stage:technical',
     'product:write',
     'product:publish',
     'category:write',

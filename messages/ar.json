@@ -1055,15 +1055,15 @@
       "currency": "العملة",
       "file": "مرفق",
       "estimatedValue": "القيمة التقديرية للطلب (دولار)",
-      "estimatedValueHint": "ما يتجاوز {threshold} يُحال عادةً إلى المكتب الفني.",
+      "estimatedValueHint": "ابتداءً من {threshold} تُحال الطلبات إلى مباني.",
       "orderClass": "نوع الطلب",
-      "technicalDue": "موعد تسليم الدراسة الفنية {date}",
+      "technicalDue": "موعد دراسة مباني {date}",
       "procurement": "تسعير البضاعة",
       "shipping": "تسعير الشحن",
       "submit": "تأكيد",
       "trackPending": "بالانتظار",
-      "trackTechnical": "لدى المكتب الفني",
-      "trackTechnicalDone": "عادت الدراسة",
+      "trackTechnical": "لدى مباني",
+      "trackTechnicalDone": "وصلت الدراسة",
       "trackSubmitted": "تم الإرسال",
       "stages": {
         "INTAKE": "خدمة العملاء",
@@ -1078,7 +1078,7 @@
         "INTAKE": "خدمة العملاء",
         "SUPPLY_CHAIN": "سلسلة الإمداد",
         "PROCUREMENT": "المشتريات",
-        "TECHNICAL": "المكتب الفني",
+        "TECHNICAL": "الدراسة الفنية (مباني)",
         "SHIPPING": "الشحن",
         "COMPILATION": "إعداد العرض",
         "APPROVAL": "الاعتماد"
@@ -1090,8 +1090,8 @@
       "actions": {
         "forward_to_supply": "إحالة إلى سلسلة الإمداد",
         "dispatch_pricing": "إرسال للتسعير",
-        "send_to_technical": "إحالة إلى المكتب الفني",
-        "submit_technical": "إرسال الدراسة الفنية",
+        "send_to_technical": "إحالة إلى مباني (دراسة فنية)",
+        "submit_technical": "تسجيل الدراسة الفنية من مباني",
         "submit_procurement": "إرسال سعر البضاعة",
         "submit_shipping": "إرسال سعر الشحن",
         "submit_for_approval": "رفع للاعتماد",
@@ -1103,7 +1103,8 @@
         "wrong_stage": "تم تحديث الطلب بالفعل. أعد تحميل الصفحة.",
         "note_required": "أضف ملاحظة قبل التأكيد.",
         "amount_required": "أدخل مبلغًا أكبر من صفر.",
-        "closed": "هذا الطلب مغلق."
+        "closed": "هذا الطلب مغلق.",
+        "study_required": "قيمة هذا الطلب {threshold} أو أكثر، لذا يلزم تسجيل الدراسة الفنية من مباني قبل التسعير."
       }
     },
     "finance": {
