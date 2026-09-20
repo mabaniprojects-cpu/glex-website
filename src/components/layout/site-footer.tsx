@@ -94,7 +94,7 @@ export async function SiteFooter() {
                 <Phone className="rtl-flip size-4 shrink-0" aria-hidden="true" />
                 <a
                   href={`tel:${GLEX_COMPANY.phoneE164}`}
-                  className="underline-offset-4 hover:underline"
+                  className="-my-1 inline-block py-1 underline-offset-4 hover:underline"
                   dir="ltr"
                 >
                   {GLEX_COMPANY.phoneDisplay}
@@ -102,7 +102,10 @@ export async function SiteFooter() {
               </div>
               <div className="flex gap-2.5">
                 <Mail className="size-4 shrink-0" aria-hidden="true" />
-                <Link href="/contact" className="underline-offset-4 hover:underline">
+                <Link
+                  href="/contact"
+                  className="-my-1 inline-block py-1 underline-offset-4 hover:underline"
+                >
                   {nav('contact')}
                 </Link>
               </div>
@@ -127,7 +130,7 @@ export async function SiteFooter() {
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer me"
-                    className="text-glex-ivory/80 text-sm underline-offset-4 hover:underline"
+                    className="text-glex-ivory/80 inline-block py-1 text-sm underline-offset-4 hover:underline"
                   >
                     {link.platform}
                   </a>
@@ -144,7 +147,7 @@ export async function SiteFooter() {
           <ul className="flex flex-wrap gap-x-5 gap-y-2">
             {LEGAL_LINKS.map(([href, key]) => (
               <li key={href}>
-                <Link href={href} className="underline-offset-4 hover:underline">
+                <Link href={href} className="inline-block py-1 underline-offset-4 hover:underline">
                   {t(key)}
                 </Link>
               </li>
@@ -162,12 +165,12 @@ function FooterColumn({ title, items }: { title: string; items: FooterItem[] }) 
   return (
     <div className="lg:col-span-2">
       <h2 className="text-sm font-semibold tracking-wide text-white uppercase">{title}</h2>
-      <ul className="text-glex-ivory/80 mt-4 space-y-2.5 text-sm">
+      <ul className="text-glex-ivory/80 mt-3 space-y-1 text-sm">
         {items.map((item) => (
           <li key={item.href}>
             <Link
               href={item.href as Parameters<typeof Link>[0]['href']}
-              className="underline-offset-4 hover:underline"
+              className="inline-block py-1 underline-offset-4 hover:underline"
             >
               {item.label}
             </Link>
