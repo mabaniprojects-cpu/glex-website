@@ -878,7 +878,10 @@ hand-off and no other. Two rules are worth knowing:
 - **Pricing runs in parallel.** Goods and freight are quoted at the same time, and
   the file moves on by itself once both have reported — nobody has to notice.
 - **An order estimated at $100,000 or more must be referred to Mabani** before it
-  can be priced. Mabani is a separate company in the group rather than a GLEX
+  can be priced. Procurement reviews the message and sends it from the portal;
+  it reaches the Mabani PMO by email carrying the reference, the destination,
+  the approximate value and the reason for the referral, and the reply goes back
+  to the person who sent it. `MABANI_TECHNICAL_EMAILS` overrides the addresses. Mabani is a separate company in the group rather than a GLEX
   desk, so it has no account here: procurement commissions the study and records
   what comes back. Whoever may approve a quotation may override the rule, since
   the estimate behind it is supply chain’s judgement.

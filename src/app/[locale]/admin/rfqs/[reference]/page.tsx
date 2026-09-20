@@ -13,6 +13,7 @@ import { requirePermission } from '@/lib/auth-guards'
 import { getRfqForAdmin, listAssignableStaff } from '@/lib/admin'
 import { can, worksTheWorkflow } from '@/lib/rbac'
 import { availableActions, isWaitingOn, TECHNICAL_ORDER_THRESHOLD_USD } from '@/lib/rfq-workflow'
+import { technicalOfficeLabel } from '@/lib/technical-office'
 import { formatDate } from '@/lib/utils'
 
 export const metadata: Metadata = { robots: { index: false, follow: false } }
@@ -322,6 +323,7 @@ export default async function AdminRfqDetailPage({
                 currency: 'USD',
                 maximumFractionDigits: 0,
               }).format(TECHNICAL_ORDER_THRESHOLD_USD)}
+              technicalOffice={technicalOfficeLabel()}
             />
           ) : null}
 

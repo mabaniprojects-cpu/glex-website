@@ -15,6 +15,8 @@ import {
   type WorkflowAction,
 } from '@/lib/rfq-workflow'
 import { isRfqClosed } from '@/lib/rfq-status'
+import { technicalOfficeRecipients } from '@/lib/technical-office'
+import { TECHNICAL_ORDER_THRESHOLD_USD } from '@/lib/rfq-workflow'
 import { can } from '@/lib/rbac'
 import { absoluteUrl } from '@/lib/urls'
 
@@ -96,6 +98,8 @@ export async function advanceRfqWorkflow(input: unknown): Promise<WorkflowAction
     select: {
       id: true,
       status: true,
+      destinationCountry: true,
+      projectName: true,
       workflowStage: true,
       procurementStatus: true,
       shippingStatus: true,
@@ -199,11 +203,88 @@ export async function advanceRfqWorkflow(input: unknown): Promise<WorkflowAction
 
   // Best effort, after the move is committed: a mail outage must not undo work
   // that has already been done.
-  await notifyNextDesk(data.reference, state)
+  if (data.action === 'send_to_technical') {
+    await referToTechnicalOffice({
+      reference: data.reference,
+      destination: rfq.destinationCountry,
+      project: rfq.projectName,
+      message: data.note ?? '',
+      estimatedValueUsd: rfq.estimatedValueUsd === null ? null : Number(rfq.estimatedValueUsd),
+      // Mabani replies to the person who asked, not to a no-reply address.
+      replyTo: user.email,
+      senderName: user.name ?? null,
+    })
+  } else {
+    await notifyNextDesk(data.reference, state)
+  }
 
   revalidatePath('/[locale]/admin/rfqs', 'page')
   revalidatePath(`/[locale]/admin/rfqs/${data.reference}`, 'page')
   return { ok: true }
+}
+
+/**
+ * The referral itself: the message procurement reviewed, sent to Mabani.
+ *
+ * Addressed to a partner company rather than a colleague, so it carries no
+ * admin link — they have no account here — and replies go to the person who
+ * sent it. Failure is reported to the caller's log rather than thrown: the
+ * referral is already recorded, and losing that record because mail was down
+ * would be the worse outcome.
+ */
+async function referToTechnicalOffice({
+  reference,
+  destination,
+  project,
+  message,
+  estimatedValueUsd,
+  replyTo,
+  senderName,
+}: {
+  reference: string
+  destination: string
+  project: string | null
+  message: string
+  estimatedValueUsd: number | null
+  replyTo: string
+  senderName: string | null
+}) {
+  const recipients = technicalOfficeRecipients()
+  if (recipients.length === 0) return
+
+  await Promise.all(
+    recipients.map((person) =>
+      sendTemplate(
+        'external-technical-study',
+        person.email,
+        {
+          locale: 'en',
+          recipientName: person.name || undefined,
+          subjectSuffix: `${reference} · ${destination}`,
+          details: [
+            { label: 'Reference', value: reference },
+            { label: 'Destination', value: destination },
+            ...(project ? [{ label: 'Project', value: project }] : []),
+            ...(senderName ? [{ label: 'From', value: senderName }] : []),
+            // Why they are being asked, in the message itself: the referral is
+            // a rule about order size, and Mabani should see the figure that
+            // triggered it rather than have to ask.
+            ...(estimatedValueUsd !== null
+              ? [
+                  { label: 'Approximate order value', value: usd(estimatedValueUsd) },
+                  {
+                    label: 'Why this is referred',
+                    value: `Above ${usd(TECHNICAL_ORDER_THRESHOLD_USD)} — GLEX refers orders of this size to the Mabani PMO for a technical study.`,
+                  },
+                ]
+              : []),
+            { label: 'Message', value: message },
+          ],
+        },
+        { replyTo }
+      )
+    )
+  )
 }
 
 /** Emails everyone whose desk the file now waits on. */
@@ -238,6 +319,15 @@ async function notifyNextDesk(
       })
     )
   )
+}
+
+/** Plain USD, for a reader outside the application. */
+function usd(amount: number): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  }).format(amount)
 }
 
 function humanStage(stage: string): string {

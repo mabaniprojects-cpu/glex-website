@@ -167,7 +167,7 @@ describe('a technical order', () => {
         UserRole.PROCUREMENT_MANAGER,
         pricing,
         'send_to_technical',
-        {},
+        { note: 'Please prepare a technical study.' },
         new Date('2026-09-20T00:00:00Z')
       )
     )
@@ -218,7 +218,9 @@ describe('the 100,000 USD referral rule', () => {
 
   it('allows it once the study has been recorded', () => {
     const referred = expectOk(
-      applyWorkflowAction(UserRole.PROCUREMENT_MANAGER, large, 'send_to_technical')
+      applyWorkflowAction(UserRole.PROCUREMENT_MANAGER, large, 'send_to_technical', {
+        note: 'Please prepare a technical study and material list.',
+      })
     )
     const filed = expectOk(
       applyWorkflowAction(UserRole.PROCUREMENT_MANAGER, referred.state, 'submit_technical', {
@@ -263,6 +265,13 @@ describe('the 100,000 USD referral rule', () => {
 
   it('offers procurement the referral and nothing else until the study is in', () => {
     expect(availableActions(UserRole.PROCUREMENT_MANAGER, large)).toEqual(['send_to_technical'])
+  })
+
+  it('refuses a referral with no message, because the note is what Mabani receives', () => {
+    expect(applyWorkflowAction(UserRole.PROCUREMENT_MANAGER, large, 'send_to_technical')).toEqual({
+      ok: false,
+      error: 'note_required',
+    })
   })
 
   it('answers whether a referral is required', () => {

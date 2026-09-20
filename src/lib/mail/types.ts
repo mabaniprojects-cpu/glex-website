@@ -57,6 +57,7 @@ export const TEMPLATE_KEYS = [
   'internal-contact',
   'internal-rfq',
   'internal-rfq-stage',
+  'external-technical-study',
   'internal-staff-invitation',
   'internal-freight',
   'internal-supplier',

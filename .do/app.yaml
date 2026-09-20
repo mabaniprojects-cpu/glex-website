@@ -150,6 +150,8 @@ services:
 #   S3_SECRET_ACCESS_KEY  Spaces secret
 #
 # Optional:
+#   MABANI_TECHNICAL_EMAILS   comma-separated; overrides the built-in Mabani PMO
+#                             addresses a large-order referral is sent to
 #   SENTRY_DSN, NEXT_PUBLIC_SENTRY_DSN   error monitoring
 #   ANTHROPIC_API_KEY                    the assistant's AI branch; the FAQ
 #                                        fallback works without it

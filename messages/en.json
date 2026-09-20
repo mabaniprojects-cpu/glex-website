@@ -1105,7 +1105,13 @@
         "amount_required": "Enter an amount greater than zero.",
         "closed": "This request is closed.",
         "study_required": "This order is {threshold} or more, so Mabani’s technical study has to be recorded before it can be priced."
-      }
+      },
+      "reviewTitle": "Review before sending to Mabani",
+      "recipients": "Goes to",
+      "messageLabel": "Message to Mabani",
+      "messageHint": "Sent to Mabani by email. Their reply comes back to you, not to a no-reply address.",
+      "draft": "Please prepare a technical study and material list for this request. Drawings and the bill of quantities follow separately.",
+      "sendAction": "Send to Mabani"
     },
     "finance": {
       "title": "Quotations & invoicing",

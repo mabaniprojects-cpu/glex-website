@@ -92,6 +92,9 @@ const RULES: Record<WorkflowAction, Rule> = {
     permission: 'rfq:stage:procurement',
     from: [RfqWorkflowStage.PRICING],
     procurement: [RfqTrackStatus.PENDING],
+    // The note is the message Mabani receives, so an empty one would send them
+    // a reference and nothing else.
+    requiresNote: true,
   },
   submit_technical: {
     permission: 'rfq:stage:technical',

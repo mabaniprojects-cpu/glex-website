@@ -132,6 +132,15 @@ const FALLBACKS: Record<TemplateKey, TemplateCopy> = {
     heading: 'A request needs your desk',
     body: 'A request for quotation has reached your stage of the internal process. Open it in the admin portal to see what is waiting and to report back.',
   },
+  /**
+   * The only message this application sends outside GLEX. Addressed to a
+   * partner company, so it is written for someone who does not work here.
+   */
+  'external-technical-study': {
+    subject: 'Technical study request',
+    heading: 'Request for a technical study',
+    body: 'GLEX is preparing a quotation and would like your technical study for the request below. The details follow; please reply to this message with your material list and any questions.',
+  },
   'internal-staff-invitation': {
     subject: 'Your GLEX staff account',
     heading: 'Set your password',

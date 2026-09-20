@@ -1105,7 +1105,13 @@
         "amount_required": "Saisissez un montant supérieur à zéro.",
         "closed": "Cette demande est clôturée.",
         "study_required": "Cette commande atteint {threshold} ou plus : l’étude technique de Mabani doit être enregistrée avant le chiffrage."
-      }
+      },
+      "reviewTitle": "Vérifier avant l’envoi à Mabani",
+      "recipients": "Destinataires",
+      "messageLabel": "Message à Mabani",
+      "messageHint": "Envoyé à Mabani par e-mail. Leur réponse vous parvient directement.",
+      "draft": "Merci de préparer une étude technique et une liste de matériaux pour cette demande. Les plans et le métré suivront séparément.",
+      "sendAction": "Envoyer à Mabani"
     },
     "finance": {
       "title": "Offres et facturation",

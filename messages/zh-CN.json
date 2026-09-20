@@ -1105,7 +1105,13 @@
         "amount_required": "请输入大于零的金额。",
         "closed": "该询价已关闭。",
         "study_required": "该订单金额达到 {threshold} 及以上，需先登记 Mabani 的技术评估才能报价。"
-      }
+      },
+      "reviewTitle": "发送给 Mabani 前请确认",
+      "recipients": "收件人",
+      "messageLabel": "给 Mabani 的留言",
+      "messageHint": "将通过邮件发送给 Mabani，其回复会直接发给您。",
+      "draft": "请为此询价准备技术评估与材料清单。图纸与工程量清单将另行发送。",
+      "sendAction": "发送给 Mabani"
     },
     "finance": {
       "title": "报价与开票",

@@ -25,7 +25,7 @@ const FIELDS: Record<
 > = {
   forward_to_supply: { note: 'optional' },
   dispatch_pricing: { estimate: true, note: 'optional', file: true },
-  send_to_technical: { note: 'optional', file: true },
+  send_to_technical: { note: 'required', file: true },
   submit_technical: { note: 'required', file: true },
   submit_procurement: { amount: true, note: 'optional', file: true },
   submit_shipping: { amount: true, note: 'optional', file: true },
@@ -45,6 +45,7 @@ export function RfqWorkflowPanel({
   actions,
   waitingOnYou,
   technicalThreshold,
+  technicalOffice,
 }: {
   reference: string
   stage: RfqWorkflowStage
@@ -57,6 +58,8 @@ export function RfqWorkflowPanel({
   actions: WorkflowAction[]
   waitingOnYou: boolean
   technicalThreshold: string
+  /** Who the referral goes to, resolved on the server. */
+  technicalOffice: string
 }) {
   const admin = useTranslations('admin')
   const common = useTranslations('common')
@@ -86,6 +89,12 @@ export function RfqWorkflowPanel({
         : value === RfqTrackStatus.TECHNICAL_DONE
           ? admin('workflow.trackTechnicalDone')
           : admin('workflow.trackPending')
+
+  function start(action: WorkflowAction) {
+    setSelected(action)
+    setError(null)
+    if (action === 'send_to_technical') setNote(admin('workflow.draft'))
+  }
 
   function reset() {
     setSelected(null)
@@ -223,7 +232,7 @@ export function RfqWorkflowPanel({
               type="button"
               variant={action === 'return_to_supply' ? 'outline' : 'primary'}
               size="sm"
-              onClick={() => setSelected(action)}
+              onClick={() => start(action)}
             >
               {action === 'approve' ? (
                 <CheckCircle2 className="size-4" aria-hidden="true" />
@@ -286,7 +295,36 @@ export function RfqWorkflowPanel({
             </label>
           ) : null}
 
-          {fields?.note ? (
+          {/*
+            The referral leaves the company, so it gets a review step: who it
+            goes to, and the exact words, before anything is sent. Every other
+            action writes an internal note that only colleagues read.
+          */}
+          {selected === 'send_to_technical' ? (
+            <div className="border-glex-gold-300 bg-glex-gold-50 space-y-3 rounded-lg border p-4">
+              <p className="text-sm font-semibold">{admin('workflow.reviewTitle')}</p>
+
+              <p className="text-sm">
+                <span className="text-glex-green-800/70">{admin('workflow.recipients')}: </span>
+                <span dir="ltr">{technicalOffice}</span>
+              </p>
+
+              <label className="block text-sm">
+                <span className="mb-1 block font-medium">{admin('workflow.messageLabel')} *</span>
+                <textarea
+                  rows={5}
+                  required
+                  value={note}
+                  maxLength={4000}
+                  onChange={(event) => setNote(event.target.value)}
+                  className="border-border-subtle w-full rounded-lg border bg-white p-3 text-sm"
+                />
+                <span className="text-glex-green-800/70 mt-1 block text-xs">
+                  {admin('workflow.messageHint')}
+                </span>
+              </label>
+            </div>
+          ) : fields?.note ? (
             <label className="block text-sm">
               <span className="mb-1 block font-medium">
                 {admin('workflow.note')}
@@ -336,7 +374,11 @@ export function RfqWorkflowPanel({
 
           <div className="flex flex-wrap gap-3">
             <Button type="submit" variant="primary" size="sm" disabled={pending || uploading}>
-              {pending ? common('loading') : admin('workflow.submit')}
+              {pending
+                ? common('loading')
+                : selected === 'send_to_technical'
+                  ? admin('workflow.sendAction')
+                  : admin('workflow.submit')}
             </Button>
             <Button type="button" variant="ghost" size="sm" onClick={reset} disabled={pending}>
               {common('cancel')}

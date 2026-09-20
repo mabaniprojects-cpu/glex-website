@@ -1105,7 +1105,13 @@
         "amount_required": "Bitte einen Betrag größer als null eingeben.",
         "closed": "Diese Anfrage ist abgeschlossen.",
         "study_required": "Dieser Auftrag liegt bei {threshold} oder darüber; die technische Studie von Mabani muss vor der Preisbildung erfasst werden."
-      }
+      },
+      "reviewTitle": "Vor dem Senden an Mabani prüfen",
+      "recipients": "Geht an",
+      "messageLabel": "Nachricht an Mabani",
+      "messageHint": "Wird per E-Mail an Mabani gesendet. Die Antwort geht an Sie, nicht an eine No-Reply-Adresse.",
+      "draft": "Bitte erstellen Sie eine technische Studie und eine Materialliste für diese Anfrage. Zeichnungen und Leistungsverzeichnis folgen separat.",
+      "sendAction": "An Mabani senden"
     },
     "finance": {
       "title": "Angebote & Rechnungsstellung",
