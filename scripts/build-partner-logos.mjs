@@ -45,6 +45,19 @@ const GENERATED = path.resolve(process.cwd(), 'src/lib/partners.generated.ts')
 const LOGOS = [
   { file: 11, slug: 'mabani-al-jazeera', name: 'Mabani Al Jazeera', group: 'group' },
   { file: 10, slug: 'takween', name: 'Takween Metal Industries', group: 'group' },
+  // Supplied later, as square PNGs rather than as part of the numbered set.
+  {
+    source: 'mabani-projects.png',
+    slug: 'mabani-projects',
+    name: 'Mabani for Projects',
+    group: 'group',
+  },
+  {
+    source: 'swan-properties.png',
+    slug: 'swan-properties',
+    name: 'Swan Properties',
+    group: 'group',
+  },
 
   { file: 9, slug: 'sabic', name: 'SABIC', group: 'network' },
   { file: 1, slug: 'yanbu-cement', name: 'Yanbu Cement', group: 'network' },
@@ -69,9 +82,11 @@ await mkdir(OUT_DIR, { recursive: true })
 const entries = []
 
 for (const logo of LOGOS) {
-  const svg = await readFile(path.join(SOURCE, `${logo.file}.svg`))
+  // The original twelve arrived as a numbered set; anything added since names
+  // its own file, so a new logo does not have to be renamed to fit a sequence.
+  const original = await readFile(path.join(SOURCE, logo.source ?? `${logo.file}.svg`))
 
-  const flattened = await sharp(svg, { density: 300 })
+  const flattened = await sharp(original, { density: 300 })
     .flatten({ background: '#ffffff' })
     .png()
     .toBuffer()

@@ -32,6 +32,22 @@ export const PARTNER_LOGOS: readonly PartnerLogo[] = [
     height: 67,
   },
   {
+    slug: 'mabani-projects',
+    name: 'Mabani for Projects',
+    group: 'group',
+    src: '/partners/mabani-projects.webp',
+    width: 103,
+    height: 74,
+  },
+  {
+    slug: 'swan-properties',
+    name: 'Swan Properties',
+    group: 'group',
+    src: '/partners/swan-properties.webp',
+    width: 53,
+    height: 76,
+  },
+  {
     slug: 'sabic',
     name: 'SABIC',
     group: 'network',
