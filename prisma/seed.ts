@@ -161,6 +161,22 @@ const ROUTES: ReadonlyArray<{
     destLng: 36.8219,
     mode: ShipmentMode.AIR,
   },
+  // The two Sudanese Red Sea ports, a day's sailing from Jeddah rather than the
+  // weeks the other destinations take. Coordinates are the ports themselves.
+  {
+    label: 'Jeddah → Port Sudan',
+    destName: 'Port Sudan',
+    destLat: 19.6192,
+    destLng: 37.2117,
+    mode: ShipmentMode.OCEAN,
+  },
+  {
+    label: 'Jeddah → Sawakin',
+    destName: 'Sawakin',
+    destLat: 19.1019,
+    destLng: 37.3286,
+    mode: ShipmentMode.OCEAN,
+  },
 ]
 
 const FAQS: ReadonlyArray<{ question: string; answer: string; category: string }> = [
