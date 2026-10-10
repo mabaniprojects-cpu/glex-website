@@ -1,6 +1,6 @@
-import { ImageOff } from 'lucide-react'
 import Image from 'next/image'
 import { getTranslations } from 'next-intl/server'
+import { MediaPlaceholder } from '@/components/ui/media-placeholder'
 import { Link } from '@/i18n/navigation'
 import type { NewsListItem } from '@/lib/news'
 import { cn, formatDate } from '@/lib/utils'
@@ -37,9 +37,7 @@ export async function NewsCard({
             className="object-cover"
           />
         ) : (
-          <span className="flex size-full items-center justify-center text-glex-green-200">
-            <ImageOff className="size-10" aria-hidden="true" />
-          </span>
+          <MediaPlaceholder />
         )}
       </Link>
 

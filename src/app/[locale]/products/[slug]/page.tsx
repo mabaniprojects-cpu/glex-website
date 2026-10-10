@@ -1,4 +1,4 @@
-import { Download, FileText, ImageOff } from 'lucide-react'
+import { Download, FileText } from 'lucide-react'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import { hasLocale } from 'next-intl'
@@ -8,6 +8,7 @@ import { Section, SectionHeading } from '@/components/home/sections'
 import { PageHero } from '@/components/layout/page-hero'
 import { AddToRfqButton } from '@/components/marketplace/add-to-rfq-button'
 import { ProductCard } from '@/components/marketplace/product-card'
+import { MediaPlaceholder } from '@/components/ui/media-placeholder'
 import { routing, type AppLocale } from '@/i18n/routing'
 import { getProductBySlug, getRelatedProducts, parseSpecifications } from '@/lib/catalogue'
 import { pageMetadata } from '@/lib/seo'
@@ -130,9 +131,7 @@ export default async function ProductPage({
                   loading="eager"
                 />
               ) : (
-                <span className="text-glex-green-200 flex size-full items-center justify-center">
-                  <ImageOff className="size-16" aria-hidden="true" />
-                </span>
+                <MediaPlaceholder />
               )}
             </div>
 

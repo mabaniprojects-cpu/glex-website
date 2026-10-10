@@ -37,12 +37,27 @@ const plexSans = IBM_Plex_Sans({
   display: 'swap',
 })
 
-// Arabic needs its own face; the Latin cut has no Arabic coverage.
+/**
+ * Arabic needs its own face; the Latin cut has no Arabic coverage.
+ *
+ * Not preloaded, and that is deliberate. next/font preloads every family a
+ * route declares, and both families are declared here — in the one layout all
+ * five locales render through. So an English page was preloading four Arabic
+ * weights, 136 KB measured, for text it never renders: /en contains no Arabic
+ * character at all. The Latin family is the opposite case, two variable files
+ * used by every locale including /ar, so it keeps its preload.
+ *
+ * A single layout cannot preload per locale, so the choice is 136 KB wasted on
+ * four locales or a slightly later swap on one. The face is still declared in
+ * the stylesheet the document already blocks on, and `display: swap` means
+ * Arabic text is readable from first paint either way.
+ */
 const plexArabic = IBM_Plex_Sans_Arabic({
   variable: '--font-plex-arabic',
   subsets: ['arabic'],
   weight: ['400', '500', '600', '700'],
   display: 'swap',
+  preload: false,
 })
 
 /**

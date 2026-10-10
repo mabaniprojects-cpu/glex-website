@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Link } from '@/i18n/navigation'
 import { saveCookieConsent } from '@/lib/actions/consent-actions'
 import type { ConsentChoice } from '@/lib/consent'
+import { cn } from '@/lib/utils'
 
 /**
  * Cookie consent banner.
@@ -17,6 +18,12 @@ import type { ConsentChoice } from '@/lib/consent'
  * Both buttons are equally prominent: presenting "Accept all" as the only real
  * option is dark-pattern territory, and consent obtained that way is not freely
  * given.
+ *
+ * A corner card from `sm` up, rather than the full-width bar it used to be. The
+ * bar sat across the bottom of the window for the whole of the first visit and
+ * covered the page while someone read it, which is a poor first impression on a
+ * site whose job is to be read. The wording is untouched — it is the consent
+ * notice, and it still names both categories and links to the policy.
  */
 export function CookieConsent() {
   const t = useTranslations('cookies')
@@ -43,42 +50,41 @@ export function CookieConsent() {
       role="dialog"
       aria-modal="false"
       aria-labelledby="cookie-consent-title"
-      className="fixed inset-x-0 bottom-0 z-80 border-t border-border-subtle bg-white p-4 shadow-2xl sm:p-6"
+      className={cn(
+        'animate-fade-up fixed z-80 bg-white shadow-2xl',
+        'border-border-subtle inset-x-0 bottom-0 border-t p-4',
+        // Anchored to the start corner because the assistant button holds the
+        // end one; logical properties keep them apart in Arabic too.
+        'sm:inset-x-auto sm:start-4 sm:bottom-4 sm:max-w-sm sm:rounded-2xl sm:border sm:p-5'
+      )}
     >
-      <div className="container-glex flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex gap-3">
-          <Cookie className="mt-0.5 size-5 shrink-0 text-glex-green-600" aria-hidden="true" />
-          <div>
-            <h2 id="cookie-consent-title" className="font-semibold text-glex-green-900">
-              {t('title')}
-            </h2>
-            <p className="mt-1 max-w-3xl text-sm leading-relaxed text-glex-green-800/80">
-              {t('body')}{' '}
-              <Link href="/cookies" className="font-medium underline underline-offset-2">
-                {footer('cookies')}
-              </Link>
-            </p>
-          </div>
+      <div className="flex gap-3">
+        <Cookie className="text-glex-green-600 mt-0.5 size-5 shrink-0" aria-hidden="true" />
+        <div>
+          <h2 id="cookie-consent-title" className="text-glex-green-900 font-semibold">
+            {t('title')}
+          </h2>
+          <p className="text-glex-green-800/80 mt-1 text-sm leading-relaxed">
+            {t('body')}{' '}
+            <Link href="/cookies" className="font-medium underline underline-offset-2">
+              {footer('cookies')}
+            </Link>
+          </p>
         </div>
+      </div>
 
-        <div className="flex shrink-0 flex-wrap gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            disabled={pending}
-            onClick={() => choose('essential')}
-          >
-            {t('essentialOnly')}
-          </Button>
-          <Button
-            type="button"
-            variant="primary"
-            disabled={pending}
-            onClick={() => choose('all')}
-          >
-            {t('acceptAll')}
-          </Button>
-        </div>
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          disabled={pending}
+          onClick={() => choose('essential')}
+        >
+          {t('essentialOnly')}
+        </Button>
+        <Button type="button" variant="primary" disabled={pending} onClick={() => choose('all')}>
+          {t('acceptAll')}
+        </Button>
       </div>
     </div>
   )

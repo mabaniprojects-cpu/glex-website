@@ -1,4 +1,4 @@
-import { Bookmark, ImageOff } from 'lucide-react'
+import { Bookmark } from 'lucide-react'
 import Image from 'next/image'
 import type { Metadata } from 'next'
 import { hasLocale } from 'next-intl'
@@ -6,6 +6,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { AddToRfqButton } from '@/components/marketplace/add-to-rfq-button'
 import { Button } from '@/components/ui/button'
+import { MediaPlaceholder } from '@/components/ui/media-placeholder'
 import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
 import { requireUser } from '@/lib/auth-guards'
@@ -63,9 +64,7 @@ export default async function SavedProductsPage({
                     className="object-cover"
                   />
                 ) : (
-                  <span className="text-glex-green-200 flex size-full items-center justify-center">
-                    <ImageOff className="size-8" aria-hidden="true" />
-                  </span>
+                  <MediaPlaceholder />
                 )}
               </Link>
 

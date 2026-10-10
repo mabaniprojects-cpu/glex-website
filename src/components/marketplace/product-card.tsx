@@ -1,8 +1,9 @@
-import { ImageOff, MapPin, Package } from 'lucide-react'
+import { MapPin, Package } from 'lucide-react'
 import Image from 'next/image'
 import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { Card } from '@/components/ui/card'
+import { MediaPlaceholder } from '@/components/ui/media-placeholder'
 import type { ProductListItem } from '@/lib/catalogue'
 import { AddToRfqButton } from './add-to-rfq-button'
 
@@ -25,9 +26,7 @@ export async function ProductCard({ product }: { product: ProductListItem }) {
             className="object-cover"
           />
         ) : (
-          <span className="text-glex-green-200 flex size-full items-center justify-center">
-            <ImageOff className="size-10" aria-hidden="true" />
-          </span>
+          <MediaPlaceholder />
         )}
 
         {product.isSaudiMade ? (

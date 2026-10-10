@@ -2,10 +2,11 @@
 
 import Autoplay from 'embla-carousel-autoplay'
 import useEmblaCarousel from 'embla-carousel-react'
-import { ChevronLeft, ChevronRight, ImageOff, Pause, Play } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react'
 import Image from 'next/image'
 import { useLocale, useTranslations } from 'next-intl'
 import * as React from 'react'
+import { MediaPlaceholder } from '@/components/ui/media-placeholder'
 import { Link } from '@/i18n/navigation'
 import { cn, formatDate } from '@/lib/utils'
 
@@ -171,9 +172,7 @@ export function NewsSlider({ slides }: { slides: SlideItem[] }) {
                       className="object-cover"
                     />
                   ) : (
-                    <span className="flex size-full items-center justify-center text-glex-green-200">
-                      <ImageOff className="size-10" aria-hidden="true" />
-                    </span>
+                    <MediaPlaceholder />
                   )}
                 </Link>
 
