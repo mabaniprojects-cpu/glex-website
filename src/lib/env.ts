@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { ANALYTICS_PROVIDERS } from '@/lib/analytics'
+
 /**
  * Startup environment validation.
  *
@@ -91,7 +93,20 @@ const serverSchema = z.object({
   TURNSTILE_SITE_KEY: optionalString,
   TURNSTILE_SECRET_KEY: optionalString,
 
-  ANALYTICS_PROVIDER: z.preprocess(emptyToUndefined, z.string().default('none')),
+  // Analytics. Cookieless providers only, and gated on consent per visitor.
+  // ANALYTICS_PROVIDER must be set for the BUILD as well as the runtime: the
+  // CSP that allows the script is baked in by next.config.ts.
+  // `.catch` rather than a bare enum: a misspelt provider must switch analytics
+  // OFF, not refuse to boot the site. Unlike EMAIL_PROVIDER or
+  // STORAGE_PROVIDER, nothing here is load-bearing, and `analyticsScript()`
+  // already ignores a value it does not recognise — the two must agree.
+  ANALYTICS_PROVIDER: z.preprocess(
+    emptyToUndefined,
+    z.enum(ANALYTICS_PROVIDERS).default('none').catch('none')
+  ),
+  ANALYTICS_SITE_ID: optionalString,
+  /** Overrides the provider default, for a self-hosted or proxied script. */
+  ANALYTICS_SCRIPT_URL: optionalString,
 
   // Error monitoring. Absent by default; nothing is sent anywhere without a DSN.
   SENTRY_DSN: optionalString,
@@ -185,6 +200,9 @@ export const isS3Configured = () => env().STORAGE_PROVIDER === 's3'
 export const isTurnstileConfigured = () =>
   Boolean(env().TURNSTILE_SITE_KEY && env().TURNSTILE_SECRET_KEY)
 export const isRemoteMapConfigured = () => Boolean(env().MAP_STYLE_URL)
+/** A provider alone reports nothing; it needs the site identifier too. */
+export const isAnalyticsConfigured = () =>
+  env().ANALYTICS_PROVIDER !== 'none' && Boolean(env().ANALYTICS_SITE_ID)
 
 /**
  * External carrier tracking is only "live" when a non-internal provider is

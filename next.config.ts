@@ -2,6 +2,8 @@ import { withSentryConfig } from '@sentry/nextjs'
 import { PHASE_PRODUCTION_BUILD } from 'next/constants'
 import type { NextConfig } from 'next'
 import createNextIntlPlugin from 'next-intl/plugin'
+// Relative, not aliased: a config file is evaluated before module aliases exist.
+import { analyticsScriptOrigin } from './src/lib/analytics'
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
 
@@ -56,9 +58,18 @@ function assertPublicOriginConfigured() {
  * inline style attributes. Scripts use a strict policy in production; dev
  * additionally needs 'unsafe-eval' for React Refresh.
  */
+/**
+ * The analytics origin, if one is configured AT BUILD TIME.
+ *
+ * This policy is baked into the deployed bundle, so a provider set only in the
+ * runtime environment yields a tag the browser refuses to execute — a failure
+ * that looks exactly like having no visitors. Set it for the build as well.
+ */
+const analyticsOrigin = analyticsScriptOrigin()
+
 const csp = [
   `default-src 'self'`,
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''}`,
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''}${analyticsOrigin ? ` ${analyticsOrigin}` : ''}`,
   `style-src 'self' 'unsafe-inline'`,
   `img-src 'self' data: blob: https:`,
   `font-src 'self' data:`,
@@ -140,8 +151,14 @@ const nextConfig: NextConfig = {
   typedRoutes: true,
 
   images: {
-    // Next 16 coerces any quality not listed here down to the default.
-    qualities: [70, 75, 85, 90],
+    /**
+     * Next 16 serves the nearest listed quality, rounding UP — so a request
+     * for an unlisted value is quietly answered with a larger file rather than
+     * a smaller one. 82 was missing and the hero and photo bands ask for it,
+     * so the page's largest image was being served at 85 while the component
+     * said 82. Every quality the code requests belongs in this list.
+     */
+    qualities: [70, 75, 82, 85, 90],
     /**
      * AVIF first, WebP for anything that cannot take it.
      *

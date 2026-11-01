@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation'
 import { after } from 'next/server'
 import type { ReactNode } from 'react'
 import { GlexAssistant } from '@/components/chat/glex-assistant'
+import { Analytics } from '@/components/layout/analytics'
 import { CookieConsent } from '@/components/layout/cookie-consent'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { SiteHeader } from '@/components/layout/site-header'
@@ -178,6 +179,8 @@ export default async function LocaleLayout({
           {/* Mounted once, site-wide. */}
           <GlexAssistant />
           {consent === null ? <CookieConsent /> : null}
+          {/* Renders nothing unless this visitor accepted and a tag is set up. */}
+          <Analytics />
         </NextIntlClientProvider>
       </body>
     </html>
