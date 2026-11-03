@@ -26,6 +26,9 @@ import { GLEX_COMPANY } from '../src/lib/company'
 import { hashPassword, isStrongPassword } from '../src/lib/password'
 import { formatReference } from '../src/lib/references'
 import { slugify } from '../src/lib/utils'
+// The trade lanes live beside the script that loads them into a database that
+// is already seeded, so the two cannot drift apart.
+import { ROUTES, routeSeedId } from '../scripts/routes-data'
 
 const DEMO_ENABLED = process.env.SEED_DEMO_DATA === 'true' && process.env.NODE_ENV !== 'production'
 
@@ -83,101 +86,6 @@ const CATEGORIES: ReadonlyArray<{ name: string; icon: string }> = [
   { name: 'Tools and Accessories', icon: 'wrench' },
 ]
 
-/** Indicative destination markets for the animated homepage map. */
-const ROUTES: ReadonlyArray<{
-  label: string
-  destName: string
-  destLat: number
-  destLng: number
-  mode: ShipmentMode
-}> = [
-  {
-    label: 'Jeddah → Rotterdam',
-    destName: 'Rotterdam',
-    destLat: 51.9244,
-    destLng: 4.4777,
-    mode: ShipmentMode.OCEAN,
-  },
-  {
-    label: 'Jeddah → Shanghai',
-    destName: 'Shanghai',
-    destLat: 31.2304,
-    destLng: 121.4737,
-    mode: ShipmentMode.OCEAN,
-  },
-  {
-    label: 'Jeddah → Mumbai',
-    destName: 'Mumbai',
-    destLat: 19.076,
-    destLng: 72.8777,
-    mode: ShipmentMode.OCEAN,
-  },
-  {
-    label: 'Jeddah → Durban',
-    destName: 'Durban',
-    destLat: -29.8587,
-    destLng: 31.0218,
-    mode: ShipmentMode.OCEAN,
-  },
-  {
-    label: 'Jeddah → Hamburg',
-    destName: 'Hamburg',
-    destLat: 53.5511,
-    destLng: 9.9937,
-    mode: ShipmentMode.OCEAN,
-  },
-  {
-    label: 'Jeddah → Singapore',
-    destName: 'Singapore',
-    destLat: 1.3521,
-    destLng: 103.8198,
-    mode: ShipmentMode.OCEAN,
-  },
-  {
-    label: 'Jeddah → New York',
-    destName: 'New York',
-    destLat: 40.7128,
-    destLng: -74.006,
-    mode: ShipmentMode.OCEAN,
-  },
-  {
-    label: 'Jeddah → Casablanca',
-    destName: 'Casablanca',
-    destLat: 33.5731,
-    destLng: -7.5898,
-    mode: ShipmentMode.OCEAN,
-  },
-  {
-    label: 'Jeddah → Istanbul',
-    destName: 'Istanbul',
-    destLat: 41.0082,
-    destLng: 28.9784,
-    mode: ShipmentMode.MULTIMODAL,
-  },
-  {
-    label: 'Jeddah → Nairobi',
-    destName: 'Nairobi',
-    destLat: -1.2921,
-    destLng: 36.8219,
-    mode: ShipmentMode.AIR,
-  },
-  // The two Sudanese Red Sea ports, a day's sailing from Jeddah rather than the
-  // weeks the other destinations take. Coordinates are the ports themselves.
-  {
-    label: 'Jeddah → Port Sudan',
-    destName: 'Port Sudan',
-    destLat: 19.6192,
-    destLng: 37.2117,
-    mode: ShipmentMode.OCEAN,
-  },
-  {
-    label: 'Jeddah → Sawakin',
-    destName: 'Sawakin',
-    destLat: 19.1019,
-    destLng: 37.3286,
-    mode: ShipmentMode.OCEAN,
-  },
-]
 
 const FAQS: ReadonlyArray<{ question: string; answer: string; category: string }> = [
   {
@@ -383,9 +291,9 @@ async function seedReferenceData() {
 
   for (const [index, route] of ROUTES.entries()) {
     await db.globalRoute.upsert({
-      where: { id: `00000000-0000-4000-8100-${String(index).padStart(12, '0')}` },
+      where: { id: routeSeedId(index) },
       create: {
-        id: `00000000-0000-4000-8100-${String(index).padStart(12, '0')}`,
+        id: routeSeedId(index),
         label: route.label,
         originName: GLEX_COMPANY.office.city,
         originLat: GLEX_COMPANY.office.latitude,

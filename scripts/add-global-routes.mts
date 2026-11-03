@@ -1,89 +1,79 @@
 import 'dotenv/config'
-import { ShipmentMode } from '@prisma/client'
 import { GLEX_COMPANY } from '../src/lib/company'
 import { db } from '../src/lib/db'
+import { ROUTES, routeSeedId } from './routes-data'
 
 /**
- * Adds the two Sudanese Red Sea ports to the trade-route list.
+ * Loads the trade lanes into a database that is ALREADY seeded.
  *
  *   npx tsx scripts/add-global-routes.mts            # dry run
  *   npx tsx scripts/add-global-routes.mts --confirm  # apply
  *
+ * `prisma/seed.ts` carries the same list from the same module, but the seed
+ * only ever runs against a fresh database. Production was seeded by the
+ * catalogue import alone, so it went live with a single lane to Nairobi on a
+ * page titled "Connecting Saudi Arabia to Global Markets". This is how the
+ * rest get there.
+ *
  * The routes drive the map and the written list on /network, and the animated
  * map that stands in for the home-page photograph. They are content, not code:
- * the same records can be edited at Admin -> Routes.
+ * the same records can be edited at Admin -> Routes afterwards.
  *
- * The ids are the ones `prisma/seed.ts` would give these two entries, so a
- * seed run against a fresh database upserts them rather than making a second
- * copy. Running this twice changes nothing the second time.
+ * Safe to run repeatedly. A route is matched by the id the seed would give it
+ * AND by its label, so it is never duplicated — not by a second run, and not
+ * because someone typed the same lane into the admin portal first. Existing
+ * rows are left exactly as they are: someone may have corrected a label or
+ * switched a lane off, and this must not undo that.
  *
- * Every change writes an AuditLog row. The actor is null: this runs from a
- * terminal, not as a signed-in user.
+ * Every row written logs an AuditLog entry. The actor is null: this runs from
+ * a terminal, not as a signed-in user.
  */
 
 const office = GLEX_COMPANY.office
 const confirmed = process.argv.includes('--confirm')
 
-/** `00000000-0000-4000-8100-<index>` — the seed's scheme, continued. */
-const seedId = (index: number) => `00000000-0000-4000-8100-${String(index).padStart(12, '0')}`
-
-const ROUTES = [
-  {
-    id: seedId(10),
-    label: 'Jeddah → Port Sudan',
-    destName: 'Port Sudan',
-    destLat: 19.6192,
-    destLng: 37.2117,
-    sortOrder: 10,
-  },
-  {
-    id: seedId(11),
-    label: 'Jeddah → Sawakin',
-    destName: 'Sawakin',
-    destLat: 19.1019,
-    destLng: 37.3286,
-    sortOrder: 11,
-  },
-] as const
-
-console.log(`Adding ${ROUTES.length} ocean route(s) from ${office.city}\n`)
-
-const planned: { route: (typeof ROUTES)[number]; existing: boolean }[] = []
-
-for (const route of ROUTES) {
-  // By label as well as by id: a route someone already typed into the admin
-  // portal must not be duplicated just because it carries a different id.
-  const existing = await db.globalRoute.findFirst({
-    where: { OR: [{ id: route.id }, { label: route.label }] },
-    select: { id: true, label: true, isActive: true },
+const planned = await Promise.all(
+  ROUTES.map(async (route, index) => {
+    const existing = await db.globalRoute.findFirst({
+      where: { OR: [{ id: routeSeedId(index) }, { label: route.label }] },
+      select: { id: true, isActive: true },
+    })
+    return { route, index, existing }
   })
+)
 
-  console.log(`  ${route.label}`)
-  console.log(`    to:   ${route.destName} (${route.destLat}, ${route.destLng})`)
-  console.log(`    now:  ${existing ? 'already present — will be left alone' : 'not present'}`)
+console.log(`${ROUTES.length} trade lanes from ${office.city}\n`)
 
-  planned.push({ route, existing: Boolean(existing) })
+for (const { route, existing } of planned) {
+  const state = existing
+    ? existing.isActive
+      ? 'already present'
+      : 'already present (switched off — left alone)'
+    : 'MISSING — will be added'
+  console.log(`  ${route.label.padEnd(24)} ${state}`)
 }
 
-const toAdd = planned.filter((entry) => !entry.existing)
+const missing = planned.filter((entry) => !entry.existing)
 
-if (toAdd.length === 0) {
-  console.log('\nBoth routes are already in place; nothing to do.')
+console.log(`\n${planned.length - missing.length} present, ${missing.length} missing.`)
+
+if (missing.length === 0) {
+  console.log('Nothing to do.')
   await db.$disconnect()
   process.exit(0)
 }
 
 if (!confirmed) {
-  console.log(`\nDry run — nothing was written. Re-run with --confirm to add ${toAdd.length}.`)
+  console.log(`Dry run — nothing was written. Re-run with --confirm to add ${missing.length}.`)
   await db.$disconnect()
   process.exit(0)
 }
 
 await db.$transaction(async (tx) => {
-  for (const { route } of toAdd) {
+  for (const { route, index } of missing) {
     const created = await tx.globalRoute.create({
       data: {
-        id: route.id,
+        id: routeSeedId(index),
         label: route.label,
         originName: office.city,
         originLat: office.latitude,
@@ -91,8 +81,8 @@ await db.$transaction(async (tx) => {
         destName: route.destName,
         destLat: route.destLat,
         destLng: route.destLng,
-        mode: ShipmentMode.OCEAN,
-        sortOrder: route.sortOrder,
+        mode: route.mode,
+        sortOrder: index,
         isActive: true,
       },
     })
@@ -109,5 +99,5 @@ await db.$transaction(async (tx) => {
   }
 })
 
-console.log(`\nAdded ${toAdd.length} route(s). Live on /network.`)
+console.log(`\nAdded ${missing.length} route(s). Live on /network.`)
 await db.$disconnect()
