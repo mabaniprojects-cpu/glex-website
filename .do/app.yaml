@@ -123,6 +123,25 @@ services:
         scope: RUN_AND_BUILD_TIME
         value: internal
 
+      # Analytics. Cookieless, and gated on cookie consent per visitor — the
+      # tag is rendered on the server, so someone who has not accepted never
+      # receives it.
+      #
+      # RUN_AND_BUILD_TIME is load-bearing here, not habit. next.config.ts
+      # reads these to put cloud.umami.is into the Content-Security-Policy,
+      # and that policy is baked into the bundle at build. Scoped to RUN_TIME
+      # only, the tag is fetched, refused by the browser, and reports nothing —
+      # which looks exactly like having no visitors.
+      #
+      # The website id is public: it appears in the page source of every page
+      # that loads the tag.
+      - key: ANALYTICS_PROVIDER
+        scope: RUN_AND_BUILD_TIME
+        value: umami
+      - key: ANALYTICS_SITE_ID
+        scope: RUN_AND_BUILD_TIME
+        value: 6ac4d346-13a8-4d14-83ed-591b31df7a99
+
       # Connections per process. Set this to the database plan's connection
       # limit divided by instance_count, leaving headroom for migrations and an
       # admin session. The basic managed plan allows roughly 22.
