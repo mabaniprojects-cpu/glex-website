@@ -58,3 +58,6 @@ next-env.d.ts
 
 # Claude Code local tooling
 .claude/
+
+# Excel lock files, created whenever someone opens a committed .xlsx
+~$*
