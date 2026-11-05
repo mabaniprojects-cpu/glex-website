@@ -1,0 +1,381 @@
+{
+  "generatedAt": "2026-11-05T07:38:32.226Z",
+  "file": "glex-supplier-data-sheet.xlsx",
+  "productColumns": [
+    {
+      "header": "Product name (English)",
+      "maps": "Product.name",
+      "required": true,
+      "list": null,
+      "needsSchema": false
+    },
+    {
+      "header": "Product name (Arabic)",
+      "maps": "ProductTranslation.name (locale ar)",
+      "required": false,
+      "list": null,
+      "needsSchema": false
+    },
+    {
+      "header": "Category",
+      "maps": "Product.categoryId",
+      "required": true,
+      "list": [
+        "Steel & Metals",
+        "Electrical & MEP",
+        "Cement & Related",
+        "Blocks & Precast",
+        "Insulation & Waterproofing",
+        "Chemicals & Special Items",
+        "Infrastructure Materials",
+        "Modular & Prefab",
+        "Finishing Materials"
+      ],
+      "needsSchema": false
+    },
+    {
+      "header": "Brand",
+      "maps": "Product.brand (marketplace filter)",
+      "required": false,
+      "list": null,
+      "needsSchema": false
+    },
+    {
+      "header": "Manufacturer",
+      "maps": "Product.manufacturer",
+      "required": false,
+      "list": null,
+      "needsSchema": false
+    },
+    {
+      "header": "Country of origin",
+      "maps": "Product.countryOfOrigin (marketplace filter)",
+      "required": true,
+      "list": [
+        "Saudi Arabia",
+        "United Arab Emirates",
+        "Bahrain",
+        "Kuwait",
+        "Oman",
+        "Qatar",
+        "Egypt",
+        "Jordan",
+        "Turkey",
+        "India",
+        "China",
+        "Germany",
+        "Italy",
+        "Spain",
+        "United Kingdom",
+        "Other"
+      ],
+      "needsSchema": false
+    },
+    {
+      "header": "Saudi made?",
+      "maps": "Product.isSaudiMade (marketplace filter)",
+      "required": true,
+      "list": [
+        "Yes",
+        "No"
+      ],
+      "needsSchema": false
+    },
+    {
+      "header": "HS code",
+      "maps": "Product.hsCode",
+      "required": true,
+      "list": null,
+      "needsSchema": false
+    },
+    {
+      "header": "Short description",
+      "maps": "Product.shortDescription",
+      "required": false,
+      "list": null,
+      "needsSchema": false
+    },
+    {
+      "header": "Unit of sale",
+      "maps": "Product.availableUnits",
+      "required": true,
+      "list": [
+        "Piece",
+        "Box",
+        "Carton",
+        "Pack",
+        "Pallet",
+        "Kilogram",
+        "Ton",
+        "Meter",
+        "Square meter",
+        "Cubic meter",
+        "Roll",
+        "Set",
+        "Container"
+      ],
+      "needsSchema": false
+    },
+    {
+      "header": "Minimum order qty",
+      "maps": "Product.minimumOrderQty",
+      "required": false,
+      "list": null,
+      "needsSchema": false
+    },
+    {
+      "header": "Price per unit",
+      "maps": "NEW FIELD — no price column exists on Product yet",
+      "required": false,
+      "list": null,
+      "needsSchema": true
+    },
+    {
+      "header": "Currency",
+      "maps": "NEW FIELD",
+      "required": false,
+      "list": [
+        "SAR",
+        "USD",
+        "EUR"
+      ],
+      "needsSchema": true
+    },
+    {
+      "header": "Price basis (Incoterm)",
+      "maps": "NEW FIELD",
+      "required": false,
+      "list": [
+        "EXW - Ex Works",
+        "FCA - Free Carrier",
+        "FOB - Free On Board",
+        "CFR - Cost and Freight",
+        "CIF - Cost, Insurance and Freight",
+        "CPT - Carriage Paid To",
+        "CIP - Carriage and Insurance Paid To",
+        "DAP - Delivered At Place",
+        "DPU - Delivered At Place Unloaded",
+        "DDP - Delivered Duty Paid"
+      ],
+      "needsSchema": true
+    },
+    {
+      "header": "Price valid until",
+      "maps": "NEW FIELD",
+      "required": false,
+      "list": null,
+      "needsSchema": true
+    },
+    {
+      "header": "Lead time (days)",
+      "maps": "Product.leadTimeDays",
+      "required": false,
+      "list": null,
+      "needsSchema": false
+    },
+    {
+      "header": "Packing method",
+      "maps": "NEW FIELD — Product.packaging is free text and cannot be calculated with",
+      "required": true,
+      "list": [
+        "Carton",
+        "Wooden crate",
+        "Wooden box",
+        "Pallet (shrink-wrapped)",
+        "Pallet (strapped)",
+        "Bundle",
+        "Coil",
+        "Roll",
+        "Drum",
+        "Bag",
+        "Big bag (FIBC)",
+        "IBC tote",
+        "Loose / bulk"
+      ],
+      "needsSchema": true
+    },
+    {
+      "header": "Units per pack",
+      "maps": "NEW FIELD",
+      "required": false,
+      "list": null,
+      "needsSchema": true
+    },
+    {
+      "header": "Pack length (cm)",
+      "maps": "NEW FIELD — needed to calculate container loading",
+      "required": false,
+      "list": null,
+      "needsSchema": true
+    },
+    {
+      "header": "Pack width (cm)",
+      "maps": "NEW FIELD — needed to calculate container loading",
+      "required": false,
+      "list": null,
+      "needsSchema": true
+    },
+    {
+      "header": "Pack height (cm)",
+      "maps": "NEW FIELD — needed to calculate container loading",
+      "required": false,
+      "list": null,
+      "needsSchema": true
+    },
+    {
+      "header": "Pack gross weight (kg)",
+      "maps": "NEW FIELD — needed to calculate container loading",
+      "required": false,
+      "list": null,
+      "needsSchema": true
+    },
+    {
+      "header": "Packs per pallet",
+      "maps": "NEW FIELD",
+      "required": false,
+      "list": null,
+      "needsSchema": true
+    },
+    {
+      "header": "Stackable?",
+      "maps": "NEW FIELD — a non-stackable item wastes the container above it",
+      "required": false,
+      "list": [
+        "Yes",
+        "No"
+      ],
+      "needsSchema": true
+    },
+    {
+      "header": "Certifications",
+      "maps": "Product.certifications",
+      "required": false,
+      "list": null,
+      "needsSchema": false
+    },
+    {
+      "header": "Notes",
+      "maps": "Product.description",
+      "required": false,
+      "list": null,
+      "needsSchema": false
+    }
+  ],
+  "companyFields": [
+    {
+      "label": "Legal company name",
+      "maps": "SupplierProfile.legalName",
+      "required": true
+    },
+    {
+      "label": "Trading name",
+      "maps": "SupplierProfile.tradingName",
+      "required": false
+    },
+    {
+      "label": "Country",
+      "maps": "SupplierProfile.country",
+      "required": true
+    },
+    {
+      "label": "City",
+      "maps": "SupplierProfile.city",
+      "required": false
+    },
+    {
+      "label": "Address",
+      "maps": "SupplierProfile.address",
+      "required": false
+    },
+    {
+      "label": "Website",
+      "maps": "SupplierProfile.website",
+      "required": false
+    },
+    {
+      "label": "Commercial registration (CR) number",
+      "maps": "SupplierProfile.crNumber",
+      "required": true
+    },
+    {
+      "label": "VAT number",
+      "maps": "SupplierProfile.vatNumber",
+      "required": false
+    },
+    {
+      "label": "Year established",
+      "maps": "SupplierProfile.yearEstablished",
+      "required": false
+    },
+    {
+      "label": "Number of employees",
+      "maps": "SupplierProfile.employeeCount",
+      "required": false
+    },
+    {
+      "label": "Are you the manufacturer?",
+      "maps": "SupplierProfile.isManufacturer",
+      "required": true
+    },
+    {
+      "label": "Are you a distributor?",
+      "maps": "SupplierProfile.isDistributor",
+      "required": true
+    },
+    {
+      "label": "Brands you supply",
+      "maps": "SupplierProfile.brands",
+      "required": false
+    },
+    {
+      "label": "Monthly production capacity",
+      "maps": "SupplierProfile.monthlyCapacity",
+      "required": false
+    },
+    {
+      "label": "Markets you already export to",
+      "maps": "SupplierProfile.marketsServed",
+      "required": false
+    },
+    {
+      "label": "Incoterms you can quote",
+      "maps": "SupplierProfile.availableIncoterms",
+      "required": false
+    },
+    {
+      "label": "Typical lead time",
+      "maps": "SupplierProfile.leadTimeNotes",
+      "required": false
+    },
+    {
+      "label": "Quality control process",
+      "maps": "SupplierProfile.qualityControlNotes",
+      "required": false
+    },
+    {
+      "label": "Loading port / point",
+      "maps": "NEW FIELD",
+      "required": true
+    },
+    {
+      "label": "Contact name",
+      "maps": "SupplierContact.name",
+      "required": true
+    },
+    {
+      "label": "Contact role",
+      "maps": "SupplierContact.role",
+      "required": false
+    },
+    {
+      "label": "Contact email",
+      "maps": "SupplierContact.email",
+      "required": true
+    },
+    {
+      "label": "Contact phone",
+      "maps": "SupplierContact.phone",
+      "required": true
+    }
+  ]
+}
