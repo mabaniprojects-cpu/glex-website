@@ -1,6 +1,10 @@
 import ExcelJS from 'exceljs'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { parseSupplierSheet, type ParseResult } from '@/lib/import/parse-supplier-sheet'
+import {
+  parseMappedSheet,
+  parseSupplierSheet,
+  type ParseResult,
+} from '@/lib/import/parse-supplier-sheet'
 import { PRODUCT_COLUMNS, SHEET_LAYOUT } from '@/lib/import/sheet-columns'
 
 /**
@@ -256,5 +260,86 @@ describe('every dropdown in the sheet can be read back', () => {
     expect(UNITS.filter((label) => !UNIT_BY_LABEL[label])).toEqual([])
     expect(INCOTERMS.filter((label) => !INCOTERM_BY_LABEL[label])).toEqual([])
     expect(PACKING_METHODS.filter((label) => !PACKING_BY_LABEL[label])).toEqual([])
+  })
+})
+
+describe("reading a supplier's own file through a mapping", () => {
+  /** A price list with their headings on row 3, as they actually arrive. */
+  async function theirSheet(rows: (string | number)[][]) {
+    const book = new ExcelJS.Workbook()
+    const sheet = book.addWorksheet('2026 Price List')
+    sheet.getRow(1).getCell(1).value = 'AL-NAJD TRADING — PRICE LIST'
+    const headers = ['Item Description', 'Group', 'HS Code', 'UOM', 'Unit Price', 'Curr.', 'Terms']
+    headers.forEach((h, i) => (sheet.getRow(3).getCell(i + 1).value = h))
+    rows.forEach((cells, r) =>
+      cells.forEach((v, c) => (sheet.getRow(4 + r).getCell(c + 1).value = v))
+    )
+    return book.xlsx.writeBuffer()
+  }
+
+  const MAPPING = {
+    sheetName: '2026 Price List',
+    headerRow: 3,
+    columns: {
+      'Product name (English)': 'Item Description',
+      Category: 'Group',
+      'HS code': 'HS Code',
+      'Unit of sale': 'UOM',
+      'Price per unit': 'Unit Price',
+      Currency: 'Curr.',
+      'Price basis (Incoterm)': 'Terms',
+    },
+  }
+
+  const ROW = [
+    'Steel Rebar B500B, 16mm',
+    'Steel & Metals',
+    '7214.20',
+    'Ton',
+    2450,
+    'SAR',
+    'FOB - Free On Board',
+  ]
+
+  it('applies the same trade rules as the template path', async () => {
+    const result = await parseMappedSheet(await theirSheet([ROW]), MAPPING)
+
+    expect(result.rows).toHaveLength(1)
+    expect(result.rows[0]!.product.name).toBe('Steel Rebar B500B, 16mm')
+    expect(result.rows[0]!.price).toMatchObject({ amount: 2450, incoterm: 'FOB', unit: 'TON' })
+  })
+
+  it('still refuses a price with no Incoterm', async () => {
+    // The rule belongs to the trade, not to our template.
+    const noBasis = [...ROW]
+    noBasis[6] = ''
+    const result = await parseMappedSheet(await theirSheet([noBasis]), MAPPING)
+
+    expect(result.rows[0]!.price).toBeNull()
+  })
+
+  it('refuses to import when a mapped column has vanished', async () => {
+    // Importing the rest regardless would silently drop whatever that
+    // column held — the price, most expensively.
+    const stale = { ...MAPPING, columns: { ...MAPPING.columns, 'Lead time (days)': 'Lead Time' } }
+    const result = await parseMappedSheet(await theirSheet([ROW]), stale)
+
+    expect(result.rows).toEqual([])
+    expect(result.fileIssues[0]!.message).toContain('Lead Time')
+  })
+
+  it('says so when the sheet has been renamed', async () => {
+    const renamed = { ...MAPPING, sheetName: 'Prices 2027' }
+    const result = await parseMappedSheet(await theirSheet([ROW]), renamed)
+
+    expect(result.fileIssues[0]!.level).toBe('error')
+    expect(result.fileIssues[0]!.message).toContain('Prices 2027')
+  })
+
+  it('reports their columns that are not mapped, rather than dropping them quietly', async () => {
+    const partial = { ...MAPPING, columns: { 'Product name (English)': 'Item Description' } }
+    const result = await parseMappedSheet(await theirSheet([ROW]), partial)
+
+    expect(result.unknownColumns).toContain('Unit Price')
   })
 })

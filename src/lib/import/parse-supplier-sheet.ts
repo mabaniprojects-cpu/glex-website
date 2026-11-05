@@ -136,26 +136,122 @@ export async function parseSupplierSheet(data: ArrayBuffer | Buffer): Promise<Pa
     return { rows: [], fileIssues, unknownColumns }
   }
 
+  return {
+    rows: readRows(sheet, byHeader, SHEET_LAYOUT.firstDataRow),
+    fileIssues,
+    unknownColumns,
+  }
+}
+
+/**
+ * How one supplier's own spreadsheet maps onto the GLEX columns.
+ *
+ * Stored as `SupplierSheetMapping` and confirmed by a human the first time.
+ * Keyed by header text, not position: suppliers insert columns far more
+ * often than they reorder them.
+ */
+export type SheetMapping = {
+  sheetName: string
+  headerRow: number
+  /** GLEX column header to the supplier's own header. */
+  columns: Record<string, string>
+}
+
+/**
+ * Reads a supplier's own file through a mapping somebody confirmed.
+ *
+ * Shares every row-level rule with the template path — the price needing an
+ * Incoterm, dates read British, the enum lookups — because those rules are
+ * about the trade, not about the file. Only the question of which cell holds
+ * what differs, and that is the mapping's whole job.
+ */
+export async function parseMappedSheet(
+  data: ArrayBuffer | Buffer,
+  mapping: SheetMapping
+): Promise<ParseResult> {
+  const book = new ExcelJS.Workbook()
+  await book.xlsx.load(data as ArrayBuffer)
+
+  const sheet = book.getWorksheet(mapping.sheetName)
+  if (!sheet) {
+    return {
+      rows: [],
+      unknownColumns: [],
+      fileIssues: [
+        {
+          level: 'error',
+          message: `This file has no sheet called "${mapping.sheetName}". The supplier may have renamed or reordered their tabs, in which case the mapping needs confirming again.`,
+        },
+      ],
+    }
+  }
+
+  // Their headers, as they appear in THIS file.
+  const columnByTheirHeader = new Map<string, number>()
+  sheet.getRow(mapping.headerRow).eachCell((cell, columnNumber) => {
+    const header = String(cell.value ?? '').trim()
+    if (header) columnByTheirHeader.set(header, columnNumber)
+  })
+
+  const byHeader = new Map<string, number>()
+  const missing: string[] = []
+
+  for (const [glexHeader, theirHeader] of Object.entries(mapping.columns)) {
+    const columnNumber = columnByTheirHeader.get(theirHeader)
+    if (columnNumber === undefined) missing.push(theirHeader)
+    else byHeader.set(glexHeader, columnNumber)
+  }
+
+  const fileIssues: Issue[] = []
+
+  // A mapped column that is no longer in the file means the supplier changed
+  // their format. Importing the rest regardless would quietly drop whatever
+  // that column held — a price, most expensively.
+  if (missing.length > 0) {
+    fileIssues.push({
+      level: 'error',
+      message: `The saved mapping expects column(s) ${missing.map((m) => `"${m}"`).join(', ')}, which are not in this file. Confirm the mapping again before importing.`,
+    })
+    return { rows: [], fileIssues, unknownColumns: [] }
+  }
+
+  const mapped = new Set(Object.values(mapping.columns))
+  const unknownColumns = [...columnByTheirHeader.keys()].filter((header) => !mapped.has(header))
+
+  return {
+    rows: readRows(sheet, byHeader, mapping.headerRow + 1),
+    fileIssues,
+    unknownColumns,
+  }
+}
+
+/** The row loop, shared by both paths. */
+function readRows(
+  sheet: ExcelJS.Worksheet,
+  byHeader: Map<string, number>,
+  firstDataRow: number
+): ParsedRow[] {
   const rows: ParsedRow[] = []
 
   sheet.eachRow((row, rowNumber) => {
-    if (rowNumber < SHEET_LAYOUT.firstDataRow) return
+    if (rowNumber < firstDataRow) return
 
     const read = (header: string) => cellText(row, byHeader.get(header))
 
-    // The worked example ships in every blank sheet. A supplier who typed
+    // The worked example ships in every blank template. A supplier who typed
     // over it is importing a real product; one who left it is not.
     const first = read(PRODUCT_COLUMNS[0]!.header)
     if (first.toUpperCase().startsWith(SHEET_LAYOUT.examplePrefix)) return
 
-    // Entirely empty rows are the 300 the template ships with, not data.
+    // Entirely empty rows are the 300 the template ships with, or the spacer
+    // above a price list's totals.
     const anything = PRODUCT_COLUMNS.some((column) => read(column.header) !== '')
     if (!anything) return
 
     rows.push(parseRow(rowNumber, read))
   })
 
-  return { rows, fileIssues, unknownColumns }
+  return rows
 }
 
 /** Locates each known column, and notices any that have gone missing. */

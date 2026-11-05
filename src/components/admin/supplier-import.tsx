@@ -5,7 +5,10 @@ import { useTranslations } from 'next-intl'
 import * as React from 'react'
 import { Button } from '@/components/ui/button'
 import { FileUpload, type UploadedFile } from '@/components/ui/file-upload'
+import { ColumnMapper } from '@/components/admin/column-mapper'
 import { commitSupplierImport, previewSupplierImport } from '@/lib/actions/import-actions'
+import type { WorkbookInspection } from '@/lib/import/inspect-workbook'
+import type { SheetMapping } from '@/lib/import/parse-supplier-sheet'
 import type { Issue } from '@/lib/import/parse-supplier-sheet'
 import type { ImportPlan, RowPlan } from '@/lib/import/plan-import'
 import { cn } from '@/lib/utils'
@@ -29,6 +32,11 @@ export function SupplierImport({ supplierId }: { supplierId: string }) {
   const [plan, setPlan] = React.useState<ImportPlan | null>(null)
   const [fileIssues, setFileIssues] = React.useState<Issue[]>([])
   const [error, setError] = React.useState<string | null>(null)
+  const [mapping, setMapping] = React.useState<{
+    inspection: WorkbookInspection
+    savedMapping: SheetMapping | null
+    reason: string
+  } | null>(null)
   const [done, setDone] = React.useState<string | null>(null)
   const [pending, startTransition] = React.useTransition()
 
@@ -40,6 +48,7 @@ export function SupplierImport({ supplierId }: { supplierId: string }) {
       too_large: t('errorTooLarge'),
       not_found: t('errorNotFound'),
       nothing_to_do: t('nothingToDo'),
+      needs_mapping: t('errorNeedsMapping'),
     })[code] ?? t('errorServer')
 
   /**
@@ -63,13 +72,32 @@ export function SupplierImport({ supplierId }: { supplierId: string }) {
       return
     }
 
+    void preview(uploaded.id)
+  }
+
+  /** Reads the file and shows either the plan or the column mapper. */
+  function preview(id: string) {
     startTransition(async () => {
-      const result = await previewSupplierImport({ supplierId, fileId: uploaded.id })
-      if (!result.ok) {
+      const result = await previewSupplierImport({ supplierId, fileId: id })
+
+      if (result.status === 'error') {
         setError(message(result.error))
         setPlan(null)
+        setMapping(null)
         return
       }
+
+      if (result.status === 'needs_mapping') {
+        setPlan(null)
+        setMapping({
+          inspection: result.inspection,
+          savedMapping: result.savedMapping,
+          reason: result.reason,
+        })
+        return
+      }
+
+      setMapping(null)
       setPlan(result.plan)
       setFileIssues(result.fileIssues)
     })
@@ -130,6 +158,18 @@ export function SupplierImport({ supplierId }: { supplierId: string }) {
       ) : null}
 
       {fileIssues.length > 0 ? <IssueList title={t('issuesTitle')} issues={fileIssues} /> : null}
+
+      {mapping && fileId ? (
+        <ColumnMapper
+          supplierId={supplierId}
+          inspection={mapping.inspection}
+          savedMapping={mapping.savedMapping}
+          reason={mapping.reason}
+          // Saving the mapping answers the question the preview asked, so
+          // read the same file again rather than making them re-upload it.
+          onSaved={() => preview(fileId)}
+        />
+      ) : null}
 
       {plan ? (
         <section className="space-y-4">

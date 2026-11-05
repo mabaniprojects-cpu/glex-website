@@ -1174,7 +1174,17 @@
       "errorServer": "حدث خطأ. لم يتم استيراد أي شيء.",
       "issuesTitle": "مشكلات في الملف",
       "warningsOnly": "تنبيه",
-      "errorsOnly": "يجب إصلاحه"
+      "errorsOnly": "يجب إصلاحه",
+      "mapTitle": "مطابقة الأعمدة",
+      "mapSheet": "الورقة التي تحتوي على المنتجات",
+      "mapTheirColumn": "عمود المورّد",
+      "mapSample": "المحتوى",
+      "mapOurColumn": "يقابل",
+      "mapIgnore": "— تجاهل هذا العمود —",
+      "mapSave": "حفظ وقراءة الملف",
+      "mapCount": "تم مطابقة {count} عمودًا",
+      "mapDuplicate": "عمودان مرتبطان بـ: {columns}. لا يمكن استخدام كل منها إلا مرة واحدة.",
+      "errorNeedsMapping": "يجب مطابقة الأعمدة قبل الاستيراد."
     },
     "alerts": {
       "oneSupplier": "لديك طلب تسجيل مورّد واحد بانتظار المراجعة",

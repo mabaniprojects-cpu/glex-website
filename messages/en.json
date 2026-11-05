@@ -1174,7 +1174,17 @@
       "errorServer": "Something went wrong. Nothing was imported.",
       "issuesTitle": "Problems with the file",
       "warningsOnly": "warning",
-      "errorsOnly": "must be fixed"
+      "errorsOnly": "must be fixed",
+      "mapTitle": "Match the columns",
+      "mapSheet": "Which sheet holds the products",
+      "mapTheirColumn": "Their column",
+      "mapSample": "What it contains",
+      "mapOurColumn": "Maps to",
+      "mapIgnore": "— ignore this column —",
+      "mapSave": "Save and read the file",
+      "mapCount": "{count} columns matched",
+      "mapDuplicate": "Two columns are both mapped to: {columns}. Each can only be used once.",
+      "errorNeedsMapping": "The columns need matching before this can be imported."
     },
     "alerts": {
       "oneSupplier": "You have 1 supplier registration to review",

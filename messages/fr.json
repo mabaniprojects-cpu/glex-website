@@ -1174,7 +1174,17 @@
       "errorServer": "Une erreur s'est produite. Rien n'a été importé.",
       "issuesTitle": "Problèmes avec le fichier",
       "warningsOnly": "avertissement",
-      "errorsOnly": "à corriger"
+      "errorsOnly": "à corriger",
+      "mapTitle": "Faire correspondre les colonnes",
+      "mapSheet": "Quelle feuille contient les produits",
+      "mapTheirColumn": "Leur colonne",
+      "mapSample": "Contenu",
+      "mapOurColumn": "Correspond à",
+      "mapIgnore": "— ignorer cette colonne —",
+      "mapSave": "Enregistrer et lire le fichier",
+      "mapCount": "{count} colonnes associées",
+      "mapDuplicate": "Deux colonnes pointent vers : {columns}. Chacune ne peut servir qu’une fois.",
+      "errorNeedsMapping": "Les colonnes doivent être associées avant l’import."
     },
     "alerts": {
       "oneSupplier": "Une inscription fournisseur attend votre examen",

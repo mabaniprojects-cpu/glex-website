@@ -1174,7 +1174,17 @@
       "errorServer": "Etwas ist schiefgelaufen. Es wurde nichts importiert.",
       "issuesTitle": "Probleme mit der Datei",
       "warningsOnly": "Hinweis",
-      "errorsOnly": "muss behoben werden"
+      "errorsOnly": "muss behoben werden",
+      "mapTitle": "Spalten zuordnen",
+      "mapSheet": "Welches Blatt enthält die Produkte",
+      "mapTheirColumn": "Ihre Spalte",
+      "mapSample": "Inhalt",
+      "mapOurColumn": "Zugeordnet zu",
+      "mapIgnore": "— diese Spalte ignorieren —",
+      "mapSave": "Speichern und Datei lesen",
+      "mapCount": "{count} Spalten zugeordnet",
+      "mapDuplicate": "Zwei Spalten sind zugeordnet zu: {columns}. Jede darf nur einmal verwendet werden.",
+      "errorNeedsMapping": "Die Spalten müssen vor dem Import zugeordnet werden."
     },
     "alerts": {
       "oneSupplier": "Eine Lieferantenregistrierung wartet auf Ihre Prüfung",

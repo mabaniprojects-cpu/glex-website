@@ -1174,7 +1174,17 @@
       "errorServer": "发生错误。未导入任何内容。",
       "issuesTitle": "文件存在的问题",
       "warningsOnly": "提示",
-      "errorsOnly": "必须修正"
+      "errorsOnly": "必须修正",
+      "mapTitle": "匹配列",
+      "mapSheet": "哪个工作表包含产品",
+      "mapTheirColumn": "供应商的列",
+      "mapSample": "内容",
+      "mapOurColumn": "对应到",
+      "mapIgnore": "— 忽略此列 —",
+      "mapSave": "保存并读取文件",
+      "mapCount": "已匹配 {count} 列",
+      "mapDuplicate": "有两列同时对应：{columns}。每项只能使用一次。",
+      "errorNeedsMapping": "导入前需要先匹配列。"
     },
     "alerts": {
       "oneSupplier": "有 1 份供应商注册待您审核",
