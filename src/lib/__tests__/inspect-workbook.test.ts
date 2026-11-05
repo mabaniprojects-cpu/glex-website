@@ -181,6 +181,51 @@ describe('the values back the guess up, or undermine it', () => {
   })
 })
 
+describe('a sectioned catalogue', () => {
+  // Found on a real 3,145-row catalogue: a banner row between sections made
+  // all thirteen columns report the same sample, so every suggestion was
+  // judged on one irrelevant string.
+  const SECTIONED: Cells = [
+    ['PRODUCT CATALOGUE 2026', null, null],
+    [null, null, null],
+    ['Product (English)', 'Brand', 'Standard'],
+    ['Section 01: uPVC pipes and fittings', null, null],
+    ['uPVC Pressure Pipe DIN 8061', 'Cosmoplast', 'DIN 8061/62'],
+    ['uPVC Elbow 90°', 'Cosmoplast', 'DIN 8063'],
+  ]
+
+  it('samples real rows, not the section banner', async () => {
+    const result = await inspect({ Items: SECTIONED })
+    const brand = result.sheets[0]!.columns.find((c) => c.header === 'Brand')
+
+    expect(brand?.samples).toEqual(['Cosmoplast', 'Cosmoplast'])
+    expect(brand?.samples[0]).not.toContain('Section 01')
+  })
+
+  it('maps the columns correctly once the samples are real', async () => {
+    const result = await inspect({ Items: SECTIONED })
+    const suggestions = Object.fromEntries(
+      result.sheets[0]!.columns.map((c) => [c.header, c.suggested])
+    )
+
+    expect(suggestions['Product (English)']).toBe('Product name (English)')
+    expect(suggestions['Brand']).toBe('Brand')
+  })
+
+  it('does not read a section number as a category name', async () => {
+    const result = await inspect({
+      Items: [
+        ['Sec.', 'Product'],
+        [1, 'uPVC Pressure Pipe'],
+        [2, 'uPVC Elbow'],
+      ],
+    })
+
+    const section = result.sheets[0]!.columns.find((c) => c.header === 'Sec.')
+    expect(section?.suggested).toBeNull()
+  })
+})
+
 describe('choosing between sheets', () => {
   it('prefers the product table over a longer sheet of prose', async () => {
     const terms: Cells = [['Terms and Conditions'], ...Array.from({ length: 80 }, (_, i) => [`Clause ${i + 1}`])]

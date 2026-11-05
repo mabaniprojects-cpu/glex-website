@@ -80,11 +80,15 @@ function inspectSheet(sheet: ExcelJS.Worksheet): DetectedSheet | null {
   const columns: DetectedColumn[] = []
   const used = new Set<string>()
 
+  // Found once for the sheet, not per column: scanning past banner rows
+  // thirteen times over a 3,000-row catalogue is work for nothing.
+  const sampleRows = dataRowNumbers(sheet, headerRow, SAMPLE_COUNT)
+
   sheet.getRow(headerRow).eachCell((cell, index) => {
     const header = text(cell.value)
     if (!header) return
 
-    const samples = sampleBelow(sheet, headerRow, index)
+    const samples = sampleBelow(sheet, sampleRows, index)
     const guess = suggestColumn(header, samples, used)
     if (guess.column) used.add(guess.column)
 
@@ -142,11 +146,44 @@ function findHeaderRow(sheet: ExcelJS.Worksheet): number | null {
   return best && best.score >= 3 ? best.row : null
 }
 
-function sampleBelow(sheet: ExcelJS.Worksheet, headerRow: number, column: number): string[] {
-  const samples: string[] = []
+/**
+ * Which rows below the header are actually data.
+ *
+ * A sectioned catalogue puts a banner between groups — "Section 01: uPVC
+ * pipes and fittings" — as one merged cell across the width. Sampled
+ * naively, every column reports that banner as its first value, and since
+ * the samples are what support or veto a suggestion, every column is then
+ * judged on the same irrelevant string. Found on a real 3,145-row catalogue
+ * where all thirteen columns showed identical samples.
+ *
+ * A banner is a row carrying one distinct value, however many cells repeat
+ * it. Real data varies across its columns.
+ */
+function dataRowNumbers(sheet: ExcelJS.Worksheet, headerRow: number, want: number): number[] {
+  const rows: number[] = []
 
   for (let rowNumber = headerRow + 1; rowNumber <= sheet.rowCount; rowNumber += 1) {
-    if (samples.length >= SAMPLE_COUNT) break
+    if (rows.length >= want) break
+
+    const values: string[] = []
+    sheet.getRow(rowNumber).eachCell((cell) => {
+      const value = text(cell.value)
+      if (value) values.push(value)
+    })
+
+    if (values.length < 2) continue
+    if (new Set(values).size < 2) continue
+
+    rows.push(rowNumber)
+  }
+
+  return rows
+}
+
+function sampleBelow(sheet: ExcelJS.Worksheet, rowNumbers: number[], column: number): string[] {
+  const samples: string[] = []
+
+  for (const rowNumber of rowNumbers) {
     const value = text(sheet.getRow(rowNumber).getCell(column).value)
     if (value) samples.push(value.slice(0, 60))
   }
@@ -258,7 +295,11 @@ const ALL_NUMERIC = (samples: string[]) =>
 function contradicts(column: string, samples: string[]): boolean {
   if (samples.length === 0) return false
 
-  const wordColumn = /name|description|Notes|Certifications/i.test(column)
+  // Category belongs here too: a sectioned catalogue numbers its sections,
+  // and "Sec." above a column of 1, 2, 3 is not a category name.
+  const wordColumn = /name|description|Notes|Certifications|Category|Brand|Manufacturer/i.test(
+    column
+  )
 
   // Names, descriptions and notes are words.
   if (wordColumn && ALL_NUMERIC(samples)) return true
