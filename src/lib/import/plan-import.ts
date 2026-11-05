@@ -19,6 +19,14 @@ export type ImportContext = {
   categoryIdByName: Map<string, string>
   /** This supplier's existing products, keyed by matchable name. */
   existingByName: Map<string, ExistingProduct>
+  /**
+   * Every product in the catalogue by GLEX code, not only this supplier's.
+   *
+   * A code identifies a product, and GLEX may later source the same one
+   * from a second supplier — so a sheet quoting a code we issued should
+   * find it wherever it sits.
+   */
+  existingByCode: Map<string, ExistingProduct>
   supplierId: string
 }
 
@@ -116,7 +124,26 @@ export function planImport(rows: ParsedRow[], context: ImportContext): ImportPla
       continue
     }
 
-    const existing = context.existingByName.get(key)
+    /**
+     * By code first, by name only when there is none.
+     *
+     * A code is exact: the sheet was sent out carrying it, and a supplier
+     * who rewords a description still matches. Name matching is the
+     * fallback for products we have never coded, and it is the fragile
+     * one — "Rebar 16mm" and "Rebar 18mm" are one character apart.
+     */
+    const code = row.product.glexCode?.trim().toUpperCase()
+    const byCode = code ? context.existingByCode.get(code) : undefined
+
+    if (code && !byCode) {
+      issues.push({
+        level: 'warning',
+        column: 'GLEX Code',
+        message: `No product has the code ${code}. It may have been typed over, or belong to another catalogue; matching on the name instead.`,
+      })
+    }
+
+    const existing = byCode ?? context.existingByName.get(key)
     plans.push(existing ? update(row, existing, issues) : create(row, issues))
   }
 

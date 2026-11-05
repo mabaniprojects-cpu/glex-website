@@ -286,13 +286,29 @@ async function loadMapping(supplierId: string): Promise<SheetMapping | null> {
 
 /** Everything the planner needs to know about what already exists. */
 async function loadContext(supplierId: string): Promise<ImportContext> {
-  const [categories, products] = await Promise.all([
+  const [categories, products, coded] = await Promise.all([
     db.category.findMany({ where: { deletedAt: null }, select: { id: true, name: true } }),
     db.product.findMany({
       where: { supplierId, deletedAt: null },
       select: {
         id: true,
         name: true,
+        packings: { where: { isDefault: true }, select: { id: true }, take: 1 },
+        prices: {
+          where: { supersededAt: null, supplierId },
+          select: { id: true, amount: true, currency: true, incoterm: true, unit: true },
+          orderBy: { validFrom: 'desc' },
+          take: 1,
+        },
+      },
+    }),
+    // Catalogue-wide, because a code identifies a product wherever it sits.
+    db.product.findMany({
+      where: { glexCode: { not: null }, deletedAt: null },
+      select: {
+        id: true,
+        name: true,
+        glexCode: true,
         packings: { where: { isDefault: true }, select: { id: true }, take: 1 },
         prices: {
           where: { supersededAt: null, supplierId },
@@ -323,9 +339,29 @@ async function loadContext(supplierId: string): Promise<ImportContext> {
     })
   }
 
+  const existingByCode = new Map<string, ExistingProduct>()
+  for (const product of coded) {
+    const price = product.prices[0]
+    existingByCode.set(product.glexCode!.toUpperCase(), {
+      id: product.id,
+      name: product.name,
+      hasDefaultPacking: product.packings.length > 0,
+      currentPrice: price
+        ? {
+            id: price.id,
+            amount: Number(price.amount),
+            currency: price.currency,
+            incoterm: price.incoterm,
+            unit: price.unit,
+          }
+        : null,
+    })
+  }
+
   return {
     categoryIdByName: new Map(categories.map((category) => [category.name, category.id])),
     existingByName,
+    existingByCode,
     supplierId,
   }
 }

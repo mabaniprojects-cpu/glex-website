@@ -42,6 +42,8 @@ export type Issue = {
 }
 
 export type ParsedProduct = {
+  /** Our own catalogue number, when the sheet was sent out pre-filled. */
+  glexCode: string | null
   name: string
   nameAr: string | null
   categoryName: string
@@ -338,6 +340,7 @@ function parseRow(rowNumber: number, read: (header: string) => string): ParsedRo
   }
 
   const product: ParsedProduct = {
+    glexCode: read('GLEX Code') || null,
     name,
     nameAr: read('Product name (Arabic)') || null,
     categoryName,

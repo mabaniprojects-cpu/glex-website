@@ -1,7 +1,14 @@
 {
-  "generatedAt": "2026-11-05T07:38:32.226Z",
+  "generatedAt": "2026-11-05T13:39:46.407Z",
   "file": "glex-supplier-data-sheet.xlsx",
   "productColumns": [
+    {
+      "header": "GLEX Code",
+      "maps": "Product.glexCode — the match key on re-import",
+      "required": false,
+      "list": null,
+      "needsSchema": false
+    },
     {
       "header": "Product name (English)",
       "maps": "Product.name",
@@ -125,25 +132,25 @@
     },
     {
       "header": "Price per unit",
-      "maps": "NEW FIELD — no price column exists on Product yet",
+      "maps": "ProductPrice.amount",
       "required": false,
       "list": null,
-      "needsSchema": true
+      "needsSchema": false
     },
     {
       "header": "Currency",
-      "maps": "NEW FIELD",
+      "maps": "ProductPrice.currency",
       "required": false,
       "list": [
         "SAR",
         "USD",
         "EUR"
       ],
-      "needsSchema": true
+      "needsSchema": false
     },
     {
       "header": "Price basis (Incoterm)",
-      "maps": "NEW FIELD",
+      "maps": "ProductPrice.incoterm (required — a price without one cannot be compared)",
       "required": false,
       "list": [
         "EXW - Ex Works",
@@ -157,14 +164,14 @@
         "DPU - Delivered At Place Unloaded",
         "DDP - Delivered Duty Paid"
       ],
-      "needsSchema": true
+      "needsSchema": false
     },
     {
       "header": "Price valid until",
-      "maps": "NEW FIELD",
+      "maps": "ProductPrice.validUntil",
       "required": false,
       "list": null,
-      "needsSchema": true
+      "needsSchema": false
     },
     {
       "header": "Lead time (days)",
@@ -175,7 +182,7 @@
     },
     {
       "header": "Packing method",
-      "maps": "NEW FIELD — Product.packaging is free text and cannot be calculated with",
+      "maps": "ProductPacking.method",
       "required": true,
       "list": [
         "Carton",
@@ -192,59 +199,59 @@
         "IBC tote",
         "Loose / bulk"
       ],
-      "needsSchema": true
+      "needsSchema": false
     },
     {
       "header": "Units per pack",
-      "maps": "NEW FIELD",
+      "maps": "ProductPacking.unitsPerPack",
       "required": false,
       "list": null,
-      "needsSchema": true
+      "needsSchema": false
     },
     {
       "header": "Pack length (cm)",
-      "maps": "NEW FIELD — needed to calculate container loading",
+      "maps": "ProductPacking dimensions, in centimetres",
       "required": false,
       "list": null,
-      "needsSchema": true
+      "needsSchema": false
     },
     {
       "header": "Pack width (cm)",
-      "maps": "NEW FIELD — needed to calculate container loading",
+      "maps": "ProductPacking dimensions, in centimetres",
       "required": false,
       "list": null,
-      "needsSchema": true
+      "needsSchema": false
     },
     {
       "header": "Pack height (cm)",
-      "maps": "NEW FIELD — needed to calculate container loading",
+      "maps": "ProductPacking dimensions, in centimetres",
       "required": false,
       "list": null,
-      "needsSchema": true
+      "needsSchema": false
     },
     {
       "header": "Pack gross weight (kg)",
-      "maps": "NEW FIELD — needed to calculate container loading",
+      "maps": "ProductPacking dimensions, in centimetres",
       "required": false,
       "list": null,
-      "needsSchema": true
+      "needsSchema": false
     },
     {
       "header": "Packs per pallet",
-      "maps": "NEW FIELD",
+      "maps": "ProductPacking.packsPerPallet",
       "required": false,
       "list": null,
-      "needsSchema": true
+      "needsSchema": false
     },
     {
       "header": "Stackable?",
-      "maps": "NEW FIELD — a non-stackable item wastes the container above it",
+      "maps": "ProductPacking.isStackable — a non-stackable item wastes the container above it",
       "required": false,
       "list": [
         "Yes",
         "No"
       ],
-      "needsSchema": true
+      "needsSchema": false
     },
     {
       "header": "Certifications",

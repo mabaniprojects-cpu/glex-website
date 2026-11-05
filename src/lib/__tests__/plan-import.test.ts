@@ -16,6 +16,7 @@ function row(overrides: Partial<ParsedRow['product']> & { rowNumber?: number } =
   return {
     rowNumber,
     product: {
+      glexCode: null,
       name: 'Steel Rebar 16mm',
       nameAr: null,
       categoryName: 'Steel & Metals',
@@ -49,6 +50,7 @@ function context(overrides: Partial<ImportContext> = {}): ImportContext {
   return {
     categoryIdByName: new Map([['Steel & Metals', 'cat-1']]),
     existingByName: new Map(),
+    existingByCode: new Map(),
     supplierId: 'supplier-1',
     ...overrides,
   }
@@ -206,5 +208,67 @@ describe('packing', () => {
 
     const plan = planImport([{ ...row(), packing }], withPacking)
     expect(plan.rows[0]!.packingAction).toBe('replace')
+  })
+})
+
+describe('matching by GLEX code', () => {
+  const coded = (code: string): ImportContext =>
+    context({
+      existingByCode: new Map([
+        [
+          code,
+          { id: 'prod-9', name: 'Whatever we called it', currentPrice: null, hasDefaultPacking: false },
+        ],
+      ]),
+    })
+
+  it('matches the code even when the supplier renamed the product', () => {
+    // The point of the code: a reworded description still finds the record.
+    const renamed = row({ name: 'Rebar, deformed, B500B — 16mm' })
+    renamed.product.glexCode = 'REB016'
+
+    const plan = planImport([renamed], coded('REB016'))
+
+    expect(plan.rows[0]!.action).toBe('update')
+    expect(plan.rows[0]!.productId).toBe('prod-9')
+  })
+
+  it('is case-insensitive, because people retype codes', () => {
+    const typed = row()
+    typed.product.glexCode = 'reb016'
+
+    expect(planImport([typed], coded('REB016')).rows[0]!.action).toBe('update')
+  })
+
+  it('warns and falls back to the name when the code is unknown', () => {
+    const wrong = row()
+    wrong.product.glexCode = 'XXX999'
+
+    const plan = planImport([wrong], context())
+
+    expect(plan.rows[0]!.action).toBe('create')
+    expect(plan.rows[0]!.issues).toContainEqual(
+      expect.objectContaining({ level: 'warning', column: 'GLEX Code' })
+    )
+  })
+
+  it('prefers the code over a name that matches a different product', () => {
+    // Name matching is the fragile path; the code must win outright.
+    const both = row({ name: 'Steel Rebar 16mm' })
+    both.product.glexCode = 'REB016'
+
+    const ctx = context({
+      existingByCode: new Map([
+        ['REB016', { id: 'by-code', name: 'x', currentPrice: null, hasDefaultPacking: false }],
+      ]),
+      existingByName: new Map([
+        [
+          matchKey('Steel Rebar 16mm'),
+          { id: 'by-name', name: 'Steel Rebar 16mm', currentPrice: null, hasDefaultPacking: false },
+        ],
+      ]),
+    })
+
+    expect(planImport([both], ctx).rows[0]!.productId).toBe('by-code')
   })
 })
