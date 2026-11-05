@@ -89,3 +89,42 @@ describe('recognising one of ours', () => {
     expect(isCatalogueCode(code)).toBe(false)
   })
 })
+
+describe('guessing a type from a product name', () => {
+  // Each case here mis-typed a real product in the existing catalogue
+  // before it was fixed, and a code is permanent once issued.
+  it('reads the product name, not the category it sits in', async () => {
+    const { guessType } = await import('@/lib/import/product-type')
+
+    // GLEX's categories are pairs, so searching name and category together
+    // filed every concrete block as precast and every EPS sheet as
+    // waterproofing — on a word never present in the product's own name.
+    expect(guessType('Concrete Blocks (Hollow/Solid)', 'Blocks & Precast')).toBe('BLK')
+    expect(guessType('EPS Insulation', 'Insulation & Waterproofing')).toBe('INS')
+    expect(guessType('Precast Panels', 'Blocks & Precast')).toBe('PCP')
+    expect(guessType('Waterproofing Membrane', 'Insulation & Waterproofing')).toBe('WPM')
+  })
+
+  it('matches names written in the plural, as catalogues write them', async () => {
+    const { guessType } = await import('@/lib/import/product-type')
+
+    expect(guessType('Electrical Power Cables')).toBe('CBL')
+    expect(guessType('Cable Lugs')).toBe('LUG')
+    expect(guessType('Steel Pipes (Welded)')).toBe('PIP')
+  })
+
+  it('prefers the more specific cable type', async () => {
+    const { guessType } = await import('@/lib/import/product-type')
+
+    // A fire-resistant power cable is bought for its fire resistance.
+    expect(guessType('Fire Resistant Power Cable')).toBe('CBF')
+    expect(guessType('Instrumentation Cable')).toBe('CBI')
+    expect(guessType('Solar Cable')).toBe('CBS')
+  })
+
+  it('falls back to the category only when the name says nothing', async () => {
+    const { guessType } = await import('@/lib/import/product-type')
+
+    expect(guessType('Type I', 'Cement & Related')).toBe('CEM')
+  })
+})

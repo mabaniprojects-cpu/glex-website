@@ -57,7 +57,65 @@ export const TYPE_CODES = {
   WDV: 'Wiring device',
   ENC: 'Enclosure',
 
-  // Anything not yet given a type of its own.
+  // Steel and metals.
+  REB: 'Steel rebar',
+  WRD: 'Wire rod',
+  BLT: 'Steel billet',
+  STR: 'Structural steel',
+  ANG: 'Angle and channel',
+  COL: 'Steel coil',
+  MSH: 'Welded wire mesh',
+
+  // Cement and concrete.
+  CEM: 'Cement',
+  CLK: 'Clinker',
+  GGB: 'Ground granulated blast-furnace slag',
+  BLK: 'Concrete block',
+  PAV: 'Interlock paver',
+  KRB: 'Kerbstone',
+  PCP: 'Precast panel',
+  PCM: 'Precast manhole',
+
+  // Insulation and waterproofing.
+  WPM: 'Waterproofing membrane',
+  INS: 'Insulation board',
+
+  // Chemicals and energy.
+  CHM: 'Construction chemical',
+  ADM: 'Admixture',
+  SOL: 'Solar panel',
+  SMS: 'Solar mounting structure',
+
+  // Infrastructure.
+  GTX: 'Geotextile',
+  GGR: 'Geogrid',
+  MHC: 'Manhole cover',
+  BAR: 'Road barrier',
+  RMP: 'Road marking paint',
+
+  // Modular and prefabricated.
+  CAB: 'Portable cabin',
+  MOD: 'Modular unit',
+  LSF: 'Light steel frame system',
+
+  // Finishing.
+  GYP: 'Gypsum board',
+  CMP: 'Ceiling metal profile',
+  TIL: 'Tile',
+  PNT: 'Paint and coating',
+  ALW: 'Aluminium window and door',
+  ALP: 'Aluminium profile system',
+  WDR: 'Wooden door',
+  LUM: 'Luminaire and lighting',
+
+  // Mechanical.
+  DCT: 'Ducting',
+  HVC: 'HVAC unit',
+  FFS: 'Firefighting system',
+
+  // Anything not yet given a type of its own. A product should not stay
+  // here: GEN sorts into one undifferentiated heap, which is the thing
+  // these codes exist to avoid.
   GEN: 'General',
 } as const
 
