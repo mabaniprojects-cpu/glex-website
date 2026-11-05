@@ -12,7 +12,7 @@ import {
   UNITS,
   YES_NO,
   type ColumnSpec,
-} from './supplier-workbook-data'
+} from '../src/lib/import/sheet-columns'
 
 /**
  * Builds the workbook GLEX sends to a supplier after their account is approved.

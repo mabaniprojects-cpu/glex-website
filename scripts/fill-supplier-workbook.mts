@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import ExcelJS from 'exceljs'
-import { PRODUCT_COLUMNS } from './supplier-workbook-data'
+import { PRODUCT_COLUMNS } from '../src/lib/import/sheet-columns'
 
 /**
  * Fills the blank supplier sheet from extracted rows.

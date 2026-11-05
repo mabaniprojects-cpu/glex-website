@@ -14,6 +14,8 @@
  * follows. Until it lands those columns import into nothing.
  */
 
+import type { Incoterm, PackingMethod, UnitOfMeasure } from '@prisma/client'
+
 /** The nine live categories, from `scripts/catalogue-data.ts`. */
 export const CATEGORIES = [
   'Steel & Metals',
@@ -388,3 +390,70 @@ export const COMPANY_FIELDS: readonly {
   { label: 'Contact email', maps: 'SupplierContact.email', required: true, example: 'sales@example.com.sa' },
   { label: 'Contact phone', maps: 'SupplierContact.phone', required: true, example: '+966 5X XXX XXXX' },
 ]
+
+// --- Reading the sheet back ------------------------------------------------
+// The workbook offers a human label; the database stores an enum. These maps
+// are the one place the two are tied together. They live beside the dropdown
+// lists above on purpose: a label added to a list without a mapping here
+// produces a sheet a supplier can fill and the importer silently rejects.
+
+/** Sheet label to `UnitOfMeasure`. Keys must match UNITS exactly. */
+export const UNIT_BY_LABEL: Record<string, UnitOfMeasure> = {
+  Piece: 'PIECE',
+  Box: 'BOX',
+  Carton: 'CARTON',
+  Pack: 'PACK',
+  Pallet: 'PALLET',
+  Kilogram: 'KILOGRAM',
+  Ton: 'TON',
+  Meter: 'METER',
+  'Square meter': 'SQUARE_METER',
+  'Cubic meter': 'CUBIC_METER',
+  Roll: 'ROLL',
+  Set: 'SET',
+  Container: 'CONTAINER',
+}
+
+/** Sheet label to `Incoterm`. The label carries the code before the dash. */
+export const INCOTERM_BY_LABEL: Record<string, Incoterm> = {
+  'EXW - Ex Works': 'EXW',
+  'FCA - Free Carrier': 'FCA',
+  'FOB - Free On Board': 'FOB',
+  'CFR - Cost and Freight': 'CFR',
+  'CIF - Cost, Insurance and Freight': 'CIF',
+  'CPT - Carriage Paid To': 'CPT',
+  'CIP - Carriage and Insurance Paid To': 'CIP',
+  'DAP - Delivered At Place': 'DAP',
+  'DPU - Delivered At Place Unloaded': 'DPU',
+  'DDP - Delivered Duty Paid': 'DDP',
+}
+
+/** Sheet label to `PackingMethod`. Keys must match PACKING_METHODS exactly. */
+export const PACKING_BY_LABEL: Record<string, PackingMethod> = {
+  Carton: 'CARTON',
+  'Wooden crate': 'WOODEN_CRATE',
+  'Wooden box': 'WOODEN_BOX',
+  'Pallet (shrink-wrapped)': 'PALLET_SHRINK_WRAPPED',
+  'Pallet (strapped)': 'PALLET_STRAPPED',
+  Bundle: 'BUNDLE',
+  Coil: 'COIL',
+  Roll: 'ROLL',
+  Drum: 'DRUM',
+  Bag: 'BAG',
+  'Big bag (FIBC)': 'BIG_BAG_FIBC',
+  'IBC tote': 'IBC_TOTE',
+  'Loose / bulk': 'LOOSE_BULK',
+}
+
+/** Where the generator writes things, so the parser looks in the same places. */
+export const SHEET_LAYOUT = {
+  productsSheet: 'Products',
+  companySheet: 'Company',
+  /** Row 1 is the instruction banner. */
+  headerRow: 2,
+  /** Row 3 is the worked example; real data starts below it. */
+  exampleRow: 3,
+  firstDataRow: 4,
+  /** Any row whose first cell starts with this is the example, and is skipped. */
+  examplePrefix: 'EXAMPLE',
+} as const
