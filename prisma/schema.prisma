@@ -196,6 +196,38 @@ enum UnitOfMeasure {
   CONTAINER
 }
 
+/**
+ * How goods are presented for loading.
+ * `Product.packaging` is free text and stays that way for human notes, but a
+ * container-loading calculation cannot reason about prose. Every option here
+ * is a shape with a footprint.
+ */
+enum PackingMethod {
+  CARTON
+  WOODEN_CRATE
+  WOODEN_BOX
+  PALLET_SHRINK_WRAPPED
+  PALLET_STRAPPED
+  BUNDLE
+  COIL
+  ROLL
+  DRUM
+  BAG
+  BIG_BAG_FIBC
+  IBC_TOTE
+  LOOSE_BULK
+}
+
+/**
+ * Where a price came from, so a stale one can be traced to its document.
+ */
+enum PriceSource {
+  SUPPLIER_SHEET
+  SUPPLIER_PORTAL
+  MANUAL
+  QUOTATION
+}
+
 enum ContentStatus {
   DRAFT
   REVIEW
@@ -512,6 +544,10 @@ model SupplierProfile {
   availableIncoterms  Incoterm[] @default([])
   leadTimeNotes       String?
   qualityControlNotes String?    @db.Text
+  /**
+   * Where goods are collected or loaded. Freight cannot be quoted without it.
+   */
+  loadingPort         String?
 
   // Workflow
   completionPercent   Int       @default(0)
@@ -529,6 +565,7 @@ model SupplierProfile {
   categories     SupplierProductCategory[]
   contacts       SupplierContact[]
   products       Product[]
+  prices         ProductPrice[]
   opportunities  SourcingOpportunity[]
 
   createdAt DateTime  @default(now())
@@ -678,6 +715,8 @@ model Product {
   translations ProductTranslation[]
   savedBy      SavedProduct[]
   rfqItems     RFQItem[]
+  prices       ProductPrice[]
+  packings     ProductPacking[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -690,6 +729,121 @@ model Product {
   @@index([countryOfOrigin])
   @@index([isSaudiMade])
   @@index([deletedAt])
+}
+
+/**
+ * What a supplier charges for a product, as of a date.
+ * A row per price rather than a column on Product, for three reasons that
+ * only a table can serve. A price is superseded, never overwritten, so "what
+ * did we pay for 16mm rebar in March" stays answerable. `minQuantity` carries
+ * quantity breaks — 25 tons at one price, 100 at another — which a single
+ * column cannot hold. And the same product may be offered by two suppliers,
+ * which is the comparison that makes an RFQ fast.
+ * Price is an attribute of an OFFER, not of a product. That is why it lives
+ * here and not on `Product`.
+ * NEVER expose this in a public query. The catalogue says "Price on request"
+ * deliberately; `src/lib/__tests__/price-privacy.test.ts` fails the build if a
+ * public selector reaches it.
+ */
+model ProductPrice {
+  id         String  @id @default(uuid()) @db.Uuid
+  productId  String  @db.Uuid
+  /**
+   * Whose price. Null for a GLEX-internal estimate with no named source.
+   */
+  supplierId String? @db.Uuid
+
+  amount   Decimal       @db.Decimal(14, 2)
+  /**
+   * ISO 4217. A String to match Quotation.currency and RFQWorkflowEntry.
+   */
+  currency String        @default("SAR")
+  /**
+   * Required: a price without a delivery basis cannot be compared.
+   */
+  incoterm Incoterm
+  /**
+   * What the amount buys — the price is per one of these.
+   */
+  unit     UnitOfMeasure
+
+  /**
+   * Lowest quantity this price applies from; null means any quantity.
+   */
+  minQuantity Decimal? @db.Decimal(14, 3)
+
+  validFrom  DateTime  @default(now())
+  validUntil DateTime?
+
+  source       PriceSource
+  /**
+   * The sheet or quotation this was read from, where there was one.
+   */
+  sourceFileId String?     @db.Uuid
+  note         String?     @db.Text
+
+  /**
+   * Set instead of deleting, so the history survives a new price list.
+   */
+  supersededAt DateTime?
+
+  product  Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  supplier SupplierProfile? @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  file     StoredFile?      @relation(fields: [sourceFileId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // The hot query is "current prices for this product".
+  @@index([productId, supersededAt])
+  @@index([supplierId])
+  @@index([validUntil])
+}
+
+/**
+ * How one product is packed for shipping.
+ * Several rows per product are allowed because the same material genuinely
+ * ships more than one way — a sealant sold in 4, 20, 200 and 1000 litre
+ * containers is four different things to load. The supplier sheet creates one
+ * row marked `isDefault`; the rest can follow without another migration.
+ * Dimensions are centimetres and weight is kilograms, everywhere, with no
+ * per-row unit to get wrong.
+ */
+model ProductPacking {
+  id        String        @id @default(uuid()) @db.Uuid
+  productId String        @db.Uuid
+  method    PackingMethod
+
+  /**
+   * How many `unit` are inside one pack.
+   */
+  unitsPerPack Decimal?      @db.Decimal(12, 3)
+  unit         UnitOfMeasure
+
+  lengthCm      Decimal? @db.Decimal(10, 2)
+  widthCm       Decimal? @db.Decimal(10, 2)
+  heightCm      Decimal? @db.Decimal(10, 2)
+  /**
+   * Including the packing itself. A container reaches its payload limit long
+   * before it fills with anything dense, so this decides as often as volume.
+   */
+  grossWeightKg Decimal? @db.Decimal(12, 3)
+
+  packsPerPallet Int?
+  /**
+   * False wastes the container space above the pack; it has to be modelled.
+   */
+  isStackable    Boolean @default(true)
+  isDefault      Boolean @default(true)
+
+  note String?
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
 }
 
 model ProductTranslation {
@@ -1133,6 +1287,7 @@ model StoredFile {
   quotations         Quotation[]
   shipmentDocuments  ShipmentDocument[]
   inquiries          ContactInquiry[]
+  productPrices      ProductPrice[]
 
   createdAt DateTime  @default(now())
   deletedAt DateTime?
