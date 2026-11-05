@@ -685,9 +685,37 @@ model CategoryTranslation {
 }
 
 model Product {
-  id               String          @id @default(uuid()) @db.Uuid
-  slug             String          @unique
-  name             String
+  id   String @id @default(uuid()) @db.Uuid
+  slug String @unique
+
+  /**
+   * GLEX's own catalogue number, shown to buyers.
+   *
+   * Format `TYP` + size + `-MAT`, e.g. PIP012630-UPA: type first so a
+   * listing groups by product kind, size encoded numerically so it sorts
+   * within the type.
+   *
+   * Three rules, each one load-bearing:
+   *
+   *   It names no supplier. GLEX is the face of this catalogue and the
+   *   source behind it is commercial information; the same cable may also
+   *   come from a second supplier later, which `ProductPrice.supplierId`
+   *   already allows.
+   *
+   *   It is assigned once and never recalculated. The variant letter is
+   *   positional, so regenerating a catalogue with one product inserted
+   *   would shift every letter after it — and this code is printed on
+   *   quotations and typed back to us months later.
+   *
+   *   Nothing is published without one. Enforced in `setProductVisibility`
+   *   rather than trusted to habit.
+   *
+   * Nullable because a product exists from the moment it is imported, and
+   * is coded before it is published rather than before it is created.
+   */
+  glexCode String? @unique
+
+  name String
   shortDescription String?         @db.Text
   description      String?         @db.Text
   specifications   Json? // [{ key, value, unit }]

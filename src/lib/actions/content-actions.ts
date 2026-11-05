@@ -26,7 +26,10 @@ import { slugify } from '@/lib/utils'
 
 export type ContentActionResult =
   | { ok: true; slug?: string }
-  | { ok: false; error: 'validation' | 'not_found' | 'duplicate' | 'in_use' | 'server' }
+  | {
+      ok: false
+      error: 'validation' | 'not_found' | 'duplicate' | 'in_use' | 'no_code' | 'server'
+    }
 
 /**
  * A unique slug derived from a name.
@@ -360,10 +363,21 @@ export async function setProductVisibility(input: unknown): Promise<ContentActio
   try {
     const product = await db.product.findFirst({
       where: { id, deletedAt: null },
-      select: { id: true, slug: true, isVisible: true },
+      select: { id: true, slug: true, isVisible: true, glexCode: true },
     })
     if (!product) return { ok: false, error: 'not_found' }
     if (product.isVisible === isVisible) return { ok: true, slug: product.slug }
+
+    /**
+     * No catalogue number, no publishing.
+     *
+     * The code is what a buyer quotes back in an enquiry and what the
+     * quotation carries, so a product that reaches the website without one
+     * cannot be referred to. Enforced here rather than left to habit: the
+     * importer creates products hidden precisely so this gate exists, and a
+     * gate nobody checks is not a gate.
+     */
+    if (isVisible && !product.glexCode) return { ok: false, error: 'no_code' }
 
     await db.$transaction(async (tx) => {
       await tx.product.update({ where: { id }, data: { isVisible } })
