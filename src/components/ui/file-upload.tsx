@@ -114,14 +114,16 @@ export function FileUpload({
             disabled={busy || value.length >= maxFiles}
             onClick={() => inputRef.current?.click()}
           >
-            {busy ? common('loading') : common('search')}
+            {busy ? common('loading') : common('upload')}
           </Button>
         </div>
 
         <input
           ref={inputRef}
           type="file"
-          multiple
+          // Offering a multi-select the caller will discard is a small lie;
+          // `maxFiles={1}` means one.
+          multiple={maxFiles > 1}
           accept={accept}
           className="sr-only"
           // The visible button forwards clicks here; the input itself stays in
@@ -129,7 +131,18 @@ export function FileUpload({
           onChange={(event) => void upload(event.target.files)}
         />
 
-        <p className="mt-3 text-xs text-glex-green-800/60">PDF · JPG · PNG · WEBP · DOCX · XLSX</p>
+        {/*
+          Derived from `accept`, not a fixed list. Hard-coding every type the
+          default allows told someone uploading to a .xlsx-only field that a
+          PDF was welcome, and the refusal came from the server afterwards.
+        */}
+        <p className="mt-3 text-xs text-glex-green-800/60" dir="ltr">
+          {accept
+            .split(',')
+            .map((type) => type.trim().replace(/^\./, '').toUpperCase())
+            .filter(Boolean)
+            .join(' · ')}
+        </p>
       </div>
 
       {error ? (

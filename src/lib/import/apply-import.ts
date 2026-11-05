@@ -24,7 +24,9 @@ export async function applyRow(
   planned: RowPlan,
   row: ParsedRow,
   categoryId: string,
-  supplierId: string
+  supplierId: string,
+  /** The sheet this came from, recorded on every price it produces. */
+  sourceFileId: string | null
 ): Promise<string> {
   const productId =
     planned.action === 'create'
@@ -33,7 +35,7 @@ export async function applyRow(
 
   if (planned.action === 'update') await updateProduct(tx, productId, row)
 
-  await applyPrice(tx, productId, row, planned.priceAction, supplierId)
+  await applyPrice(tx, productId, row, planned.priceAction, supplierId, sourceFileId)
   await applyPacking(tx, productId, row, planned.packingAction)
 
   return productId
@@ -105,7 +107,8 @@ export async function applyPrice(
   productId: string,
   row: ParsedRow,
   action: string,
-  supplierId: string
+  supplierId: string,
+  sourceFileId: string | null = null
 ): Promise<void> {
   if (!row.price || action === 'none' || action === 'unchanged') return
 
@@ -127,6 +130,7 @@ export async function applyPrice(
       unit: row.price.unit,
       validUntil: row.price.validUntil,
       source: 'SUPPLIER_SHEET',
+      sourceFileId,
     },
   })
 }

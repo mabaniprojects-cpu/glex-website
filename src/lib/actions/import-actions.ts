@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { recordAudit } from '@/lib/audit'
 import { requirePermission } from '@/lib/auth-guards'
 import { db } from '@/lib/db'
+import { getStorageProvider } from '@/lib/storage'
 import { applyRow } from '@/lib/import/apply-import'
 import {
   parseSupplierSheet,
@@ -52,8 +53,15 @@ const MAX_BYTES = 10 * 1024 * 1024
 
 const schema = z.object({
   supplierId: z.string().uuid(),
-  /** The workbook, base64-encoded by the client. */
-  file: z.string().min(1),
+  /**
+   * The uploaded workbook, as a `StoredFile` id.
+   *
+   * The file is kept rather than streamed through the request, so every price
+   * it produces can name the sheet it came from — `ProductPrice.sourceFileId`
+   * exists for exactly that. A price nobody can trace to a document is a
+   * price nobody can defend six months later.
+   */
+  fileId: z.string().uuid(),
 })
 
 export async function previewSupplierImport(input: unknown): Promise<ImportResult> {
@@ -62,7 +70,7 @@ export async function previewSupplierImport(input: unknown): Promise<ImportResul
 
   await requirePermission('product:write')
 
-  const read = await readAndPlan(parsed.data.supplierId, parsed.data.file)
+  const read = await readAndPlan(parsed.data.supplierId, parsed.data.fileId)
   if ('error' in read) return { ok: false, error: read.error }
 
   return { ok: true, plan: read.plan, fileIssues: read.fileIssues }
@@ -74,7 +82,7 @@ export async function commitSupplierImport(input: unknown): Promise<CommitResult
 
   const user = await requirePermission('product:write')
 
-  const read = await readAndPlan(parsed.data.supplierId, parsed.data.file)
+  const read = await readAndPlan(parsed.data.supplierId, parsed.data.fileId)
   if ('error' in read) return { ok: false, error: read.error }
 
   const { plan, rows, context } = read
@@ -91,7 +99,7 @@ export async function commitSupplierImport(input: unknown): Promise<CommitResult
           if (!row) continue
 
           const categoryId = context.categoryIdByName.get(row.product.categoryName)!
-          await applyRow(tx, planned, row, categoryId, context.supplierId)
+          await applyRow(tx, planned, row, categoryId, context.supplierId, read.fileId)
         }
 
         await recordAudit(
@@ -136,19 +144,26 @@ export async function commitSupplierImport(input: unknown): Promise<CommitResult
 // --- Shared reading --------------------------------------------------------
 
 type ReadResult =
-  | { plan: ImportPlan; rows: ParsedRow[]; context: ImportContext; fileIssues: Issue[] }
+  | { plan: ImportPlan; rows: ParsedRow[]; context: ImportContext; fileIssues: Issue[]; fileId: string }
   | { error: 'not_found' | 'unreadable' | 'too_large' | 'server' }
 
-async function readAndPlan(supplierId: string, base64: string): Promise<ReadResult> {
-  const buffer = Buffer.from(base64, 'base64')
-  if (buffer.byteLength === 0) return { error: 'unreadable' }
-  if (buffer.byteLength > MAX_BYTES) return { error: 'too_large' }
+async function readAndPlan(supplierId: string, fileId: string): Promise<ReadResult> {
+  const [supplier, stored] = await Promise.all([
+    db.supplierProfile.findFirst({
+      where: { id: supplierId, deletedAt: null },
+      select: { id: true },
+    }),
+    db.storedFile.findFirst({
+      where: { id: fileId, deletedAt: null },
+      select: { key: true, size: true },
+    }),
+  ])
 
-  const supplier = await db.supplierProfile.findFirst({
-    where: { id: supplierId, deletedAt: null },
-    select: { id: true },
-  })
-  if (!supplier) return { error: 'not_found' }
+  if (!supplier || !stored) return { error: 'not_found' }
+  if (stored.size > MAX_BYTES) return { error: 'too_large' }
+
+  const buffer = await getStorageProvider().get(stored.key)
+  if (!buffer || buffer.byteLength === 0) return { error: 'unreadable' }
 
   let parsed
   try {
@@ -165,6 +180,7 @@ async function readAndPlan(supplierId: string, base64: string): Promise<ReadResu
     rows: parsed.rows,
     context,
     fileIssues: parsed.fileIssues,
+    fileId,
   }
 }
 

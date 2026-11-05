@@ -28,6 +28,7 @@ export default async function AdminSupplierDetailPage({
 
   const supplier = await getTranslations('supplier')
   const admin = await getTranslations('admin')
+  const importStrings = await getTranslations('admin.import')
   const common = await getTranslations('common')
 
   const facts: Array<{ label: string; value: string | null }> = [
@@ -61,6 +62,17 @@ export default async function AdminSupplierDetailPage({
           <span className="rounded-full border border-border-subtle px-2.5 py-1 text-xs font-semibold">
             {supplier(`status.${profile.status}`)}
           </span>
+
+          {/* Offered only to someone who could act on it; the page enforces
+              the same permission rather than trusting this to hide it. */}
+          {can(user.role, 'product:write') ? (
+            <Link
+              href={`/admin/suppliers/${profile.id}/import` as Parameters<typeof Link>[0]['href']}
+              className="text-sm font-medium text-glex-green-700 underline-offset-4 hover:underline"
+            >
+              {importStrings('title')}
+            </Link>
+          ) : null}
         </div>
       </div>
 
