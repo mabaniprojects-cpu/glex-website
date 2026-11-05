@@ -566,6 +566,7 @@ model SupplierProfile {
   contacts       SupplierContact[]
   products       Product[]
   prices         ProductPrice[]
+  sheetMappings  SupplierSheetMapping[]
   opportunities  SourcingOpportunity[]
 
   createdAt DateTime  @default(now())
@@ -844,6 +845,44 @@ model ProductPacking {
   updatedAt DateTime @updatedAt
 
   @@index([productId])
+}
+
+/**
+ * How one supplier's own spreadsheet maps onto the GLEX data sheet.
+ *
+ * Suppliers do not fill in our template; they send the price list they
+ * already keep, with their own column names, often in Arabic, and they send
+ * the same shape every time. Mapping it once and remembering the result is
+ * what turns the second file and every file after it into one click.
+ *
+ * `columns` is `{ "<GLEX column header>": "<their column header>" }`, keyed
+ * by the header text rather than a position, because suppliers insert
+ * columns far more often than they reorder them.
+ *
+ * One mapping per supplier for now. A supplier who sends two shapes — a
+ * product list and a separate price list — needs more than one, which is why
+ * this is a table rather than a column on SupplierProfile.
+ */
+model SupplierSheetMapping {
+  id         String @id @default(uuid()) @db.Uuid
+  supplierId String @db.Uuid
+
+  /** Which worksheet the data was found on. */
+  sheetName String
+  /** Which row carried the headers; rarely row 1 in a real price list. */
+  headerRow Int    @default(1)
+
+  columns Json
+
+  /** Lets a stale mapping be spotted when a supplier changes their format. */
+  lastUsedAt DateTime?
+
+  supplier SupplierProfile @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([supplierId])
 }
 
 model ProductTranslation {
