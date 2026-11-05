@@ -1173,6 +1173,10 @@
       "issuesTitle": "Problems with the file",
       "warningsOnly": "warning",
       "errorsOnly": "must be fixed"
+    },
+    "alerts": {
+      "oneSupplier": "You have 1 supplier registration to review",
+      "manySuppliers": "You have {count} supplier registrations to review"
     }
   },
   "legal": {

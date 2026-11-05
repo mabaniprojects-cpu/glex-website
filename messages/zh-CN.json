@@ -1173,6 +1173,10 @@
       "issuesTitle": "文件存在的问题",
       "warningsOnly": "提示",
       "errorsOnly": "必须修正"
+    },
+    "alerts": {
+      "oneSupplier": "有 1 份供应商注册待您审核",
+      "manySuppliers": "有 {count} 份供应商注册待您审核"
     }
   },
   "legal": {

@@ -1173,6 +1173,10 @@
       "issuesTitle": "Probleme mit der Datei",
       "warningsOnly": "Hinweis",
       "errorsOnly": "muss behoben werden"
+    },
+    "alerts": {
+      "oneSupplier": "Eine Lieferantenregistrierung wartet auf Ihre Prüfung",
+      "manySuppliers": "{count} Lieferantenregistrierungen warten auf Ihre Prüfung"
     }
   },
   "legal": {

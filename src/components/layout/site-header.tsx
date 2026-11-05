@@ -5,9 +5,11 @@ import { homeRouteFor } from '@/lib/rbac'
 import { Link } from '@/i18n/navigation'
 import { GlexLogo } from '@/components/brand/glex-logo'
 import { Button } from '@/components/ui/button'
+import { staffAlerts } from '@/lib/staff-alerts'
 import { AnnouncementBar } from './announcement-bar'
 import { LanguageSwitcher } from './language-switcher'
 import { MobileNav } from './mobile-nav'
+import { ReviewBell } from './review-bell'
 import { UserMenu } from './user-menu'
 
 /** Public navigation. Kept in one place so desktop and mobile never diverge. */
@@ -25,6 +27,10 @@ export async function SiteHeader() {
   const t = await getTranslations('nav')
   const user = await getSessionUser()
   const locale = await getLocale()
+
+  // Costs one indexed count, and only for staff who could act on it — a
+  // signed-out visitor adds no query to any public page.
+  const alerts = await staffAlerts(user?.role)
 
   return (
     <>
@@ -82,6 +88,8 @@ export async function SiteHeader() {
                 <span className="sr-only">{t('tracking')}</span>
               </Link>
             </Button>
+
+            <ReviewBell alerts={alerts} />
 
             {user ? (
               <UserMenu

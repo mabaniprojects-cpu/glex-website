@@ -1173,6 +1173,10 @@
       "issuesTitle": "مشكلات في الملف",
       "warningsOnly": "تنبيه",
       "errorsOnly": "يجب إصلاحه"
+    },
+    "alerts": {
+      "oneSupplier": "لديك طلب تسجيل مورّد واحد بانتظار المراجعة",
+      "manySuppliers": "لديك {count} طلب تسجيل مورّد بانتظار المراجعة"
     }
   },
   "legal": {

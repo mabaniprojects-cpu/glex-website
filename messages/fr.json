@@ -1173,6 +1173,10 @@
       "issuesTitle": "Problèmes avec le fichier",
       "warningsOnly": "avertissement",
       "errorsOnly": "à corriger"
+    },
+    "alerts": {
+      "oneSupplier": "Une inscription fournisseur attend votre examen",
+      "manySuppliers": "{count} inscriptions fournisseurs attendent votre examen"
     }
   },
   "legal": {
