@@ -736,7 +736,9 @@
       "REJECTED": "未通过",
       "SUSPENDED": "已暂停",
       "ARCHIVED": "已归档"
-    }
+    },
+    "companyLogo": "公司标志",
+    "companyLogoHint": "可选。PNG、JPG、WEBP 或 SVG。用于您的供应商资料。"
   },
   "client": {
     "registerTitle": "客户注册",

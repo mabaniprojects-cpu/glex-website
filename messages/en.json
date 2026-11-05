@@ -736,7 +736,9 @@
       "REJECTED": "Rejected",
       "SUSPENDED": "Suspended",
       "ARCHIVED": "Archived"
-    }
+    },
+    "companyLogo": "Company logo",
+    "companyLogoHint": "Optional. PNG, JPG, WEBP or SVG. Used on your supplier profile."
   },
   "client": {
     "registerTitle": "Client Registration",

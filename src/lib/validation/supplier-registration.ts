@@ -61,6 +61,15 @@ export const supplierRegistrationSchema = z
     leadTimeNotes: optionalText(300),
     qualityControlNotes: optionalText(2000),
 
+    /**
+     * Company logo, an id returned by POST /api/uploads.
+     *
+     * Optional: a supplier without their logo to hand should still be able
+     * to finish registering, and chasing it later is cheaper than losing the
+     * application.
+     */
+    logoFileId: z.string().uuid().optional(),
+
     // Step 4 — documents (ids returned by POST /api/uploads)
     documentIds: z.array(z.string().uuid()).max(20),
 

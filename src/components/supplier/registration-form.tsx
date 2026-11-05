@@ -53,6 +53,7 @@ export function SupplierRegistrationForm({
 
   const [step, setStep] = React.useState(0)
   const [documents, setDocuments] = React.useState<UploadedFile[]>([])
+  const [logo, setLogo] = React.useState<UploadedFile[]>([])
   const [submitted, setSubmitted] = React.useState(false)
   const [draftSaved, setDraftSaved] = React.useState(false)
   const [formError, setFormError] = React.useState<string | null>(null)
@@ -166,6 +167,7 @@ export function SupplierRegistrationForm({
     const result = await submitSupplierRegistration({
       ...values,
       documentIds: documents.map((file) => file.id),
+      logoFileId: logo[0]?.id,
     })
 
     if (result.ok) {
@@ -359,6 +361,24 @@ export function SupplierRegistrationForm({
             <FieldLabel>{t('companyDescription')}</FieldLabel>
             <FieldTextarea rows={4} {...register('description')} />
           </Field>
+
+          {/*
+            Not a <Field>: FieldLabel calls useField() for the id to point its
+            htmlFor at, and FileUpload is a drop zone and a list, not one
+            labelled input. Wrapping it in Field throws, and a label pointing
+            at nothing would be worse than this heading.
+          */}
+          <div className="sm:col-span-2">
+            <p className="text-sm font-medium text-glex-green-900">{t('companyLogo')}</p>
+            <p className="mt-1 mb-3 text-sm text-glex-green-800/70">{t('companyLogoHint')}</p>
+            <FileUpload
+              value={logo}
+              onChange={setLogo}
+              purpose="supplier-logos"
+              accept=".png,.jpg,.jpeg,.webp,.svg"
+              maxFiles={1}
+            />
+          </div>
         </section>
       ) : null}
 

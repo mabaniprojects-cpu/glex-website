@@ -132,8 +132,26 @@ export async function submitSupplierRegistration(
           crNumber: data.crNumber || null,
           vatNumber: data.vatNumber || null,
           description: data.description || null,
+          // Served through the authorized download route rather than stored
+          // as a public URL: a supplier's logo is their property, and this
+          // keeps it behind the same check as the rest of their documents.
+          logoUrl: data.logoFileId ? `/api/files/${data.logoFileId}` : null,
         },
       })
+
+      /**
+       * Attach the logo to the organization that now owns it.
+       *
+       * It was uploaded before the account existed, so it has no owner and
+       * `/api/files/[id]` would refuse it to the very supplier who sent it —
+       * staff could see the logo and its owner could not.
+       */
+      if (data.logoFileId) {
+        await tx.storedFile.updateMany({
+          where: { id: data.logoFileId, organizationId: null },
+          data: { organizationId: organization.id },
+        })
+      }
 
       const profile = await tx.supplierProfile.create({
         data: {

@@ -736,7 +736,9 @@
       "REJECTED": "مرفوض",
       "SUSPENDED": "موقوف",
       "ARCHIVED": "مؤرشف"
-    }
+    },
+    "companyLogo": "شعار الشركة",
+    "companyLogoHint": "اختياري. PNG أو JPG أو WEBP أو SVG. يُستخدم في ملف المورّد الخاص بك."
   },
   "client": {
     "registerTitle": "تسجيل العملاء",

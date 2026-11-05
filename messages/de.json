@@ -736,7 +736,9 @@
       "REJECTED": "Abgelehnt",
       "SUSPENDED": "Ausgesetzt",
       "ARCHIVED": "Archiviert"
-    }
+    },
+    "companyLogo": "Firmenlogo",
+    "companyLogoHint": "Optional. PNG, JPG, WEBP oder SVG. Wird in Ihrem Lieferantenprofil verwendet."
   },
   "client": {
     "registerTitle": "Kundenregistrierung",

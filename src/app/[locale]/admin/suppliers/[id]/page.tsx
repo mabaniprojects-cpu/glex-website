@@ -58,6 +58,20 @@ export default async function AdminSupplierDetailPage({
         </Link>
 
         <div className="mt-3 flex flex-wrap items-center gap-4">
+          {/*
+            Served through /api/files, which re-checks the caller on every
+            request — so a plain <img>, not next/image, whose optimiser would
+            fetch it without the session cookie and get a 404.
+          */}
+          {profile.organization?.logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={profile.organization.logoUrl}
+              alt=""
+              className="border-border-subtle h-12 w-12 rounded-lg border bg-white object-contain p-1"
+            />
+          ) : null}
+
           <h1 className="text-2xl font-bold sm:text-3xl">{profile.legalName}</h1>
           <span className="rounded-full border border-border-subtle px-2.5 py-1 text-xs font-semibold">
             {supplier(`status.${profile.status}`)}
