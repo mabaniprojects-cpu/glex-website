@@ -537,6 +537,12 @@ model SupplierProfile {
   brands              String[]   @default([])
   isManufacturer      Boolean    @default(false)
   isDistributor       Boolean    @default(false)
+  /**
+   * The distributor a manufacturer sells through, when it is not itself the
+   * one shipping. Named on the registration form so a buyer's enquiry can be
+   * routed to whoever actually fulfils it.
+   */
+  distributorName     String?
   monthlyCapacity     String?
   minimumOrderNotes   String?
   exportExperience    String?

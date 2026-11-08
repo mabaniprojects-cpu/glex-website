@@ -13,6 +13,7 @@ import { computeCompletion } from '@/lib/supplier'
 import { createToken, TOKEN_PURPOSE } from '@/lib/tokens'
 import { slugify } from '@/lib/utils'
 import {
+  CERTIFICATION_CHOICES,
   supplierRegistrationSchema,
   type SupplierRegistrationInput,
 } from '@/lib/validation/supplier-registration'
@@ -86,15 +87,46 @@ export async function submitSupplierRegistration(
         })
       : []
 
-    // Only accept documents the applicant actually uploaded in this session.
+    /**
+     * Only accept documents the applicant actually uploaded in this session.
+     *
+     * An unclaimed file is one no organization and no account owns, which is
+     * exactly what an anonymous upload from this form produces. Without that
+     * filter the ids are simply trusted, and a caller who knew any other
+     * file's id could attach it to the organization being created here — and
+     * then read it back as its new owner.
+     */
     const documents = data.documentIds.length
       ? await db.storedFile.findMany({
-          where: { id: { in: data.documentIds }, deletedAt: null },
+          where: {
+            id: { in: data.documentIds },
+            deletedAt: null,
+            organizationId: null,
+            uploadedById: null,
+          },
           select: { id: true, originalName: true },
         })
       : []
 
+    // Held to the same rule, and checked before it is referenced as a URL.
+    const logoFile = data.logoFileId
+      ? await db.storedFile.findFirst({
+          where: {
+            id: data.logoFileId,
+            deletedAt: null,
+            organizationId: null,
+            uploadedById: null,
+          },
+          select: { id: true },
+        })
+      : null
+
     const contacts = data.contacts.filter((contact) => contact.name && contact.email)
+
+    // Only the certificates the form offers — the list is not a free-text field.
+    const certifications = data.certifications.filter((name) =>
+      (CERTIFICATION_CHOICES as readonly string[]).includes(name)
+    )
 
     const completion = computeCompletion({
       legalName: data.legalName,
@@ -135,7 +167,7 @@ export async function submitSupplierRegistration(
           // Served through the authorized download route rather than stored
           // as a public URL: a supplier's logo is their property, and this
           // keeps it behind the same check as the rest of their documents.
-          logoUrl: data.logoFileId ? `/api/files/${data.logoFileId}` : null,
+          logoUrl: logoFile ? `/api/files/${logoFile.id}` : null,
         },
       })
 
@@ -146,9 +178,9 @@ export async function submitSupplierRegistration(
        * `/api/files/[id]` would refuse it to the very supplier who sent it —
        * staff could see the logo and its owner could not.
        */
-      if (data.logoFileId) {
+      if (logoFile) {
         await tx.storedFile.updateMany({
-          where: { id: data.logoFileId, organizationId: null },
+          where: { id: logoFile.id, organizationId: null },
           data: { organizationId: organization.id },
         })
       }
@@ -181,6 +213,7 @@ export async function submitSupplierRegistration(
             : [],
           isManufacturer: data.isManufacturer,
           isDistributor: data.isDistributor,
+          distributorName: data.distributorName || null,
           monthlyCapacity: data.monthlyCapacity || null,
           minimumOrderNotes: data.minimumOrderNotes || null,
           exportExperience: data.exportExperience || null,
@@ -207,6 +240,17 @@ export async function submitSupplierRegistration(
             categoryId: category.id,
           })),
           skipDuplicates: true,
+        })
+      }
+
+      /**
+       * Each ticked certificate becomes a record an approver can verify and
+       * date. The certificate document arrives as an ordinary upload, so the
+       * row starts without a file attached.
+       */
+      if (certifications.length > 0) {
+        await tx.supplierCertification.createMany({
+          data: certifications.map((name) => ({ supplierId: profile.id, name })),
         })
       }
 

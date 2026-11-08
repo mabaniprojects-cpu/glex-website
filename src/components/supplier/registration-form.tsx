@@ -18,11 +18,14 @@ import {
 import { FileUpload, type UploadedFile } from '@/components/ui/file-upload'
 import { submitSupplierRegistration } from '@/lib/actions/supplier-registration-actions'
 import {
+  CERTIFICATION_CHOICES,
   CONTACT_KINDS,
+  CR_NUMBER_DIGITS,
   INCOTERM_CHOICES,
   STEP_FIELDS,
   SUPPLIER_KINDS,
   supplierRegistrationSchema,
+  VAT_NUMBER_DIGITS,
   type SupplierRegistrationInput,
 } from '@/lib/validation/supplier-registration'
 import { cn } from '@/lib/utils'
@@ -57,6 +60,19 @@ export function SupplierRegistrationForm({
   const [submitted, setSubmitted] = React.useState(false)
   const [draftSaved, setDraftSaved] = React.useState(false)
   const [formError, setFormError] = React.useState<string | null>(null)
+  const errorRef = React.useRef<HTMLParagraphElement>(null)
+
+  /**
+   * Bring a refusal into view.
+   *
+   * The message sits above a button row that is usually the only thing on
+   * screen when it is clicked, so on a long step it can appear well outside
+   * the viewport — and a form that declines out of sight is indistinguishable
+   * from one that is broken.
+   */
+  React.useEffect(() => {
+    if (formError) errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, [formError])
 
   const form = useForm<SupplierRegistrationInput>({
     resolver: zodResolver(supplierRegistrationSchema),
@@ -82,6 +98,8 @@ export function SupplierRegistrationForm({
       brands: '',
       isManufacturer: true,
       isDistributor: false,
+      distributorName: '',
+      certifications: [],
       monthlyCapacity: '',
       minimumOrderNotes: '',
       exportExperience: '',
@@ -122,6 +140,8 @@ export function SupplierRegistrationForm({
    */
   const selectedCategories = useWatch({ control, name: 'categorySlugs' })
   const selectedIncoterms = useWatch({ control, name: 'availableIncoterms' })
+  const selectedCertifications = useWatch({ control, name: 'certifications' })
+  const isDistributor = useWatch({ control, name: 'isDistributor' })
 
   // Restore a saved draft. Credentials are never persisted — see saveDraft.
   React.useEffect(() => {
@@ -185,15 +205,36 @@ export function SupplierRegistrationForm({
     )
   }
 
+  /**
+   * Say what is wrong when the form refuses to submit.
+   *
+   * Only the current step is mounted, so an error raised on any earlier one
+   * has nowhere to render: `handleSubmit` quietly declines and the button
+   * appears dead. Each field belongs to exactly one step, so the first step
+   * holding an error is the one to return to — where the message does have
+   * somewhere to appear.
+   */
+  function onInvalid(invalid: Record<string, unknown>) {
+    const firstBadStep = STEP_FIELDS.findIndex((fields) => fields.some((field) => field in invalid))
+
+    if (firstBadStep < 0) {
+      setFormError(common('errorBody'))
+      return
+    }
+
+    setFormError(t('fixStep', { step: firstBadStep + 1 }))
+    setStep(firstBadStep)
+  }
+
   if (submitted) {
     return (
       <div
         role="status"
-        className="rounded-xl border border-glex-green-200 bg-glex-green-50 p-8 text-center"
+        className="border-glex-green-200 bg-glex-green-50 rounded-xl border p-8 text-center"
       >
-        <CheckCircle2 className="mx-auto size-10 text-glex-green-600" aria-hidden="true" />
+        <CheckCircle2 className="text-glex-green-600 mx-auto size-10" aria-hidden="true" />
         <h2 className="mt-4 text-xl font-bold">{t('submittedTitle')}</h2>
-        <p className="mt-3 text-glex-green-800/80">{t('submittedBody')}</p>
+        <p className="text-glex-green-800/80 mt-3">{t('submittedBody')}</p>
         <div className="mt-6">
           <Button asChild variant="outline">
             <Link href="/login">{auth('loginAction')}</Link>
@@ -203,16 +244,18 @@ export function SupplierRegistrationForm({
     )
   }
 
-
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-8">
+    <form onSubmit={handleSubmit(onSubmit, onInvalid)} noValidate className="space-y-8">
       <div aria-hidden="true" className="hidden">
         <label htmlFor="sup-website-hp">Website</label>
         <input id="sup-website-hp" tabIndex={-1} autoComplete="off" {...register('website_hp')} />
       </div>
 
       {/* Step indicator */}
-      <ol className="flex flex-wrap gap-2" aria-label={t('stepOf', { current: step + 1, total: 6 })}>
+      <ol
+        className="flex flex-wrap gap-2"
+        aria-label={t('stepOf', { current: step + 1, total: 6 })}
+      >
         {STEP_KEYS.map((key, index) => {
           const state = index === step ? 'current' : index < step ? 'done' : 'todo'
           return (
@@ -225,8 +268,9 @@ export function SupplierRegistrationForm({
                 className={cn(
                   'inline-flex h-9 items-center gap-2 rounded-full px-3 text-xs font-semibold transition-colors',
                   state === 'current' && 'bg-glex-green-600 text-white',
-                  state === 'done' && 'bg-glex-green-50 text-glex-green-700 hover:bg-glex-green-100',
-                  state === 'todo' && 'border border-border-subtle text-glex-green-800/50'
+                  state === 'done' &&
+                    'bg-glex-green-50 text-glex-green-700 hover:bg-glex-green-100',
+                  state === 'todo' && 'border-border-subtle text-glex-green-800/50 border'
                 )}
               >
                 <span dir="ltr">{index + 1}</span>
@@ -237,7 +281,7 @@ export function SupplierRegistrationForm({
         })}
       </ol>
 
-      <p className="text-sm font-medium text-glex-green-800/70">
+      <p className="text-glex-green-800/70 text-sm font-medium">
         {t('stepOf', { current: step + 1, total: 6 })}
       </p>
 
@@ -263,7 +307,12 @@ export function SupplierRegistrationForm({
 
           <Field error={errors.password ? v('passwordWeak') : undefined}>
             <FieldLabel required>{auth('password')}</FieldLabel>
-            <FieldInput type="password" autoComplete="new-password" dir="ltr" {...register('password')} />
+            <FieldInput
+              type="password"
+              autoComplete="new-password"
+              dir="ltr"
+              {...register('password')}
+            />
             <FieldDescription>{auth('passwordHint')}</FieldDescription>
           </Field>
 
@@ -302,11 +351,7 @@ export function SupplierRegistrationForm({
             <FieldSelect {...register('kind')}>
               {SUPPLIER_KINDS.map((kind) => (
                 <option key={kind} value={kind}>
-                  {kind === 'SUPPLIER'
-                    ? t('registerTitle').split(' ')[0]
-                    : kind === 'DISTRIBUTOR'
-                      ? contact('type.SUPPLIER_REGISTRATION')
-                      : common('yes')}
+                  {t(`kindOption.${kind}`)}
                 </option>
               ))}
             </FieldSelect>
@@ -332,14 +377,16 @@ export function SupplierRegistrationForm({
             <FieldInput type="url" dir="ltr" placeholder="https://" {...register('website')} />
           </Field>
 
-          <Field>
+          {/* `inputMode` raises the numeric keypad on a phone; the length
+              itself is enforced by the schema, and only for Saudi companies. */}
+          <Field error={errors.crNumber ? v('digits', { count: CR_NUMBER_DIGITS }) : undefined}>
             <FieldLabel>{t('crNumber')}</FieldLabel>
-            <FieldInput dir="ltr" {...register('crNumber')} />
+            <FieldInput dir="ltr" inputMode="numeric" {...register('crNumber')} />
           </Field>
 
-          <Field>
+          <Field error={errors.vatNumber ? v('digits', { count: VAT_NUMBER_DIGITS }) : undefined}>
             <FieldLabel>{t('vatNumber')}</FieldLabel>
-            <FieldInput dir="ltr" {...register('vatNumber')} />
+            <FieldInput dir="ltr" inputMode="numeric" {...register('vatNumber')} />
           </Field>
 
           <Field>
@@ -369,8 +416,8 @@ export function SupplierRegistrationForm({
             at nothing would be worse than this heading.
           */}
           <div className="sm:col-span-2">
-            <p className="text-sm font-medium text-glex-green-900">{t('companyLogo')}</p>
-            <p className="mt-1 mb-3 text-sm text-glex-green-800/70">{t('companyLogoHint')}</p>
+            <p className="text-glex-green-900 text-sm font-medium">{t('companyLogo')}</p>
+            <p className="text-glex-green-800/70 mt-1 mb-3 text-sm">{t('companyLogoHint')}</p>
             <FileUpload
               value={logo}
               onChange={setLogo}
@@ -386,7 +433,7 @@ export function SupplierRegistrationForm({
       {step === 2 ? (
         <section aria-label={t('stepCapabilities')} className="space-y-6">
           <fieldset>
-            <legend className="text-sm font-medium text-glex-green-900">
+            <legend className="text-glex-green-900 text-sm font-medium">
               {t('productCategories')}
             </legend>
             <ul className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -407,7 +454,7 @@ export function SupplierRegistrationForm({
                           { shouldDirty: true }
                         )
                       }
-                      className="size-4 shrink-0 rounded border-border-subtle accent-glex-green-600"
+                      className="border-border-subtle accent-glex-green-600 size-4 shrink-0 rounded"
                     />
                     <label htmlFor={`cat-${category.slug}`} className="text-sm">
                       {category.name}
@@ -419,7 +466,7 @@ export function SupplierRegistrationForm({
           </fieldset>
 
           <fieldset>
-            <legend className="text-sm font-medium text-glex-green-900">
+            <legend className="text-glex-green-900 text-sm font-medium">
               {t('manufacturingOrDistribution')}
             </legend>
             <div className="mt-3 flex flex-wrap gap-5">
@@ -427,22 +474,22 @@ export function SupplierRegistrationForm({
                 <input
                   id="is-manufacturer"
                   type="checkbox"
-                  className="size-4 rounded border-border-subtle accent-glex-green-600"
+                  className="border-border-subtle accent-glex-green-600 size-4 rounded"
                   {...register('isManufacturer')}
                 />
                 <label htmlFor="is-manufacturer" className="text-sm">
-                  {t('stepCapabilities')}
+                  {t('isManufacturer')}
                 </label>
               </div>
               <div className="flex items-center gap-2.5">
                 <input
                   id="is-distributor"
                   type="checkbox"
-                  className="size-4 rounded border-border-subtle accent-glex-green-600"
+                  className="border-border-subtle accent-glex-green-600 size-4 rounded"
                   {...register('isDistributor')}
                 />
                 <label htmlFor="is-distributor" className="text-sm">
-                  {contact('type.SUPPLIER_REGISTRATION')}
+                  {t('isDistributor')}
                 </label>
               </div>
             </div>
@@ -451,10 +498,21 @@ export function SupplierRegistrationForm({
                 {v('selectOne')}
               </p>
             ) : null}
+
+            {/* Ticking both is how a company says it manufactures and
+                distributes; a manufacturer who sells through someone else
+                names them here. */}
+            {isDistributor ? (
+              <Field className="mt-4">
+                <FieldLabel>{t('distributorName')}</FieldLabel>
+                <FieldInput {...register('distributorName')} />
+                <FieldDescription>{t('distributorNameHelp')}</FieldDescription>
+              </Field>
+            ) : null}
           </fieldset>
 
           <fieldset>
-            <legend className="text-sm font-medium text-glex-green-900">
+            <legend className="text-glex-green-900 text-sm font-medium">
               {t('availableIncoterms')}
             </legend>
             <ul className="mt-3 flex flex-wrap gap-3">
@@ -475,7 +533,7 @@ export function SupplierRegistrationForm({
                           { shouldDirty: true }
                         )
                       }
-                      className="size-4 rounded border-border-subtle accent-glex-green-600"
+                      className="border-border-subtle accent-glex-green-600 size-4 rounded"
                     />
                     <label htmlFor={`inco-${code}`} className="text-sm" dir="ltr">
                       {code}
@@ -484,6 +542,44 @@ export function SupplierRegistrationForm({
                 )
               })}
             </ul>
+          </fieldset>
+
+          {/* The certificates a Saudi export shipment is actually asked for.
+              Ticking one records it against the supplier; the certificate
+              document itself is uploaded a step later. */}
+          <fieldset>
+            <legend className="text-glex-green-900 text-sm font-medium">
+              {t('certifications')}
+            </legend>
+            <ul className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {CERTIFICATION_CHOICES.map((name) => {
+                const checked = selectedCertifications.includes(name)
+                const id = `cert-${name.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`
+                return (
+                  <li key={name} className="flex items-center gap-2">
+                    <input
+                      id={id}
+                      type="checkbox"
+                      checked={checked}
+                      onChange={(event) =>
+                        setValue(
+                          'certifications',
+                          event.target.checked
+                            ? [...selectedCertifications, name]
+                            : selectedCertifications.filter((value) => value !== name),
+                          { shouldDirty: true }
+                        )
+                      }
+                      className="border-border-subtle accent-glex-green-600 size-4 shrink-0 rounded"
+                    />
+                    <label htmlFor={id} className="text-sm" dir="ltr">
+                      {name}
+                    </label>
+                  </li>
+                )
+              })}
+            </ul>
+            <p className="text-glex-green-800/70 mt-3 text-sm">{t('certificationsHelp')}</p>
           </fieldset>
 
           <div className="grid gap-5 sm:grid-cols-2">
@@ -533,10 +629,10 @@ export function SupplierRegistrationForm({
 
           <div
             role="note"
-            className="mt-6 flex gap-3 rounded-xl border border-glex-gold-300 bg-glex-gold-50 p-5"
+            className="border-glex-gold-300 bg-glex-gold-50 mt-6 flex gap-3 rounded-xl border p-5"
           >
-            <Info className="mt-0.5 size-5 shrink-0 text-glex-gold-700" aria-hidden="true" />
-            <p className="text-sm leading-relaxed text-glex-green-900">{t('noBankingNotice')}</p>
+            <Info className="text-glex-gold-700 mt-0.5 size-5 shrink-0" aria-hidden="true" />
+            <p className="text-glex-green-900 text-sm leading-relaxed">{t('noBankingNotice')}</p>
           </div>
         </section>
       ) : null}
@@ -545,7 +641,7 @@ export function SupplierRegistrationForm({
       {step === 4 ? (
         <section aria-label={t('stepContacts')} className="space-y-6">
           {CONTACT_KINDS.map((kind, index) => (
-            <fieldset key={kind} className="rounded-xl border border-border-subtle p-5">
+            <fieldset key={kind} className="border-border-subtle rounded-xl border p-5">
               <legend className="px-2 text-sm font-semibold">{kind}</legend>
               <div className="grid gap-4 sm:grid-cols-2">
                 <input type="hidden" {...register(`contacts.${index}.kind` as const)} />
@@ -557,12 +653,20 @@ export function SupplierRegistrationForm({
 
                 <Field error={errors.contacts?.[index]?.email ? v('email') : undefined}>
                   <FieldLabel>{auth('email')}</FieldLabel>
-                  <FieldInput type="email" dir="ltr" {...register(`contacts.${index}.email` as const)} />
+                  <FieldInput
+                    type="email"
+                    dir="ltr"
+                    {...register(`contacts.${index}.email` as const)}
+                  />
                 </Field>
 
                 <Field>
                   <FieldLabel>{auth('phone')}</FieldLabel>
-                  <FieldInput type="tel" dir="ltr" {...register(`contacts.${index}.phone` as const)} />
+                  <FieldInput
+                    type="tel"
+                    dir="ltr"
+                    {...register(`contacts.${index}.phone` as const)}
+                  />
                 </Field>
 
                 <Field>
@@ -578,14 +682,14 @@ export function SupplierRegistrationForm({
       {/* --- Step 6: declaration --- */}
       {step === 5 ? (
         <section aria-label={t('stepDeclaration')} className="space-y-5">
-          <div className="flex items-start gap-3 rounded-xl border border-border-subtle p-5">
+          <div className="border-border-subtle flex items-start gap-3 rounded-xl border p-5">
             <input
               id="declaration"
               type="checkbox"
-              className="mt-1 size-4 shrink-0 rounded border-border-subtle accent-glex-green-600"
+              className="border-border-subtle accent-glex-green-600 mt-1 size-4 shrink-0 rounded"
               {...register('declaration')}
             />
-            <label htmlFor="declaration" className="text-sm leading-relaxed text-glex-green-800/85">
+            <label htmlFor="declaration" className="text-glex-green-800/85 text-sm leading-relaxed">
               {t('declarationText')}
               <span className="ms-1 text-red-600" aria-hidden="true">
                 *
@@ -600,25 +704,29 @@ export function SupplierRegistrationForm({
 
           <div
             role="note"
-            className="flex gap-3 rounded-xl border border-glex-gold-300 bg-glex-gold-50 p-5"
+            className="border-glex-gold-300 bg-glex-gold-50 flex gap-3 rounded-xl border p-5"
           >
-            <Info className="mt-0.5 size-5 shrink-0 text-glex-gold-700" aria-hidden="true" />
-            <p className="text-sm leading-relaxed text-glex-green-900">{t('noBankingNotice')}</p>
+            <Info className="text-glex-gold-700 mt-0.5 size-5 shrink-0" aria-hidden="true" />
+            <p className="text-glex-green-900 text-sm leading-relaxed">{t('noBankingNotice')}</p>
           </div>
         </section>
       ) : null}
 
       {formError ? (
-        <p role="alert" className="rounded-lg bg-red-50 p-4 text-sm font-medium text-red-800">
+        <p
+          ref={errorRef}
+          role="alert"
+          className="rounded-lg bg-red-50 p-4 text-sm font-medium text-red-800"
+        >
           {formError}
         </p>
       ) : null}
 
       {/* Navigation */}
-      <div className="flex flex-wrap items-center gap-3 border-t border-border-subtle pt-6">
+      <div className="border-border-subtle flex flex-wrap items-center gap-3 border-t pt-6">
         {step > 0 ? (
           <Button type="button" variant="outline" onClick={() => setStep((s) => s - 1)}>
-            <ChevronLeft className="size-4 rtl-flip" aria-hidden="true" />
+            <ChevronLeft className="rtl-flip size-4" aria-hidden="true" />
             {common('previous')}
           </Button>
         ) : null}
@@ -628,11 +736,11 @@ export function SupplierRegistrationForm({
         {step < STEP_KEYS.length - 1 ? (
           <Button key="next" type="button" variant="primary" onClick={next}>
             {common('next')}
-            <ChevronRight className="size-4 rtl-flip" aria-hidden="true" />
+            <ChevronRight className="rtl-flip size-4" aria-hidden="true" />
           </Button>
         ) : (
           <Button key="submit" type="submit" variant="gold" size="lg" disabled={isSubmitting}>
-            <Send className="size-4 rtl-flip" aria-hidden="true" />
+            <Send className="rtl-flip size-4" aria-hidden="true" />
             {isSubmitting ? common('loading') : t('submitApplication')}
           </Button>
         )}
@@ -643,7 +751,7 @@ export function SupplierRegistrationForm({
       </div>
 
       {draftSaved ? (
-        <p role="status" className="text-sm font-medium text-glex-green-700">
+        <p role="status" className="text-glex-green-700 text-sm font-medium">
           {t('savedDraft')}
         </p>
       ) : null}

@@ -14,6 +14,47 @@ import { isStrongPassword } from '@/lib/password'
 
 const optionalText = (max: number) => z.string().trim().max(max).optional().or(z.literal(''))
 
+/**
+ * Quality certificates a Saudi exporter is routinely asked to evidence at
+ * customs. Standards keep their published names in every language, so these
+ * are constants rather than message keys; anything else goes in the
+ * free-text quality-control notes.
+ */
+export const CERTIFICATION_CHOICES = [
+  'SASO / SABER',
+  'Saudi Quality Mark',
+  'G-Mark (Gulf Conformity)',
+  'ISO 9001',
+  'ISO 14001',
+  'ISO 45001',
+  'ISO 50001',
+  'Halal',
+] as const
+
+/**
+ * Saudi commercial registration numbers are ten digits and VAT numbers are
+ * fifteen. The rule is applied only to Saudi companies: elsewhere the
+ * numbering follows that country's own rules, and a valid German VAT number
+ * such as "DE123456789" must not be refused.
+ */
+const SAUDI_COUNTRY_NAMES = new Set([
+  'saudi arabia',
+  'saudi',
+  'ksa',
+  'sa',
+  'kingdom of saudi arabia',
+  'المملكة العربية السعودية',
+  'السعودية',
+])
+
+export function isSaudiCountry(country: string): boolean {
+  return SAUDI_COUNTRY_NAMES.has(country.trim().toLowerCase().replace(/\s+/g, ' '))
+}
+
+/** Required digit counts, shared with the form so it can name the number. */
+export const CR_NUMBER_DIGITS = 10
+export const VAT_NUMBER_DIGITS = 15
+
 export const supplierContactSchema = z.object({
   kind: z.enum(['SALES', 'EXPORT', 'TECHNICAL', 'LOGISTICS']),
   name: optionalText(120),
@@ -53,6 +94,8 @@ export const supplierRegistrationSchema = z
     brands: optionalText(500),
     isManufacturer: z.boolean(),
     isDistributor: z.boolean(),
+    distributorName: optionalText(160),
+    certifications: z.array(z.string().max(80)).max(20),
     monthlyCapacity: optionalText(200),
     minimumOrderNotes: optionalText(300),
     exportExperience: optionalText(500),
@@ -88,6 +131,24 @@ export const supplierRegistrationSchema = z
   .refine((data) => data.isManufacturer || data.isDistributor, {
     message: 'selectOne',
     path: ['isManufacturer'],
+  })
+  .superRefine((data, ctx) => {
+    if (!isSaudiCountry(data.country)) return
+
+    const rules = [
+      { field: 'crNumber', value: data.crNumber, digits: CR_NUMBER_DIGITS },
+      { field: 'vatNumber', value: data.vatNumber, digits: VAT_NUMBER_DIGITS },
+    ] as const
+
+    for (const rule of rules) {
+      // Both fields stay optional; it is only a value that is present and
+      // the wrong length that is refused.
+      if (!rule.value) continue
+      const trimmed = rule.value.trim()
+      if (trimmed.length === rule.digits && /^[0-9]+$/.test(trimmed)) continue
+
+      ctx.addIssue({ code: 'custom', path: [rule.field], message: 'digits' })
+    }
   })
 
 export type SupplierRegistrationInput = z.infer<typeof supplierRegistrationSchema>
@@ -137,6 +198,8 @@ export const STEP_FIELDS = [
     'brands',
     'isManufacturer',
     'isDistributor',
+    'distributorName',
+    'certifications',
     'monthlyCapacity',
     'minimumOrderNotes',
     'exportExperience',
