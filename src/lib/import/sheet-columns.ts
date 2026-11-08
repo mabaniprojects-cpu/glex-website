@@ -137,6 +137,16 @@ export const PRODUCT_COLUMNS: readonly ColumnSpec[] = [
     example: 'CBL240-XLA',
   },
   {
+    header: 'Your product code',
+    help: 'Your own part number for this product, exactly as it appears in your catalogue or price list. This is what we will cite on purchase orders, and it is how we match your next sheet to this one.',
+    maps: 'SupplierProductCode.code — the match key before a GLEX Code is issued',
+    width: 18,
+    // Beside the GLEX Code, because the two of them are the row's identity
+    // and everything after is description. Not required: a supplier with no
+    // part numbering should not be blocked, and the name still matches.
+    example: '21010002',
+  },
+  {
     header: 'Product name (English)',
     help: 'The name a buyer would recognise. Include grade or standard where it distinguishes the product.',
     maps: 'Product.name',

@@ -59,6 +59,10 @@ function describe(entry: BahraRow): string {
 rows.forEach((entry, index) => {
   const row = sheet.getRow(4 + index)
 
+  // Bahra's own code, in the column that now exists for it. This is the
+  // row's identity: 2,531 of these are unique where the composed names
+  // collapse to 1,356, so it is what an import matches on.
+  put(row, 'Your product code', entry.code)
   put(row, 'Product name (English)', describe(entry))
   put(row, 'Category', 'Electrical & MEP')
   put(row, 'Brand', 'Bahra Cables')
@@ -77,7 +81,6 @@ rows.forEach((entry, index) => {
   }
 
   const notes = [
-    `Bahra code ${entry.code}`,
     entry.weightKgKm !== null ? `${entry.weightKgKm} kg/km` : 'weight not readable from catalogue',
     entry.drumMetres ? `standard drum ${entry.drumMetres} m` : '',
     `${entry.catalogue} p${entry.page}`,

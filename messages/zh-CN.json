@@ -1157,6 +1157,8 @@
       "willSkip": "跳过的行",
       "pricesAdded": "已记录价格",
       "packings": "包装信息",
+      "supplierCodes": "已记录产品编号",
+      "andMore": "另有 {count} 行无需处理，未在此列出。",
       "confirm": "导入这些行",
       "importing": "正在导入…",
       "done": "已导入。新产品在您发布前保持隐藏。",

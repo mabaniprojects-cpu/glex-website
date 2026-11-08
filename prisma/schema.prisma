@@ -566,6 +566,7 @@ model SupplierProfile {
   contacts       SupplierContact[]
   products       Product[]
   prices         ProductPrice[]
+  productCodes   SupplierProductCode[]
   sheetMappings  SupplierSheetMapping[]
   opportunities  SourcingOpportunity[]
 
@@ -690,32 +691,26 @@ model Product {
 
   /**
    * GLEX's own catalogue number, shown to buyers.
-   *
    * Format `TYP` + size + `-MAT`, e.g. PIP012630-UPA: type first so a
    * listing groups by product kind, size encoded numerically so it sorts
    * within the type.
-   *
    * Three rules, each one load-bearing:
-   *
-   *   It names no supplier. GLEX is the face of this catalogue and the
-   *   source behind it is commercial information; the same cable may also
-   *   come from a second supplier later, which `ProductPrice.supplierId`
-   *   already allows.
-   *
-   *   It is assigned once and never recalculated. The variant letter is
-   *   positional, so regenerating a catalogue with one product inserted
-   *   would shift every letter after it — and this code is printed on
-   *   quotations and typed back to us months later.
-   *
-   *   Nothing is published without one. Enforced in `setProductVisibility`
-   *   rather than trusted to habit.
-   *
+   * It names no supplier. GLEX is the face of this catalogue and the
+   * source behind it is commercial information; the same cable may also
+   * come from a second supplier later, which `ProductPrice.supplierId`
+   * already allows.
+   * It is assigned once and never recalculated. The variant letter is
+   * positional, so regenerating a catalogue with one product inserted
+   * would shift every letter after it — and this code is printed on
+   * quotations and typed back to us months later.
+   * Nothing is published without one. Enforced in `setProductVisibility`
+   * rather than trusted to habit.
    * Nullable because a product exists from the moment it is imported, and
    * is coded before it is published rather than before it is created.
    */
   glexCode String? @unique
 
-  name String
+  name             String
   shortDescription String?         @db.Text
   description      String?         @db.Text
   specifications   Json? // [{ key, value, unit }]
@@ -737,15 +732,16 @@ model Product {
   categoryId String  @db.Uuid
   supplierId String? @db.Uuid
 
-  category     Category             @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  supplier     SupplierProfile?     @relation(fields: [supplierId], references: [id], onDelete: SetNull)
-  images       ProductImage[]
-  documents    ProductDocument[]
-  translations ProductTranslation[]
-  savedBy      SavedProduct[]
-  rfqItems     RFQItem[]
-  prices       ProductPrice[]
-  packings     ProductPacking[]
+  category      Category              @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  supplier      SupplierProfile?      @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  images        ProductImage[]
+  documents     ProductDocument[]
+  translations  ProductTranslation[]
+  savedBy       SavedProduct[]
+  rfqItems      RFQItem[]
+  prices        ProductPrice[]
+  packings      ProductPacking[]
+  supplierCodes SupplierProductCode[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -758,6 +754,59 @@ model Product {
   @@index([countryOfOrigin])
   @@index([isSaudiMade])
   @@index([deletedAt])
+}
+
+/**
+ * A supplier's own part number for a product.
+ * A table rather than a column on `Product`, for the same reason
+ * `ProductPrice` is one: the product is supplier-neutral and the same cable
+ * may later come from a second supplier with a part number of its own. One
+ * column could hold only the first of them.
+ * It earns its place three ways.
+ * It is the only reliable identity a returning sheet has before GLEX has
+ * issued a code. Matching on the product name is fragile by design -
+ * strict enough that "Rebar 16mm" and "Rebar 18mm" stay apart, which
+ * means a supplier who rewords a description gets a duplicate. Bahra's
+ * catalogues made the cost concrete: 2,531 of 2,544 rows carried a
+ * unique Bahra code while the composed names collapsed to 482, because
+ * core count, screen and insulation compound are not all recoverable
+ * from a catalogue's text layer.
+ * It is what GLEX quotes and orders against. A purchase order cites the
+ * manufacturer's part number; a buyer checking a delivery note has
+ * nothing else to match on.
+ * It survives the supplier renaming their own product, which the name
+ * cannot.
+ * Unique per supplier, not globally: the same string from two suppliers is
+ * two different things, while one supplier cannot use one code for two
+ * products. Internal - a supplier's part numbering is their commercial
+ * information and the public catalogue shows GLEX's code instead.
+ */
+model SupplierProductCode {
+  id         String @id @default(uuid()) @db.Uuid
+  productId  String @db.Uuid
+  supplierId String @db.Uuid
+
+  /**
+   * As the supplier writes it, trimmed only. Case is preserved for display
+   * and ignored when matching, because people retype these.
+   */
+  code String
+
+  /**
+   * The sheet it was read from, where there was one.
+   */
+  sourceFileId String? @db.Uuid
+
+  product  Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  supplier SupplierProfile @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  file     StoredFile?     @relation(fields: [sourceFileId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // The match key an import looks up, and the guarantee that makes it one.
+  @@unique([supplierId, code])
+  @@index([productId])
 }
 
 /**
@@ -877,16 +926,13 @@ model ProductPacking {
 
 /**
  * How one supplier's own spreadsheet maps onto the GLEX data sheet.
- *
  * Suppliers do not fill in our template; they send the price list they
  * already keep, with their own column names, often in Arabic, and they send
  * the same shape every time. Mapping it once and remembering the result is
  * what turns the second file and every file after it into one click.
- *
  * `columns` is `{ "<GLEX column header>": "<their column header>" }`, keyed
  * by the header text rather than a position, because suppliers insert
  * columns far more often than they reorder them.
- *
  * One mapping per supplier for now. A supplier who sends two shapes — a
  * product list and a separate price list — needs more than one, which is why
  * this is a table rather than a column on SupplierProfile.
@@ -895,14 +941,20 @@ model SupplierSheetMapping {
   id         String @id @default(uuid()) @db.Uuid
   supplierId String @db.Uuid
 
-  /** Which worksheet the data was found on. */
+  /**
+   * Which worksheet the data was found on.
+   */
   sheetName String
-  /** Which row carried the headers; rarely row 1 in a real price list. */
+  /**
+   * Which row carried the headers; rarely row 1 in a real price list.
+   */
   headerRow Int    @default(1)
 
   columns Json
 
-  /** Lets a stale mapping be spotted when a supplier changes their format. */
+  /**
+   * Lets a stale mapping be spotted when a supplier changes their format.
+   */
   lastUsedAt DateTime?
 
   supplier SupplierProfile @relation(fields: [supplierId], references: [id], onDelete: Cascade)
@@ -1346,15 +1398,16 @@ model StoredFile {
 
   organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
 
-  supplierDocuments  SupplierDocument[]
-  certifications     SupplierCertification[]
-  productDocuments   ProductDocument[]
-  rfqAttachments     RFQAttachment[]
-  rfqWorkflowEntries RFQWorkflowEntry[]
-  quotations         Quotation[]
-  shipmentDocuments  ShipmentDocument[]
-  inquiries          ContactInquiry[]
-  productPrices      ProductPrice[]
+  supplierDocuments    SupplierDocument[]
+  certifications       SupplierCertification[]
+  productDocuments     ProductDocument[]
+  rfqAttachments       RFQAttachment[]
+  rfqWorkflowEntries   RFQWorkflowEntry[]
+  quotations           Quotation[]
+  shipmentDocuments    ShipmentDocument[]
+  inquiries            ContactInquiry[]
+  productPrices        ProductPrice[]
+  supplierProductCodes SupplierProductCode[]
 
   createdAt DateTime  @default(now())
   deletedAt DateTime?

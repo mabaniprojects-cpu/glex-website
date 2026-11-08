@@ -27,6 +27,14 @@ export type ImportContext = {
    * find it wherever it sits.
    */
   existingByCode: Map<string, ExistingProduct>
+  /**
+   * This supplier's products by their OWN part number, normalised.
+   *
+   * Scoped to the supplier, unlike `existingByCode`: a GLEX code identifies
+   * a product catalogue-wide, but "21010002" means something only alongside
+   * the supplier who issued it.
+   */
+  existingBySupplierCode: Map<string, ExistingProduct>
   supplierId: string
 }
 
@@ -42,10 +50,13 @@ export type ExistingProduct = {
     unit: string
   } | null
   hasDefaultPacking: boolean
+  /** Part numbers this supplier already has recorded against it. */
+  supplierCodes: string[]
 }
 
 export type RowAction = 'create' | 'update' | 'skip'
 export type PriceAction = 'none' | 'first' | 'supersede' | 'unchanged'
+export type SupplierCodeAction = 'none' | 'record' | 'unchanged'
 
 export type RowPlan = {
   rowNumber: number
@@ -59,6 +70,7 @@ export type RowPlan = {
   changes: string[]
   priceAction: PriceAction
   packingAction: 'none' | 'create' | 'replace'
+  supplierCodeAction: SupplierCodeAction
   issues: Issue[]
 }
 
@@ -71,6 +83,7 @@ export type ImportPlan = {
     pricesAdded: number
     pricesSuperseded: number
     packings: number
+    supplierCodes: number
   }
 }
 
@@ -86,31 +99,78 @@ export function matchKey(name: string): string {
   return name.trim().toLowerCase().replace(/\s+/g, ' ')
 }
 
+/**
+ * How two spellings of a supplier's part number are judged to be the same.
+ *
+ * Case and whitespace only, for the same reason `matchKey` stops there.
+ * Punctuation is deliberately significant: stripping it would merge
+ * "ABC-123" with "ABC123", and in a part-numbering scheme those are as
+ * likely to be two products as one. People retype these, so case and
+ * stray spaces are forgiven; nothing else is guessed at.
+ */
+export function supplierCodeKey(code: string): string {
+  return code.trim().toUpperCase().replace(/\s+/g, ' ')
+}
+
 export function planImport(rows: ParsedRow[], context: ImportContext): ImportPlan {
   const plans: RowPlan[] = []
 
   // A sheet listing the same product twice would otherwise create it, then
   // update it, within one import — and the second row would silently win.
+  //
+  // Keyed on the strongest identity each row carries, not on the name.
+  // Bahra's catalogues are why: 2,544 cables composed to 482 distinct names,
+  // because core count, screen and insulation compound are not all
+  // recoverable from a catalogue's text layer. Deduplicating those by name
+  // discarded 2,062 genuinely different products. Each still has its own
+  // part number, so that is what identity is taken from where it exists.
   const seenInThisFile = new Map<string, number>()
+  /** Separately, for the warning: a name reused tells buyers nothing apart. */
+  const namesInThisFile = new Map<string, number>()
 
   for (const row of rows) {
     const issues = [...row.issues]
     const blocked = issues.some((issue) => issue.level === 'error')
     const key = matchKey(row.product.name)
+    const supplierCode = row.product.supplierCode?.trim()
+      ? supplierCodeKey(row.product.supplierCode)
+      : null
 
     if (blocked) {
       plans.push(skip(row, 'The row has an error that has to be fixed first.', issues))
       continue
     }
 
-    const duplicateOf = seenInThisFile.get(key)
+    const identity = supplierCode
+      ? { key: `code:${supplierCode}`, label: `product code ${supplierCode}` }
+      : { key: `name:${key}`, label: 'product name' }
+
+    const duplicateOf = seenInThisFile.get(identity.key)
     if (duplicateOf !== undefined) {
       plans.push(
-        skip(row, `Same product name as row ${duplicateOf}. Only the first is imported.`, issues)
+        skip(
+          row,
+          `Same ${identity.label} as row ${duplicateOf}. Only the first is imported.`,
+          issues
+        )
       )
       continue
     }
-    seenInThisFile.set(key, row.rowNumber)
+    seenInThisFile.set(identity.key, row.rowNumber)
+
+    // Two different products sharing a name import fine — they are told
+    // apart by their codes — but a buyer reading the catalogue cannot tell
+    // them apart, so say so rather than letting it through silently.
+    const sameName = namesInThisFile.get(key)
+    if (sameName !== undefined) {
+      issues.push({
+        level: 'warning',
+        column: 'Product name (English)',
+        message: `Row ${sameName} has this name too. Both import because their product codes differ, but buyers will see two identical names — worth distinguishing.`,
+      })
+    } else {
+      namesInThisFile.set(key, row.rowNumber)
+    }
 
     const categoryId = context.categoryIdByName.get(row.product.categoryName)
     if (!categoryId) {
@@ -125,12 +185,13 @@ export function planImport(rows: ParsedRow[], context: ImportContext): ImportPla
     }
 
     /**
-     * By code first, by name only when there is none.
+     * GLEX code, then the supplier's own code, then the name.
      *
-     * A code is exact: the sheet was sent out carrying it, and a supplier
-     * who rewords a description still matches. Name matching is the
-     * fallback for products we have never coded, and it is the fragile
-     * one — "Rebar 16mm" and "Rebar 18mm" are one character apart.
+     * Both codes are exact. Ours comes first because we issued it and it
+     * survives the product moving between suppliers; theirs is what
+     * identifies a row before we have issued one, which is the usual case
+     * on a first sheet. The name is the last resort and the fragile one —
+     * "Rebar 16mm" and "Rebar 18mm" are one character apart.
      */
     const code = row.product.glexCode?.trim().toUpperCase()
     const byCode = code ? context.existingByCode.get(code) : undefined
@@ -139,12 +200,20 @@ export function planImport(rows: ParsedRow[], context: ImportContext): ImportPla
       issues.push({
         level: 'warning',
         column: 'GLEX Code',
-        message: `No product has the code ${code}. It may have been typed over, or belong to another catalogue; matching on the name instead.`,
+        message: `No product has the code ${code}. It may have been typed over, or belong to another catalogue; matching on the product code or name instead.`,
       })
     }
 
-    const existing = byCode ?? context.existingByName.get(key)
-    plans.push(existing ? update(row, existing, issues) : create(row, issues))
+    const bySupplierCode = supplierCode
+      ? context.existingBySupplierCode.get(supplierCode)
+      : undefined
+
+    const existing = byCode ?? bySupplierCode ?? context.existingByName.get(key)
+    plans.push(
+      existing
+        ? update(row, existing, issues, supplierCode)
+        : create(row, issues, supplierCode)
+    )
   }
 
   return { rows: plans, summary: summarise(plans) }
@@ -159,11 +228,12 @@ function skip(row: ParsedRow, reason: string, issues: Issue[]): RowPlan {
     changes: [],
     priceAction: 'none',
     packingAction: 'none',
+    supplierCodeAction: 'none',
     issues,
   }
 }
 
-function create(row: ParsedRow, issues: Issue[]): RowPlan {
+function create(row: ParsedRow, issues: Issue[], supplierCode: string | null): RowPlan {
   return {
     rowNumber: row.rowNumber,
     action: 'create',
@@ -171,11 +241,17 @@ function create(row: ParsedRow, issues: Issue[]): RowPlan {
     changes: ['New product'],
     priceAction: row.price ? 'first' : 'none',
     packingAction: row.packing ? 'create' : 'none',
+    supplierCodeAction: supplierCode ? 'record' : 'none',
     issues,
   }
 }
 
-function update(row: ParsedRow, existing: ExistingProduct, issues: Issue[]): RowPlan {
+function update(
+  row: ParsedRow,
+  existing: ExistingProduct,
+  issues: Issue[],
+  supplierCode: string | null
+): RowPlan {
   const changes: string[] = []
 
   // Only fields the sheet actually carries a value for. A blank cell means
@@ -192,6 +268,17 @@ function update(row: ParsedRow, existing: ExistingProduct, issues: Issue[]): Row
   field('minimum order', row.product.minimumOrderQty)
   if (row.product.certifications.length > 0) changes.push('certifications')
 
+  // Recorded once. A product already carrying this supplier's part number
+  // needs nothing, and a second, different number is added rather than
+  // replacing the first — a supplier who renumbers a line still has orders
+  // open against the old code.
+  const supplierCodeAction: SupplierCodeAction = !supplierCode
+    ? 'none'
+    : existing.supplierCodes.includes(supplierCode)
+      ? 'unchanged'
+      : 'record'
+  if (supplierCodeAction === 'record') changes.push('product code')
+
   return {
     rowNumber: row.rowNumber,
     action: 'update',
@@ -200,6 +287,7 @@ function update(row: ParsedRow, existing: ExistingProduct, issues: Issue[]): Row
     changes: changes.length > 0 ? changes : ['Nothing on the product itself'],
     priceAction: priceActionFor(row, existing),
     packingAction: row.packing ? (existing.hasDefaultPacking ? 'replace' : 'create') : 'none',
+    supplierCodeAction,
     issues,
   }
 }
@@ -235,5 +323,6 @@ function summarise(plans: RowPlan[]): ImportPlan['summary'] {
     pricesAdded: count((plan) => plan.priceAction === 'first' || plan.priceAction === 'supersede'),
     pricesSuperseded: count((plan) => plan.priceAction === 'supersede'),
     packings: count((plan) => plan.packingAction !== 'none'),
+    supplierCodes: count((plan) => plan.supplierCodeAction === 'record'),
   }
 }

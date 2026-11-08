@@ -1157,6 +1157,8 @@
       "willSkip": "Rows skipped",
       "pricesAdded": "Prices recorded",
       "packings": "Packing details",
+      "supplierCodes": "Product codes recorded",
+      "andMore": "{count} more rows need no attention and are not listed.",
       "confirm": "Import these rows",
       "importing": "Importing…",
       "done": "Imported. New products are hidden until you publish them.",

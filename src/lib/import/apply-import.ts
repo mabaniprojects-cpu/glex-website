@@ -35,6 +35,14 @@ export async function applyRow(
 
   if (planned.action === 'update') await updateProduct(tx, productId, row)
 
+  await applySupplierCode(
+    tx,
+    productId,
+    row,
+    planned.supplierCodeAction,
+    supplierId,
+    sourceFileId
+  )
   await applyPrice(tx, productId, row, planned.priceAction, supplierId, sourceFileId)
   await applyPacking(tx, productId, row, planned.packingAction)
 
@@ -100,6 +108,38 @@ export async function updateProduct(tx: Tx, productId: string, row: ParsedRow): 
   if (Object.keys(data).length > 0) {
     await tx.product.update({ where: { id: productId }, data })
   }
+}
+
+/**
+ * Records the supplier's own part number against the product.
+ *
+ * Written as the supplier typed it, not normalised: the code is quoted back
+ * to them on a purchase order, so "21010002" must come out the way it went
+ * in. Matching ignores case and stray spaces, which is `supplierCodeKey`'s
+ * job, and is why the stored spelling can stay theirs.
+ *
+ * `upsert` rather than `create` because the unique key is (supplier, code)
+ * and a sheet that lists one part number against a product it is already
+ * recorded on should be a no-op, not a crash halfway through 2,000 rows.
+ */
+export async function applySupplierCode(
+  tx: Tx,
+  productId: string,
+  row: ParsedRow,
+  action: string,
+  supplierId: string,
+  sourceFileId: string | null = null
+): Promise<void> {
+  const code = row.product.supplierCode?.trim()
+  if (!code || action === 'none' || action === 'unchanged') return
+
+  await tx.supplierProductCode.upsert({
+    where: { supplierId_code: { supplierId, code } },
+    create: { productId, supplierId, code, sourceFileId },
+    // Only the provenance moves. Re-pointing a code at a different product
+    // would silently re-attribute it, and that is a decision for a person.
+    update: { sourceFileId },
+  })
 }
 
 export async function applyPrice(

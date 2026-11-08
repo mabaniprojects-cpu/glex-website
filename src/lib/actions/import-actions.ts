@@ -19,6 +19,7 @@ import {
 import {
   matchKey,
   planImport,
+  supplierCodeKey,
   type ExistingProduct,
   type ImportContext,
   type ImportPlan,
@@ -286,47 +287,46 @@ async function loadMapping(supplierId: string): Promise<SheetMapping | null> {
 
 /** Everything the planner needs to know about what already exists. */
 async function loadContext(supplierId: string): Promise<ImportContext> {
+  /**
+   * What the planner needs to know about a product that already exists.
+   *
+   * `supplierCodes` is filtered to THIS supplier in the query, so a part
+   * number another supplier uses never appears here — their numbering is
+   * their own commercial information and would match the wrong row.
+   */
+  const productShape = {
+    id: true,
+    name: true,
+    glexCode: true,
+    packings: { where: { isDefault: true }, select: { id: true }, take: 1 },
+    supplierCodes: { where: { supplierId }, select: { code: true } },
+    prices: {
+      where: { supersededAt: null, supplierId },
+      select: { id: true, amount: true, currency: true, incoterm: true, unit: true },
+      orderBy: { validFrom: 'desc' as const },
+      take: 1,
+    },
+  }
+
   const [categories, products, coded] = await Promise.all([
     db.category.findMany({ where: { deletedAt: null }, select: { id: true, name: true } }),
-    db.product.findMany({
-      where: { supplierId, deletedAt: null },
-      select: {
-        id: true,
-        name: true,
-        packings: { where: { isDefault: true }, select: { id: true }, take: 1 },
-        prices: {
-          where: { supersededAt: null, supplierId },
-          select: { id: true, amount: true, currency: true, incoterm: true, unit: true },
-          orderBy: { validFrom: 'desc' },
-          take: 1,
-        },
-      },
-    }),
+    db.product.findMany({ where: { supplierId, deletedAt: null }, select: productShape }),
     // Catalogue-wide, because a code identifies a product wherever it sits.
     db.product.findMany({
       where: { glexCode: { not: null }, deletedAt: null },
-      select: {
-        id: true,
-        name: true,
-        glexCode: true,
-        packings: { where: { isDefault: true }, select: { id: true }, take: 1 },
-        prices: {
-          where: { supersededAt: null, supplierId },
-          select: { id: true, amount: true, currency: true, incoterm: true, unit: true },
-          orderBy: { validFrom: 'desc' },
-          take: 1,
-        },
-      },
+      select: productShape,
     }),
   ])
 
-  const existingByName = new Map<string, ExistingProduct>()
-  for (const product of products) {
+  type Loaded = (typeof products)[number]
+
+  const toExisting = (product: Loaded): ExistingProduct => {
     const price = product.prices[0]
-    existingByName.set(matchKey(product.name), {
+    return {
       id: product.id,
       name: product.name,
       hasDefaultPacking: product.packings.length > 0,
+      supplierCodes: product.supplierCodes.map((row) => supplierCodeKey(row.code)),
       currentPrice: price
         ? {
             id: price.id,
@@ -336,32 +336,29 @@ async function loadContext(supplierId: string): Promise<ImportContext> {
             unit: price.unit,
           }
         : null,
-    })
+    }
+  }
+
+  const existingByName = new Map<string, ExistingProduct>()
+  const existingBySupplierCode = new Map<string, ExistingProduct>()
+  for (const product of products) {
+    const existing = toExisting(product)
+    existingByName.set(matchKey(product.name), existing)
+    // A name can collide; a part number cannot, so these are not the same
+    // map with two keys — the code map stays complete where names overwrite.
+    for (const code of existing.supplierCodes) existingBySupplierCode.set(code, existing)
   }
 
   const existingByCode = new Map<string, ExistingProduct>()
   for (const product of coded) {
-    const price = product.prices[0]
-    existingByCode.set(product.glexCode!.toUpperCase(), {
-      id: product.id,
-      name: product.name,
-      hasDefaultPacking: product.packings.length > 0,
-      currentPrice: price
-        ? {
-            id: price.id,
-            amount: Number(price.amount),
-            currency: price.currency,
-            incoterm: price.incoterm,
-            unit: price.unit,
-          }
-        : null,
-    })
+    existingByCode.set(product.glexCode!.toUpperCase(), toExisting(product))
   }
 
   return {
     categoryIdByName: new Map(categories.map((category) => [category.name, category.id])),
     existingByName,
     existingByCode,
+    existingBySupplierCode,
     supplierId,
   }
 }

@@ -149,9 +149,10 @@ describe('the values back the guess up, or undermine it', () => {
     expect(code?.suggested).toBe('HS code')
   })
 
-  it('does not call a column of part numbers a product name', async () => {
+  it('sends a column of part numbers to the product code, not the name', async () => {
     // The most damaging wrong guess available: "Item Code" matches the word
-    // "item", and every row would then import titled with a SKU.
+    // "item", and every row would then import titled with a SKU. It now has
+    // a column of its own to land in rather than merely being refused one.
     const result = await inspect({
       Sheet1: [
         ['Item Code', 'Item Description'],
@@ -163,8 +164,25 @@ describe('the values back the guess up, or undermine it', () => {
     const columns = Object.fromEntries(
       result.sheets[0]!.columns.map((c) => [c.header, c.suggested])
     )
-    expect(columns['Item Code']).toBeNull()
+    expect(columns['Item Code']).toBe('Your product code')
     expect(columns['Item Description']).toBe('Product name (English)')
+  })
+
+  it('still prefers HS code for a Code column that holds tariff codes', async () => {
+    // Both columns own the word "code", and the values are what separate
+    // them: a tariff code is shaped like one, a part number is not.
+    const result = await inspect({
+      Sheet1: [
+        ['Code', 'Part Number', 'Item Description'],
+        ['7214.20', 'WS-0001', 'SUPER WHITE SAND'],
+      ],
+    })
+
+    const columns = Object.fromEntries(
+      result.sheets[0]!.columns.map((c) => [c.header, c.suggested])
+    )
+    expect(columns['Code']).toBe('HS code')
+    expect(columns['Part Number']).toBe('Your product code')
   })
 
   it('does not call a column of numbers a product name', async () => {

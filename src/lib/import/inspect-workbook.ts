@@ -219,6 +219,34 @@ const SYNONYMS: Record<string, string[]> = {
   Brand: ['brand', 'make', 'trademark', 'الماركة'],
   Manufacturer: ['manufacturer', 'maker', 'factory', 'producer', 'المصنع'],
   'Country of origin': ['origin', 'country', 'made in', 'بلد', 'المنشأ'],
+  /**
+   * Before 'HS code', deliberately.
+   *
+   * Both own the bare word "code", and on a tie the first entry wins. A
+   * supplier's own part number is far more common in a price list than a
+   * tariff code, and the multi-word forms here outscore a bare "code"
+   * anyway because the score is the matched word's share of the heading.
+   */
+  'Your product code': [
+    'item code',
+    'product code',
+    'material code',
+    'cable code',
+    'part number',
+    'part no',
+    'partno',
+    'item no',
+    'item number',
+    'catalogue number',
+    'catalog number',
+    'article number',
+    'article',
+    'sku',
+    'reference',
+    'ref',
+    'رمز',
+    'الصنف',
+  ],
   // "code" alone is ambiguous — item code, SKU, HS code — so it is listed
   // here and then settled by what the column actually contains.
   'HS code': ['hs', 'hscode', 'code', 'tariff', 'customs', 'الجمركي'],
@@ -321,6 +349,12 @@ function contradicts(column: string, samples: string[]): boolean {
 
   // A code column that holds no code-shaped value is somebody else's code.
   if (column === 'HS code' && !samples.some((value) => /\b\d{4}\.?\d{0,2}\b/.test(value))) {
+    return true
+  }
+
+  // A part number is short. "Reference" and "Article" also head columns of
+  // prose in some price lists, and a sentence is not a code.
+  if (column === 'Your product code' && samples.every((value) => value.length > 40)) {
     return true
   }
 

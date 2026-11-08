@@ -175,12 +175,13 @@ export function SupplierImport({ supplierId }: { supplierId: string }) {
         <section className="space-y-4">
           <h2 className="text-lg font-semibold">{t('preview')}</h2>
 
-          <dl className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+          <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             <Figure label={t('willCreate')} value={plan.summary.create} />
             <Figure label={t('willUpdate')} value={plan.summary.update} />
             <Figure label={t('willSkip')} value={plan.summary.skip} muted />
             <Figure label={t('pricesAdded')} value={plan.summary.pricesAdded} />
             <Figure label={t('packings')} value={plan.summary.packings} />
+            <Figure label={t('supplierCodes')} value={plan.summary.supplierCodes} />
           </dl>
 
           <PlanTable
@@ -194,6 +195,7 @@ export function SupplierImport({ supplierId }: { supplierId: string }) {
               update: t('actionUpdate'),
               skip: t('actionSkip'),
             }}
+            andMore={(count) => t('andMore', { count })}
           />
 
           <Button type="button" onClick={confirm} disabled={!canImport || pending}>
@@ -258,15 +260,29 @@ function IssueList({ title, issues }: { title: string; issues: Issue[] }) {
 function PlanTable({
   rows,
   labels,
+  andMore,
 }: {
   rows: RowPlan[]
   labels: Record<'row' | 'product' | 'action' | 'notes' | 'create' | 'update' | 'skip', string>
+  /** The footer line when the table is capped, given how many are hidden. */
+  andMore: (count: number) => string
 }) {
   const ordered = [...rows].sort((a, b) => {
     const weight = (row: RowPlan) =>
       row.action === 'skip' ? 0 : row.issues.some((i) => i.level === 'warning') ? 1 : 2
     return weight(a) - weight(b) || a.rowNumber - b.rowNumber
   })
+
+  /**
+   * Enough to review, not enough to stall the browser.
+   *
+   * A real sheet reached 2,544 rows and the page could not finish painting
+   * them. Capping is safe because the sort above has already floated
+   * everything that needs a decision — skips first, then warnings — so what
+   * is cut is the clean rows, which the figures above already count.
+   */
+  const shown = ordered.slice(0, 200)
+  const hidden = ordered.length - shown.length
 
   const actionLabel = { create: labels.create, update: labels.update, skip: labels.skip }
 
@@ -290,7 +306,7 @@ function PlanTable({
           </tr>
         </thead>
         <tbody>
-          {ordered.map((row) => (
+          {shown.map((row) => (
             <tr key={row.rowNumber} className="border-border-subtle border-t align-top">
               <td className="text-glex-green-800/60 p-2 tabular-nums">{row.rowNumber}</td>
               <td className="p-2 font-medium">{row.name}</td>
@@ -327,6 +343,13 @@ function PlanTable({
               </td>
             </tr>
           ))}
+          {hidden > 0 ? (
+            <tr className="border-border-subtle border-t">
+              <td colSpan={4} className="text-glex-green-800/60 p-2 text-xs">
+                {andMore(hidden)}
+              </td>
+            </tr>
+          ) : null}
         </tbody>
       </table>
     </div>

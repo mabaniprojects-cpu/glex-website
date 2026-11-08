@@ -1157,6 +1157,8 @@
       "willSkip": "Lignes ignorées",
       "pricesAdded": "Prix enregistrés",
       "packings": "Détails d'emballage",
+      "supplierCodes": "Codes produit enregistrés",
+      "andMore": "{count} autres lignes ne nécessitent aucune vérification et ne sont pas affichées.",
       "confirm": "Importer ces lignes",
       "importing": "Import en cours…",
       "done": "Importé. Les nouveaux produits restent masqués jusqu’à leur publication.",

@@ -1157,6 +1157,8 @@
       "willSkip": "Übersprungene Zeilen",
       "pricesAdded": "Erfasste Preise",
       "packings": "Verpackungsangaben",
+      "supplierCodes": "Erfasste Artikelnummern",
+      "andMore": "Weitere {count} Zeilen erfordern keine Prüfung und werden nicht aufgeführt.",
       "confirm": "Diese Zeilen importieren",
       "importing": "Import läuft…",
       "done": "Importiert. Neue Produkte bleiben verborgen, bis Sie sie veröffentlichen.",
