@@ -4,6 +4,7 @@ import { getSessionUser } from '@/lib/auth-guards'
 import { db } from '@/lib/db'
 import { checkRateLimit, clientIp } from '@/lib/rate-limit'
 import { getStorageProvider } from '@/lib/storage'
+import { ANONYMOUS_UPLOAD_PURPOSES } from '@/lib/storage/purposes'
 import { buildKey, scanForMalware, validateUpload } from '@/lib/storage/validation'
 
 /**
@@ -23,8 +24,6 @@ import { buildKey, scanForMalware, validateUpload } from '@/lib/storage/validati
  * claims it for the new organization once the application is committed, and
  * `/api/files/[id]` refuses an ownerless file to everyone but staff.
  */
-const ANONYMOUS_PURPOSES = new Set(['supplier-logo', 'supplier-documents'])
-
 export async function POST(request: Request) {
   const user = await getSessionUser()
 
@@ -44,7 +43,7 @@ export async function POST(request: Request) {
    * registration asks for, not enough to use the endpoint as free storage.
    */
   if (!user) {
-    if (!ANONYMOUS_PURPOSES.has(purpose)) {
+    if (!ANONYMOUS_UPLOAD_PURPOSES.has(purpose)) {
       return Response.json({ error: 'unauthorized' }, { status: 401 })
     }
 

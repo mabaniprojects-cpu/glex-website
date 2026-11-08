@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/field'
 import { FileUpload, type UploadedFile } from '@/components/ui/file-upload'
 import { submitSupplierRegistration } from '@/lib/actions/supplier-registration-actions'
+import { SUPPLIER_DOCUMENTS_PURPOSE, SUPPLIER_LOGO_PURPOSE } from '@/lib/storage/purposes'
 import {
   CERTIFICATION_CHOICES,
   CONTACT_KINDS,
@@ -421,8 +422,11 @@ export function SupplierRegistrationForm({
             <FileUpload
               value={logo}
               onChange={setLogo}
-              purpose="supplier-logos"
-              accept=".png,.jpg,.jpeg,.webp,.svg"
+              purpose={SUPPLIER_LOGO_PURPOSE}
+              // No SVG: the server refuses it on purpose, because a stored
+              // SVG is a script that would run from our own origin. Offering
+              // it in the picker only produced a rejection after the upload.
+              accept=".png,.jpg,.jpeg,.webp"
               maxFiles={1}
             />
           </div>
@@ -625,7 +629,11 @@ export function SupplierRegistrationForm({
       {/* --- Step 4: documents --- */}
       {step === 3 ? (
         <section aria-label={t('stepDocuments')}>
-          <FileUpload value={documents} onChange={setDocuments} purpose="supplier-documents" />
+          <FileUpload
+            value={documents}
+            onChange={setDocuments}
+            purpose={SUPPLIER_DOCUMENTS_PURPOSE}
+          />
 
           <div
             role="note"
