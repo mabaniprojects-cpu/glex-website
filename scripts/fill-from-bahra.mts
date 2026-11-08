@@ -44,7 +44,15 @@ function describe(entry: BahraRow): string {
     `${entry.crossSectionMm2} mm²`,
   ]
   if (entry.voltage) parts.push(entry.voltage)
-  if (entry.armour && entry.armour !== 'Unarmoured') parts.push(`· ${entry.armour}`)
+
+  // Core count, screen and armour all distinguish cables that are
+  // otherwise the same size and material, and a name that omits any of
+  // them collides with a genuinely different product.
+  const qualifiers = [entry.cores, entry.screen, entry.armour === 'Unarmoured' ? '' : entry.armour]
+    .filter(Boolean)
+    .join(', ')
+  if (qualifiers) parts.push(`· ${qualifiers}`)
+
   return parts.join(' ')
 }
 

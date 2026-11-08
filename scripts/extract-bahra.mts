@@ -52,6 +52,10 @@ export type BahraRow = {
   insulation: string
   armour: string
   voltage: string
+  /** "Single core", "Three cores" — from the table's own sub-heading. */
+  cores: string
+  /** "Copper wire screened" / "Copper tape screened", likewise. */
+  screen: string
   weightKgKm: number | null
   drumMetres: string | null
   /** False when the weight is below the conductor's own mass. */
@@ -86,10 +90,41 @@ function readPage(catalogue: string, page: number, text: string) {
   if (products.length === 0) return
 
   // The page heading says what the cable is; every row on it shares that.
-  const heading = text.slice(0, 400).toUpperCase()
+  //
+  // Everything before the first product code, not a fixed number of
+  // characters: a 400-character window cut off the voltage on the pages
+  // that carry a cutaway diagram above the table, and a cable without its
+  // voltage class is indistinguishable from the same size at another one.
+  const heading = text.slice(0, products[0]!.index).toUpperCase()
   const conductor = heading.includes('ALUMINUM') || heading.includes('ALUMINIUM')
     ? 'ALUMINIUM'
     : 'COPPER'
+
+  /**
+   * Sub-headings inside the page.
+   *
+   * A single page prints several tables — "SINGLE CORE | COPPER WIRE
+   * SCREENED" then "SINGLE CORE | COPPER TAPE SCREENED" — and the only
+   * difference between their rows is the screen. Reading the page heading
+   * alone made the two tables' 35mm² cables the same product, so the
+   * heavier one's drum weight silently won.
+   */
+  const sections = [
+    ...text.matchAll(
+      /^[ \t]*(SINGLE|TWO|THREE|FOUR|FIVE|SEVEN|TWELVE)[ \t]+CORES?[ \t]*\|[ \t]*(COPPER[ \t]+(?:WIRE|TAPE)[ \t]+SCREENED)/gim
+    ),
+  ].map((match) => ({
+    index: match.index,
+    cores: sentence(`${match[1]!} core${/^SINGLE$/i.test(match[1]!) ? '' : 's'}`),
+    screen: sentence(match[2]!.replace(/[ \t]+/g, ' ')),
+  }))
+
+  /** The table a product sits under, or none on a single-table page. */
+  const sectionAt = (at: number) =>
+    sections.reduce<(typeof sections)[number] | null>(
+      (found, section) => (section.index < at ? section : found),
+      null
+    )
 
   /**
    * Weights and drum lengths, in printed order.
@@ -106,6 +141,7 @@ function readPage(catalogue: string, page: number, text: string) {
     const crossSectionMm2 = Number(match[2])
     const pair = pairs[index]
     const weight = pair?.weight ?? null
+    const section = sectionAt(match.index)
 
     rows.push({
       catalogue,
@@ -115,7 +151,9 @@ function readPage(catalogue: string, page: number, text: string) {
       conductor,
       insulation: heading.includes('XLPE') ? 'XLPE' : heading.includes('LS0H') ? 'LS0H' : 'PVC',
       armour: armourFrom(heading),
-      voltage: /(\d+(?:\.\d+)?\/\d+(?:\.\d+)?\s*KV)/.exec(heading)?.[1]?.trim() ?? '',
+      voltage: voltageFrom(heading),
+      cores: section?.cores ?? '',
+      screen: section?.screen ?? '',
       weightKgKm: weight,
       drumMetres: pair?.drum ?? null,
       // A cable cannot weigh less than the metal inside it.
@@ -123,6 +161,28 @@ function readPage(catalogue: string, page: number, text: string) {
         weight === null ? null : weight > crossSectionMm2 * DENSITY[conductor] * 0.95,
     })
   })
+}
+
+/** "Three Cores" -> "Three cores". */
+function sentence(words: string): string {
+  const lower = words.toLowerCase()
+  return lower.charAt(0).toUpperCase() + lower.slice(1)
+}
+
+/**
+ * The cable's voltage class, as "3.6/6 kV".
+ *
+ * Bahra print the rated value in brackets between the pair and the unit —
+ * "3.6/6 (7.2)kV" — so a pattern expecting kV to follow the numbers
+ * directly matched nothing on most pages. The bracketed figure is the
+ * highest voltage for equipment, derivable from the pair, so it is read
+ * and discarded rather than kept.
+ */
+function voltageFrom(heading: string): string {
+  const match = /(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)\s*(?:\(\s*[\d.]+\s*\)\s*)?K\s?V/.exec(
+    heading
+  )
+  return match ? `${match[1]}/${match[2]} kV` : ''
 }
 
 function armourFrom(heading: string): string {
